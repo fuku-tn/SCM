@@ -113,6 +113,17 @@ async function vRun(id) {
   await draw();
   poll = setInterval(draw, 1500);
 }
+const encPath = (p) => p.split('/').map(encodeURIComponent).join('/');
+function fileChips(r, s, open) {
+  const files = s.files || [], top = files.filter((f) => !f.includes('/')), nested = files.filter((f) => f.includes('/'));
+  const chip = (f) => `<a href="#" data-file="${esc(f)}" data-sid="${s.id}" class="${f === 'result.md' && open ? 'on' : ''}" title="${esc(f)}">${esc(f.length > 46 ? '…' + f.slice(-44) : f)}</a>`;
+  const proj = (nested.find((f) => /^pbip\/[^/]+\//.test(f)) || '').match(/^pbip\/([^/]+)\//);
+  const zips = [`<a class="zip" href="/api/runs/${r.id}/stages/${s.id}/result.md?download=1">⬇ result.md</a>`];
+  if (proj) zips.push(`<a class="zip" href="/api/runs/${r.id}/zip/${s.id}?dir=${encodeURIComponent('pbip/' + proj[1])}">⬇ Tải project PBIP (.zip)</a>`);
+  if (nested.length) zips.push(`<a class="zip" href="/api/runs/${r.id}/zip/${s.id}">⬇ Cả thư mục chặng (.zip)</a>`);
+  return `<div class="files">${top.map(chip).join('')}${zips.join('')}</div>` +
+    (nested.length ? `<details class="nested"><summary>${nested.length} file trong thư mục con</summary><div class="files">${nested.slice(0, 80).map(chip).join('')}${nested.length > 80 ? `<span class="sub">…và ${nested.length - 80} file nữa (có trong file zip)</span>` : ''}</div></details>` : '');
+}
 function stageCard(r, s, i) {
   const u = s.usage; const ctx = u ? u.input + u.cacheRead + u.cacheCreate + u.output : 0;
   const open = openState[r.id + s.id] ?? (s.status === 'done' && i === r.stages.length - 1);
@@ -124,7 +135,7 @@ function stageCard(r, s, i) {
     ${s.status === 'done' ? `<div class="meta"><span>Model <b>${esc(s.usedModel || s.model)}</b></span><span>Input <b>${fmt(u.input)}</b></span><span>Output <b>${fmt(u.output)}</b></span><span>Cache <b>${fmt(u.cacheRead + u.cacheCreate)}</b></span><span>Context <b>${fmt(ctx)} / ${fmt(s.contextWindow)}</b> (${((ctx / s.contextWindow) * 100).toFixed(1)}%)</span><span>Thời gian <b>${dur(s.ms)}</b></span><span>$<b>${(s.cost || 0).toFixed(4)}</b></span></div>` : ''}
     ${s.status === 'running' ? `<div class="meta"><span class="spin"></span><span>Prompt ước tính ~<b>${fmt(s.promptTokensEst)}</b> token — đang chờ model...</span></div>` : ''}
     ${s.error ? `<div class="err-box">${esc(s.error)}</div>` : ''}
-    ${s.status === 'done' ? `<div class="files">${s.files.map((f) => `<a href="#" data-file="${f}" data-sid="${s.id}" class="${f === 'result.md' && open ? 'on' : ''}">${f}</a>`).join('')}<a href="/api/runs/${r.id}/stages/${s.id}/result.md?download=1">⬇ tải result.md</a></div>
+    ${s.status === 'done' ? `${(s.scripts || []).length ? `<div class="meta" style="margin:0 0 8px">${s.scripts.map((x) => `<span class="pill ${x.code === 0 ? 'ok' : 'err'}">scripts/${esc(x.name)} ${x.code === 0 ? '✓' : '✗'}</span>`).join(' ')}</div>` : ''}${fileChips(r, s, open)}
       <div class="md" data-view="${s.id}" ${open ? '' : 'hidden'}></div>
       <button class="btn ghost sm" data-toggle="${s.id}" style="margin-top:8px">${open ? 'Thu gọn' : 'Xem kết quả'}</button>` : ''}
   </div>`;
@@ -132,7 +143,7 @@ function stageCard(r, s, i) {
 function bindRun(r) {
   const load = async (sid, f) => {
     const box = $(`[data-view="${sid}"]`, view); if (!box) return;
-    const txt = await (await api(`/api/runs/${r.id}/stages/${sid}/${f}`)).text();
+    let txt; try { txt = await (await api(`/api/runs/${r.id}/stages/${sid}/${encPath(f)}`)).text(); } catch (e) { txt = '(không xem được: ' + e.message + ')'; f = 'x.txt'; }
     box.innerHTML = f.endsWith('.md') ? md(txt) : `<pre style="white-space:pre-wrap;margin:0">${esc(txt)}</pre>`; box.hidden = false;
     view.querySelectorAll(`[data-sid="${sid}"][data-file]`).forEach((a) => a.classList.toggle('on', a.dataset.file === f));
   };

@@ -329,3 +329,17 @@ body{padding:20px}
 .stg-h{margin-bottom:4px}
 .stg .meta{margin:14px 0}
 @media(max-width:820px){body{padding:12px}.shell{padding:14px;gap:16px}.main,#view{gap:16px}.card{padding:18px}}
+
+/* period cards */
+.pcards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media(max-width:1000px){.pcards{grid-template-columns:repeat(2,1fr)}}
+.pcard{position:relative;text-align:left;border:2px solid transparent;background:var(--card2);border-radius:16px;padding:14px 14px 14px 46px;cursor:pointer;display:flex;flex-direction:column;gap:2px;transition:.15s;color:var(--ink)}
+.pcard:hover{transform:translateY(-1px)}
+.pcard b{font-size:18px;letter-spacing:.02em}.pc-n{font-size:12px;font-weight:600}.pcard small{color:var(--mut);font-size:11px}
+.pc-chk{position:absolute;left:14px;top:16px;width:22px;height:22px;border-radius:7px;border:2px solid var(--mut);background:var(--card);display:grid;place-items:center;transition:.15s}
+.pcard.on{border-color:var(--acc);background:var(--accsoft)}
+.pcard.on .pc-chk{background:var(--acc);border-color:var(--acc)}.pcard.on .pc-chk::after{content:"✓";color:var(--on-acc);font-size:13px;font-weight:800}
+/* file chips lồng thư mục */
+.files a.zip{background:var(--accsoft);color:var(--acct);font-family:inherit;font-weight:600}
+.files a.zip:hover{background:var(--acc);color:var(--on-acc)}
+.nested{margin:0 0 10px}.nested summary{cursor:pointer;color:var(--mut);font-size:12px;margin:2px 0 8px}

@@ -66,6 +66,9 @@ function profileData(buf, filename) {
         const ns = nn.filter((v) => typeof v === 'number');
         info.min = Math.min(...ns); info.max = Math.max(...ns);
         info.sum = Math.round(ns.reduce((a, b) => a + b, 0) * 100) / 100;
+      } else if (type === 'date') {
+        const ds = nn.filter((v) => v instanceof Date).map((v) => v.toISOString().slice(0, 10)).sort();
+        if (ds.length) { info.min = ds[0]; info.max = ds[ds.length - 1]; }
       } else info.examples = [...uniq].slice(0, 5);
       return info;
     });
@@ -110,12 +113,13 @@ function resourceText(id) {
   const dir = path.join(SKILLS, id); let total = 0, out = '', tree = '';
   const files = listFiles(dir).filter((f) => f.path !== 'SKILL.md').sort((a, b) => a.path.localeCompare(b.path));
   for (const f of files) {
+    if (/^scripts\//.test(f.path)) { tree += `- ${f.path} (script do server chạy — không nạp mã nguồn vào prompt)\n`; continue; }
     if (!TEXT_EXT.test(f.path)) { tree += `- ${f.path} (${f.size}B, không nạp nội dung: không phải file chữ)\n`; continue; }
-    if (f.size > 15000 || total > 40000) { tree += `- ${f.path} (${f.size}B, không nạp nội dung: quá lớn)\n`; continue; }
+    if (f.size > 30000 || total > 110000) { tree += `- ${f.path} (${f.size}B, không nạp nội dung: quá lớn)\n`; continue; }
     const t = rd(path.join(dir, f.path)); total += t.length; tree += `- ${f.path} (đã nạp bên dưới)\n`; out += '\n\n## Tài nguyên: ' + f.path + '\n' + t;
   }
   if (!files.length) return '';
-  return '\n\n## Cấu trúc thư mục của SKILL (references/assets/scripts)\nLưu ý: bạn không thể chạy script hay mở file; chỉ dùng nội dung đã nạp.\n' + tree + out;
+  return '\n\n## Cấu trúc thư mục của SKILL (references/assets/scripts)\nLưu ý: bạn không tự chạy lệnh được. Script pre.js / post.js trong scripts/ (nếu có) do server tự chạy trước / sau lượt trả lời của bạn; chỉ dùng nội dung đã nạp ở dưới.\n' + tree + out;
 }
 const skillInfo = (s) => {
   const dir = path.join(SKILLS, s.id), c = rd(path.join(dir, 'SKILL.md'));
@@ -279,7 +283,7 @@ app.post('/api/runs/:id/suggest', async (req, res) => {
 });
 
 // ---------- Claude CLI ----------
-function callClaude(prompt, model, mockText) {
+function callClaude(prompt, model, mockText, opts = {}) {
   return new Promise((resolve, reject) => {
     if (MOCK) {
       const t0 = Date.now();
@@ -288,22 +292,24 @@ function callClaude(prompt, model, mockText) {
         usage: { input: estTokens(prompt), output: 120, cacheRead: 0, cacheCreate: 0 }, contextWindow: 200000, cost: 0, ms: Date.now() - t0, model,
       }), 1200);
     }
-    const args = ['-p', '--output-format', 'json', '--model', model, '--tools', '', '--no-session-persistence', '--strict-mcp-config', '--disable-slash-commands', '--system-prompt', 'Ban la chuyen gia Business Intelligence. Lam theo huong dan trong tin nhan nguoi dung.'];
+    const toolArgs = opts.tools ? ['--tools', opts.tools, '--allowedTools', opts.tools, ...(opts.addDirs || []).flatMap((d) => ['--add-dir', d])] : ['--tools', ''];
+    const args = ['-p', '--output-format', 'json', '--model', model, ...toolArgs, '--no-session-persistence', '--strict-mcp-config', '--disable-slash-commands', '--system-prompt', 'Ban la chuyen gia Business Intelligence. Lam theo huong dan trong tin nhan nguoi dung.'];
     const child = spawn('claude', args, { cwd: SCRATCH, windowsHide: true });
     let out = '', err = '';
     child.stdout.on('data', (d) => (out += d));
     child.stderr.on('data', (d) => (err += d));
-    const fail = (msg, code) => { const e = new Error(String(msg).slice(0, 1500)); e.detail = { exitCode: code ?? null, stderr: err.slice(0, 6000), stdout: out.slice(0, 6000), command: 'claude ' + args.slice(0, 7).join(' ') + ' ...' }; reject(e); };
+    const fail = (msg, code) => { const e = new Error(String(msg).slice(0, 1500)); e.detail = { exitCode: code ?? null, stderr: err.slice(0, 6000), stdout: out.slice(0, 6000), command: 'claude ' + args.slice(0, 9).join(' ') + ' ...' }; reject(e); };
     child.on('error', (e) => fail('Không chạy được claude CLI: ' + e.message));
     child.on('close', (code) => {
       let j; try { j = JSON.parse(out); } catch { return fail(err || out || 'CLI lỗi, exit ' + code, code); }
       if (j.is_error || j.subtype && j.subtype !== 'success') return fail(j.result || err || j.subtype, code);
       const u = j.usage || {};
-      const mu = Object.values(j.modelUsage || {})[0] || {};
+      // CLI có thể liệt kê thêm model nội bộ (vd. Haiku) — lấy model đã sinh nhiều output nhất làm model chính
+      const mainModel = Object.entries(j.modelUsage || {}).sort((a, b) => (b[1].outputTokens || 0) - (a[1].outputTokens || 0))[0] || ['', {}];
       resolve({
         text: j.result || '',
         usage: { input: u.input_tokens || 0, output: u.output_tokens || 0, cacheRead: u.cache_read_input_tokens || 0, cacheCreate: u.cache_creation_input_tokens || 0 },
-        contextWindow: mu.contextWindow || 200000, cost: j.total_cost_usd || 0, ms: j.duration_ms || 0, model: Object.keys(j.modelUsage || {})[0] || model,
+        contextWindow: mainModel[1].contextWindow || 200000, cost: j.total_cost_usd || 0, ms: j.duration_ms || 0, model: mainModel[0] || model,
       });
     });
     child.stdin.end(prompt);
@@ -311,12 +317,46 @@ function callClaude(prompt, model, mockText) {
 }
 
 // ---------- Prompt assembly ----------
-function buildPrompt(run, stageIdx) {
-  const st = STAGES[stageIdx];
+const PERIOD_DESC = { YoY: 'Year over Year — so với cùng kỳ năm trước (LY)', MoM: 'Month over Month — so với tháng trước (LM)', QoQ: 'Quarter over Quarter — so với quý trước (LQ)', DoD: 'Day over Day — so với ngày trước (LD)' };
+const TEMPLATES_DIR = path.join(ROOT, 'templates');
+const IMG_EXT = /\.(png|jpe?g|pdf)$/i;
+const readJsonSafe = (p) => { try { return JSON.parse(rd(p)); } catch { return null; } };
+const skillMeta = (id) => parseFront(rd(path.join(SKILLS, id, 'SKILL.md')));
+
+// Các file "bàn giao" của chặng trước (json/dax/md nhỏ ở cấp 1) để chặng sau dùng lại
+// Mỗi SKILL khai báo trong frontmatter `handoff: a.json, b.json` những file chặng SAU cần dùng lại (ngoài result.md)
+function handoffText(run, stageIdx) {
+  let out = '', total = 0;
+  for (let i = 0; i < stageIdx; i++) {
+    const d = path.join(runDir(run.id), STAGES[i].id); if (!fs.existsSync(d)) continue;
+    const want = String(skillMeta(STAGES[i].id).handoff || '').split(',').map((x) => x.trim()).filter(Boolean);
+    for (const name of want) {
+      const e = { name }; if (!fs.existsSync(path.join(d, name))) continue;
+      const t = rd(path.join(d, e.name));
+      if (t.length > 24000 || total + t.length > 70000) { out += `\n\n## File ${STAGES[i].id}/${e.name} (${t.length} ký tự — quá lớn, không nạp; đã có trên đĩa)`; continue; }
+      total += t.length; out += `\n\n## File ${STAGES[i].id}/${e.name}\n\`\`\`${e.name.endsWith('.json') ? 'json' : ''}\n${t}\n\`\`\``;
+    }
+  }
+  return out;
+}
+function templateFiles(run) {
+  const list = [];
+  const up = path.join(runDir(run.id), '00-input', 'template');
+  for (const [dir, label] of [[up, 'người dùng tải lên'], [TEMPLATES_DIR, 'thư viện templates/']]) {
+    if (!fs.existsSync(dir)) continue;
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) if (e.isFile() && IMG_EXT.test(e.name)) list.push({ path: path.join(dir, e.name), label });
+  }
+  return list;
+}
+
+function buildPrompt(run, stageIdx, preOut) {
+  const st = STAGES[stageIdx], meta = skillMeta(st.id);
   const f = run.form, a = f.audience || {}, inDir = path.join(runDir(run.id), '00-input');
   const profile = JSON.parse(rd(path.join(inDir, 'profile.json')) || '{"filename":"","sheets":[]}');
   const picked = (f.sheets && f.sheets.length) ? profile.sheets.filter((s) => f.sheets.includes(s.name)) : profile.sheets;
   const ctxText = [f.contextTyped, rd(path.join(inDir, 'context.txt'))].filter(Boolean).join('\n\n'), reqText = rd(path.join(inDir, 'requirement.txt'));
+  const canRead = /\bRead\b/.test(meta.tools || '');
+  const tpls = templateFiles(run);
   const parts = [];
   parts.push('# QUY ĐỊNH (CLAUDE.md)\n' + rd(DOCS.claude));
   parts.push('# BỘ NHỚ (MEMORY.md)\n' + rd(DOCS.memory));
@@ -329,15 +369,62 @@ function buildPrompt(run, stageIdx) {
       '- Thâm niên tại doanh nghiệp hiện tại: ' + (a.tenureCompany || '?'), '- Thâm niên từ khi đi làm: ' + (a.tenureCareer || '(không khai báo)'),
     ].join('\n'),
     '## Chỉ số cần phân tích (Key Metrics, để tính DAX)\n' + ((f.metrics || []).map((x) => '- ' + x).join('\n') || '(trống)'),
+    '## Kỳ so sánh cần tính (time intelligence; viết DAX cho từng chỉ số)\n' + ((f.periods || []).map((x) => '- ' + x + ' (' + (PERIOD_DESC[x] || x) + ')').join('\n') || '(không yêu cầu)'),
     '## Các chiều (Dimension) cần phân tích\n' + ((f.dimensions || []).map((x) => '- ' + x).join('\n') || '(trống)'),
-    '## Theme màu dashboard\n' + ((f.colors || []).join(', ') || '(không có)'),
-    '## Template dashboard mẫu\n' + (f.templateFileName ? `Có file ${f.templateFileName} (lưu tại output/${run.id}/00-input/template/). Lưu ý: nội dung ảnh/PDF chưa được đưa vào prompt ở phiên bản này.` : '(không có)'),
+    '## Theme màu dashboard (đúng 5 mã)\n' + ((f.colors || []).join(', ') || '(không có)'),
+    '## Template dashboard mẫu\n' + (tpls.length
+      ? (canRead ? 'Hãy dùng công cụ Read để XEM các file ảnh/PDF mẫu sau (đường dẫn tuyệt đối) và lấy bố cục làm cảm hứng:\n' : 'Có các file mẫu (chặng này không xem được nội dung):\n') + tpls.map((t) => `- ${t.path.replace(/\\/g, '/')} (${t.label})`).join('\n')
+      : '(không có template)'),
   ].join('\n\n'));
-  const slim = { filename: profile.filename, sheets: picked };
-  parts.push(`# PROFILE DỮ LIỆU (file: ${profile.filename}; các bảng/sheet được chọn: ${picked.map((s) => s.name).join(', ') || '—'})\n\`\`\`json\n` + JSON.stringify(slim, null, 1) + '\n```');
+  const checks = stageIdx >= 2 ? readJsonSafe(path.join(runDir(run.id), '03-data-etl', 'data-checks.json')) : null;
+  if (checks) {
+    // Từ chặng 3 trở đi dùng tóm tắt dữ liệu ĐÃ LÀM SẠCH (có min/max đầy đủ), không dùng 20 dòng mẫu của profile gốc dễ gây hiểu sai
+    const L = [`# DỮ LIỆU ĐÃ LÀM SẠCH (tóm tắt từ chặng 3; file nguồn: ${checks.sourceFile})`];
+    for (const t of checks.tables) {
+      L.push(`\n## Bảng "${t.name}" (${t.file}) — ${t.rowsAfter} dòng`, '| Cột | Kiểu | Trống | Distinct | Min | Max / ví dụ |', '|---|---|---|---|---|---|');
+      t.columns.forEach((c) => L.push(`| ${c.name} | ${c.type} | ${c.nulls} | ${c.distinct}${c.unique ? ' (duy nhất)' : ''} | ${c.min ?? ''} | ${c.max ?? (c.examples ? c.examples.slice(0, 3).join(', ') : '')} |`));
+    }
+    parts.push(L.join('\n'));
+  } else {
+    const slim = { filename: profile.filename, sheets: picked };
+    parts.push(`# PROFILE DỮ LIỆU GỐC (file: ${profile.filename}; các bảng/sheet được chọn: ${picked.map((s) => s.name).join(', ') || '—'}; "sample" chỉ là 20 dòng ĐẦU, không đại diện cho toàn bộ dữ liệu)\n\`\`\`json\n` + JSON.stringify(slim, null, 1) + '\n```');
+  }
   for (let i = 0; i < stageIdx; i++) parts.push('# OUTPUT CHẶNG ' + (i + 1) + ': ' + STAGES[i].name + '\n' + rd(path.join(runDir(run.id), STAGES[i].id, 'result.md')));
-  parts.push('# YÊU CẦU\nThực hiện đúng SKILL của chặng "' + st.name + '" và chỉ trả về nội dung Markdown kết quả của chặng này.');
+  const ho = handoffText(run, stageIdx); if (ho) parts.push('# FILE BÀN GIAO TỪ CÁC CHẶNG TRƯỚC' + ho);
+  if (preOut) parts.push('# KẾT QUẢ SCRIPT TIỀN XỬ LÝ (scripts/pre.js — do server chạy trước lượt này)\n' + preOut);
+  parts.push('# QUY ƯỚC XUẤT FILE\nKết quả chính của bạn là Markdown (sẽ lưu thành result.md). Nếu SKILL yêu cầu thêm file (JSON, DAX...), xuất MỖI file bằng đúng khối sau (không bọc thêm ```):\n<<<FILE: ten-file.json>>>\n...nội dung file...\n<<<END FILE>>>\nServer sẽ tách các khối này ra thành file riêng trong thư mục của chặng.');
+  parts.push('# YÊU CẦU\nThực hiện đúng SKILL của chặng "' + st.name + '" và trả về nội dung Markdown kết quả của chặng này (kèm các khối FILE nếu SKILL yêu cầu).');
   return parts.join('\n\n---\n\n');
+}
+
+// ---------- Script hooks (scripts/pre.js, scripts/post.js trong thư mục SKILL) ----------
+function runScript(skillId, name, runD, stageD) {
+  const p = path.join(SKILLS, skillId, 'scripts', name);
+  if (!fs.existsSync(p)) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [p, runD, stageD], { cwd: stageD, windowsHide: true, env: { ...process.env, BIE_ROOT: ROOT } });
+    let out = '', err = '', done = false;
+    const timer = setTimeout(() => { if (!done) { child.kill(); err += '\n[timeout sau 180s]'; } }, 180000);
+    child.stdout.on('data', (d) => (out += d)); child.stderr.on('data', (d) => (err += d));
+    const fin = (code, extra) => { if (done) return; done = true; clearTimeout(timer); resolve({ name, code, stdout: out, stderr: err + (extra || ''), command: `node skills/${skillId}/scripts/${name} <runDir> <stageDir>` }); };
+    child.on('error', (e) => fin(-1, e.message)); child.on('close', (c) => fin(c));
+  });
+}
+function scriptFail(r) { const e = new Error(`scripts/${r.name} thất bại (exit ${r.code}): ` + (r.stderr || r.stdout).trim().slice(0, 600)); e.detail = { exitCode: r.code, stderr: r.stderr.slice(0, 6000), stdout: r.stdout.slice(0, 6000), command: r.command }; return e; }
+
+// Tách khối <<<FILE: path>>> ... <<<END FILE>>> thành file thật trong thư mục chặng
+const FILE_OK = /\.(json|md|dax|csv|txt|tmdl|m|sql)$/i;
+function extractFileBlocks(text, dir) {
+  const written = [];
+  const out = text.replace(/<<<FILE:\s*([^\n>]+?)\s*>>>\r?\n([\s\S]*?)\r?\n?<<<END FILE>>>/g, (_, rel, body) => {
+    const r = cleanRel(rel);
+    if (!r || !FILE_OK.test(r)) return `> ⚠ Bỏ qua file không hợp lệ: \`${rel}\``;
+    let b = body.replace(/^\s*```[\w-]*\r?\n/, '').replace(/\r?\n```\s*$/, '');
+    const p = path.join(dir, r); if (!p.startsWith(dir)) return '';
+    fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, b.endsWith('\n') ? b : b + '\n', 'utf8'); written.push(r);
+    return `> 📎 Đã tạo file \`${r}\``;
+  });
+  return { text: out, written };
 }
 
 // ---------- Run orchestration ----------
@@ -346,16 +433,37 @@ async function execStage(run, i) {
   const st = STAGES[i], s = run.stages[i];
   const dir = path.join(runDir(run.id), st.id);
   fs.mkdirSync(dir, { recursive: true });
-  s.status = 'running'; s.startedAt = Date.now(); s.error = null; s.errorDetail = null; saveRun(run);
+  s.status = 'running'; s.startedAt = Date.now(); s.error = null; s.errorDetail = null; s.scripts = []; saveRun(run);
   try {
-    const prompt = buildPrompt(run, i);
+    // 1) pre.js (tiền xử lý xác định, không tốn token)
+    let preOut = '';
+    const pre = await runScript(st.id, 'pre.js', runDir(run.id), dir);
+    if (pre) {
+      wr(path.join(dir, 'pre.log'), pre.stdout + (pre.stderr ? '\n[stderr]\n' + pre.stderr : ''));
+      s.scripts.push({ name: 'pre.js', code: pre.code });
+      if (pre.code !== 0) throw scriptFail(pre);
+      preOut = pre.stdout.length > 30000 ? pre.stdout.slice(0, 30000) + '\n…(cắt bớt)' : pre.stdout;
+    }
+    // 2) gọi model
+    const meta = skillMeta(st.id);
+    const prompt = buildPrompt(run, i, preOut);
     s.promptTokensEst = estTokens(prompt);
     wr(path.join(dir, 'prompt.md'), prompt);
-    const r = await callClaude(prompt, s.model);
-    wr(path.join(dir, 'result.md'), r.text);
-    wr(path.join(dir, 'metrics.json'), JSON.stringify({ model: r.model, usage: r.usage, contextWindow: r.contextWindow, costUSD: r.cost, ms: r.ms }, null, 2));
-    s.status = 'done'; s.usage = r.usage; s.contextWindow = r.contextWindow; s.cost = r.cost; s.ms = r.ms; s.usedModel = r.model;
-    s.files = ['result.md', 'prompt.md', 'metrics.json'];
+    const opts = meta.tools ? { tools: meta.tools, addDirs: [path.join(runDir(run.id), '00-input'), TEMPLATES_DIR].filter((d) => fs.existsSync(d)) } : {};
+    const r = await callClaude(prompt, s.model, undefined, opts);
+    const ex = extractFileBlocks(r.text, dir);
+    wr(path.join(dir, 'result.md'), ex.text);
+    wr(path.join(dir, 'metrics.json'), JSON.stringify({ model: r.model, usage: r.usage, contextWindow: r.contextWindow, costUSD: r.cost, ms: r.ms, filesFromModel: ex.written }, null, 2));
+    s.usage = r.usage; s.contextWindow = r.contextWindow; s.cost = r.cost; s.ms = r.ms; s.usedModel = r.model;
+    // 3) post.js (kiểm tra / sinh file xác định từ kết quả của model, ví dụ dựng PBIP)
+    const post = await runScript(st.id, 'post.js', runDir(run.id), dir);
+    if (post) {
+      wr(path.join(dir, 'post.log'), post.stdout + (post.stderr ? '\n[stderr]\n' + post.stderr : ''));
+      s.scripts.push({ name: 'post.js', code: post.code });
+      if (post.code !== 0) throw scriptFail(post);
+    }
+    s.files = listFiles(dir).map((f) => f.path).sort((a, b) => (a === 'result.md' ? -1 : b === 'result.md' ? 1 : a.localeCompare(b))).slice(0, 400);
+    s.status = 'done';
   } catch (e) {
     s.status = 'error'; s.error = e.message;
     s.errorDetail = { ...(e.detail || {}), stack: e.stack, model: s.model, at: new Date().toISOString() };
@@ -430,13 +538,29 @@ app.get('/api/runs/:id/profile', (req, res) => {
   if (!safeId(req.params.id)) return res.sendStatus(400);
   res.json(JSON.parse(rd(path.join(runDir(req.params.id), '00-input', 'profile.json')) || '{}'));
 });
-app.get('/api/runs/:id/stages/:sid/:file', (req, res) => {
-  const { id, sid, file } = req.params;
-  if (!safeId(id) || !safeId(sid) || !/^[\w.\-]+$/.test(file)) return res.sendStatus(400);
-  const p = path.join(runDir(id), sid, file);
-  if (!fs.existsSync(p)) return res.sendStatus(404);
+// Đọc / tải file bất kỳ (kể cả trong thư mục con) của một chặng
+app.get('/api/runs/:id/stages/:sid/*', (req, res) => {
+  const { id, sid } = req.params, rel = req.params[0];
+  if (!safeId(id) || !safeId(sid)) return res.sendStatus(400);
+  const segs = String(rel).split('/');
+  if (!segs.length || segs.some((x) => !x || x === '..' || x === '.' || !/^[^<>:"|?*\\\x00-\x1f]+$/.test(x))) return res.sendStatus(400);
+  const base = path.join(runDir(id), sid), p = path.join(base, ...segs);
+  if (!p.startsWith(base) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) return res.sendStatus(404);
   if (req.query.download) return res.download(p);
+  if (!TEXT_EXT.test(p) && !/\.(pbip|pbir|pbism|platform)$/i.test(p)) return res.status(415).type('text/plain').send('(file nhị phân — hãy dùng nút tải xuống)');
   res.type('text/plain').send(rd(p));
+});
+// Tải cả thư mục của một chặng dưới dạng .zip (ví dụ project PBIP)
+app.get('/api/runs/:id/zip/:sid', (req, res) => {
+  const { id, sid } = req.params;
+  if (!safeId(id) || !safeId(sid)) return res.sendStatus(400);
+  const base = path.join(runDir(id), sid);
+  if (!fs.existsSync(base)) return res.sendStatus(404);
+  const sub = req.query.dir ? cleanRel(req.query.dir) : '';
+  const root = sub ? path.join(base, sub) : base;
+  if (!root.startsWith(base) || !fs.existsSync(root)) return res.sendStatus(404);
+  const z = new AdmZip(); z.addLocalFolder(root, sub ? path.basename(root) : sid);
+  res.set({ 'Content-Type': 'application/zip', 'Content-Disposition': `attachment; filename="${(sub ? path.basename(root) : sid)}.zip"` }).send(z.toBuffer());
 });
 
 app.listen(PORT, () => console.log(`BIE chạy tại http://localhost:${PORT}${MOCK ? '  (MOCK mode)' : ''}`));

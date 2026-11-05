@@ -12,7 +12,7 @@ const freshA = () => {
     runId: null, step: 0,
     context: null, ctxText: '', req: { text: '', file: null },
     aud: { department: '', position: '', level: '', tenureCompany: '', tenureCareer: '' },
-    metrics: [], dimensions: [],
+    metrics: [], periods: [], dimensions: [],
     sug: { metrics: { state: 'idle', items: [], key: '', err: '' }, dimensions: { state: 'idle', items: [], key: '', err: '' } },
     sugModel: 'haiku',
     data: null, sheets: [], pv: 0,
@@ -24,6 +24,12 @@ const freshA = () => {
 let A = freshA();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const fsize = (n) => (n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(1) + ' MB');
+const PERIODS = [
+  { k: 'YoY', name: 'Year over Year', d: 'So với cùng kỳ năm trước' },
+  { k: 'MoM', name: 'Month over Month', d: 'So với tháng trước' },
+  { k: 'QoQ', name: 'Quarter over Quarter', d: 'So với quý trước' },
+  { k: 'DoD', name: 'Day over Day', d: 'So với ngày trước' },
+];
 const REQ = '<span class="req" title="Bắt buộc">*</span>';
 
 // ---------- validation ----------
@@ -138,7 +144,7 @@ function refresh() {
   if (hint) hint.innerHTML = m.length ? `<span class="warn">Còn thiếu:</span> ${m.map(esc).join(' · ')}` : '<span class="good">✓ Đã đủ thông tin</span>';
   if (A.step === 1) {
     const sec = (id, on, note) => { const el = $('#' + id); if (!el) return; el.classList.toggle('locked', !on); el.inert = !on; el.querySelector('.lock-note').textContent = on ? '' : note; };
-    sec('sec-metrics', ok21(), 'Điền đủ phần 2.1 để mở khóa'); sec('sec-dims', ok21() && A.metrics.length > 0, 'Chọn ít nhất 1 Key Metric để mở khóa');
+    sec('sec-metrics', ok21(), 'Điền đủ phần 2.1 để mở khóa'); sec('sec-periods', ok21() && A.metrics.length > 0, 'Chọn ít nhất 1 Key Metric để mở khóa'); sec('sec-dims', ok21() && A.metrics.length > 0, 'Chọn ít nhất 1 Key Metric để mở khóa');
     drawSug('metrics'); drawSug('dimensions'); autoSuggest();
   }
   if (A.step === 3) drawSummary();
@@ -179,10 +185,16 @@ function panel1() {
         ${inp('tenureCompany', 'Thâm niên tại doanh nghiệp hiện tại', 'VD: 3 năm 6 tháng', 1)}${inp('tenureCareer', 'Thâm niên kể từ khi đi làm', 'VD: 8 năm', 0)}</div></div>
     <div class="sec" id="sec-metrics"><div class="sec-h"><span class="sec-n">2.2</span><b>Key Metrics sẽ phân tích</b>${REQ}<span class="lock-note"></span></div>
       <div id="tags-metrics"></div><div id="sug-metrics" class="sug-box"></div></div>
-    <div class="sec" id="sec-dims"><div class="sec-h"><span class="sec-n">2.3</span><b>Các chiều (Dimension) đi cùng chỉ số</b>${REQ}<span class="lock-note"></span></div>
+    <div class="sec" id="sec-periods"><div class="sec-h"><span class="sec-n">2.3</span><b>Kỳ so sánh cần tính</b><small style="color:var(--mut)">chọn nhiều · không bắt buộc</small><span class="lock-note"></span></div>
+      <div class="pcards">${PERIODS.map((p) => `<button type="button" class="pcard ${A.periods.includes(p.k) ? 'on' : ''}" data-p="${p.k}" aria-pressed="${A.periods.includes(p.k)}"><span class="pc-chk"></span><b>${p.k}</b><span class="pc-n">${p.name}</span><small>${p.d}</small></button>`).join('')}</div></div>
+    <div class="sec" id="sec-dims"><div class="sec-h"><span class="sec-n">2.4</span><b>Các chiều (Dimension) đi cùng chỉ số</b>${REQ}<span class="lock-note"></span></div>
       <div id="tags-dims"></div><div id="sug-dimensions" class="sug-box"></div></div>
     ${foot()}</div>`;
   $('#panel').querySelectorAll('[data-k]').forEach((el) => { const h = () => { A.aud[el.dataset.k] = el.value; refresh(); }; el.oninput = h; el.onchange = h; });
+  $('#panel').querySelectorAll('.pcard').forEach((b) => (b.onclick = () => {
+    const k = b.dataset.p; A.periods = A.periods.includes(k) ? A.periods.filter((x) => x !== k) : PERIODS.map((p) => p.k).filter((x) => x === k || A.periods.includes(x));
+    b.classList.toggle('on', A.periods.includes(k)); b.setAttribute('aria-pressed', String(A.periods.includes(k))); refresh();
+  }));
   A.redraw = {
     metrics: tagList($('#tags-metrics'), A.metrics, refresh, 'Gõ chỉ số rồi Enter (VD: Doanh thu, Lợi nhuận gộp…) hoặc chọn gợi ý bên dưới'),
     dimensions: tagList($('#tags-dims'), A.dimensions, refresh, 'Gõ chiều rồi Enter (VD: Khu vực, Sản phẩm…) hoặc chọn gợi ý bên dưới'),
@@ -234,7 +246,7 @@ function drawSummary() {
   const h = $('#summary'); if (!h) return;
   const row = (k, v) => `<div class="sm-r"><span>${k}</span><b>${v}</b></div>`;
   h.innerHTML = row('Ngữ cảnh', esc(A.context?.name || A.ctxText.trim().slice(0, 60) || '—')) + row('Yêu cầu', esc((A.req.text.trim().slice(0, 60) || (A.req.file ? '[file] ' + A.req.file.name : '—')))) +
-    row('Người xem', esc([A.aud.department, A.aud.position, A.aud.level].filter(Boolean).join(' · ') || '—')) + row('Key Metrics', A.metrics.length) + row('Dimensions', A.dimensions.length) +
+    row('Người xem', esc([A.aud.department, A.aud.position, A.aud.level].filter(Boolean).join(' · ') || '—')) + row('Key Metrics', A.metrics.length + (A.periods.length ? ' · ' + A.periods.join(', ') : '')) + row('Dimensions', A.dimensions.length) +
     row('Dữ liệu', esc(A.data?.name || '—') + (A.data ? ` (${A.sheets.length}/${A.data.profile.sheets.length} bảng)` : '')) + row('Theme', A.colors.map((c) => `<i class="sw" style="background:${c}"></i>`).join(''));
 }
 function panel3() {
@@ -261,7 +273,7 @@ async function runAll() {
   const t = A.template && !A.template.busy ? A.template : null;
   try {
     await jsend(`/api/runs/${A.runId}/start`, 'POST', {
-      form: { requirement: A.req.text, requirementFileName: A.req.file?.name, contextFileName: A.context?.name, contextTyped: A.ctxText, templateFileName: t?.name, audience: A.aud, metrics: A.metrics, dimensions: A.dimensions, sheets: A.sheets, colors: A.colors },
+      form: { requirement: A.req.text, requirementFileName: A.req.file?.name, contextFileName: A.context?.name, contextTyped: A.ctxText, templateFileName: t?.name, audience: A.aud, metrics: A.metrics, periods: A.periods, dimensions: A.dimensions, sheets: A.sheets, colors: A.colors },
       models: A.models,
     });
     const id = A.runId; Object.values(A.timers).forEach(clearTimeout); A = freshA(); location.hash = '#home/' + id;

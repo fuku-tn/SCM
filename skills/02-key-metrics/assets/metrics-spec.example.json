@@ -1,0 +1,25 @@
+{
+  "metrics": [
+    { "id": "rev", "label": "Doanh thu", "kind": "numerical", "table": "Ban hang", "column": "Doanh thu", "aggregations": ["SUM", "AVG"], "format": "#,##0", "unit": "VND" },
+    { "id": "qty", "label": "Số lượng", "kind": "numerical", "table": "Ban hang", "column": "Số lượng", "aggregations": ["SUM"] },
+    { "id": "sku", "label": "Mã SP", "kind": "categorical", "table": "Ban hang", "column": "Mã SP", "aggregations": ["DISTINCTCOUNT"] }
+  ],
+  "derived": [
+    { "id": "rev_unit", "label": "Doanh thu trên đơn vị", "expression": "{rev.SUM} / {qty.SUM}", "format": "#,##0" }
+  ],
+  "performance": [
+    { "id": "rev_per_sku", "label": "Doanh thu / mã SP", "numerator": "rev.SUM", "denominator": "sku.DISTINCTCOUNT", "format": "#,##0" }
+  ],
+  "timeApplyTo": ["rev.SUM", "rev_per_sku"],
+  "dimensions": [
+    { "id": "date", "label": "Ngày", "table": "Ban hang", "column": "Ngày", "isDate": true },
+    { "id": "region", "label": "Khu vực", "table": "Ban hang", "column": "Khu vực" },
+    { "id": "group", "label": "Nhóm sản phẩm", "table": "San pham", "column": "Nhóm" }
+  ],
+  "combos": [
+    { "pattern": "1-1", "dimensions": ["date"], "measures": ["rev.SUM"], "purpose": "Xu hướng doanh thu theo thời gian", "section": "trend", "chart": "lineChart" },
+    { "pattern": "1-1", "dimensions": ["region"], "measures": ["rev.SUM"], "purpose": "So sánh doanh thu giữa các khu vực", "section": "comparison", "chart": "clusteredBarChart" },
+    { "pattern": "1-1", "dimensions": ["group"], "measures": ["qty.SUM"], "purpose": "Tỷ trọng số lượng theo nhóm sản phẩm", "section": "composition", "chart": "donutChart" },
+    { "pattern": "1-N", "dimensions": ["region"], "measures": ["rev.SUM", "qty.SUM"], "purpose": "Chi tiết theo khu vực", "section": "breakdown", "chart": "tableEx" }
+  ]
+}

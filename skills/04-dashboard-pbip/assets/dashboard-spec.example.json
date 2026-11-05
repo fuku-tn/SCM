@@ -1,0 +1,57 @@
+{
+  "projectName": "Doanh_thu_Q1",
+  "title": "Báo cáo doanh thu Q1",
+  "pages": [
+    {
+      "id": "overview",
+      "name": "Tổng quan",
+      "visuals": [
+        { "id": "kpi_rev", "type": "card", "title": "Doanh thu", "subtitle": "VND", "measures": ["Doanh thu (SUM)"], "grid": { "col": 0, "row": 0, "w": 3, "h": 2 } },
+        { "id": "kpi_qty", "type": "card", "title": "Số lượng bán", "measures": ["Số lượng (SUM)"], "grid": { "col": 3, "row": 0, "w": 3, "h": 2 } },
+        { "id": "kpi_delta", "type": "card", "title": "Doanh thu so với tháng trước", "measures": ["Doanh thu (SUM) Delta % LM"], "grid": { "col": 6, "row": 0, "w": 3, "h": 2 } },
+        { "id": "slc_region", "type": "slicer", "field": { "table": "Ban hang", "column": "Khu vực" }, "grid": { "col": 9, "row": 0, "w": 3, "h": 2 } },
+        {
+          "id": "trend", "type": "lineChart", "title": "Doanh thu theo tháng so với tháng trước", "subtitle": "VND",
+          "category": { "table": "Calendar", "column": "YearMonth" },
+          "measures": ["Doanh thu (SUM)", "Doanh thu (SUM) LM"],
+          "grid": { "col": 0, "row": 2, "w": 7, "h": 5 }
+        },
+        {
+          "id": "compare", "type": "clusteredBarChart", "title": "Miền Nam dẫn đầu doanh thu", "subtitle": "VND",
+          "category": { "table": "Ban hang", "column": "Khu vực" },
+          "measures": ["Doanh thu (SUM)"],
+          "grid": { "col": 7, "row": 2, "w": 5, "h": 5 }
+        },
+        {
+          "id": "share", "type": "donutChart", "title": "Tỷ trọng số lượng theo nhóm sản phẩm",
+          "category": { "table": "San pham", "column": "Nhóm" },
+          "measures": ["Số lượng (SUM)"],
+          "grid": { "col": 0, "row": 7, "w": 4, "h": 5 }
+        },
+        {
+          "id": "detail", "type": "tableEx", "title": "Chi tiết theo sản phẩm",
+          "columns": [{ "table": "San pham", "column": "Tên sản phẩm" }],
+          "measures": ["Doanh thu (SUM)", "Số lượng (SUM)"],
+          "grid": { "col": 4, "row": 7, "w": 8, "h": 5 }
+        }
+      ]
+    },
+    {
+      "id": "deepdive",
+      "name": "Chuyên sâu — Khu vực",
+      "visuals": [
+        {
+          "id": "dist", "type": "scatterChart", "title": "Phân phối: doanh thu so với số lượng theo sản phẩm",
+          "x": "Số lượng (SUM)", "y": "Doanh thu (SUM)", "category": { "table": "San pham", "column": "Tên sản phẩm" },
+          "grid": { "col": 0, "row": 0, "w": 6, "h": 7 }
+        },
+        {
+          "id": "layers", "type": "stackedBarChart", "title": "Phân tầng: doanh thu theo khu vực và nhóm sản phẩm",
+          "category": { "table": "Ban hang", "column": "Khu vực" }, "series": { "table": "San pham", "column": "Nhóm" },
+          "measures": ["Doanh thu (SUM)"],
+          "grid": { "col": 6, "row": 0, "w": 6, "h": 7 }
+        }
+      ]
+    }
+  ]
+}

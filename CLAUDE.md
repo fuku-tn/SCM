@@ -9,12 +9,35 @@ Bạn là một chuyên gia Business Intelligence trong pipeline 4 chặng:
 ## Quy định chung
 - Trả lời bằng **tiếng Việt**; thuật ngữ chuyên ngành (DAX, ETL, measure, dimension, KPI...) giữ nguyên tiếng Anh.
 - Output của mỗi chặng là **Markdown** rõ ràng, có tiêu đề, bảng khi cần.
-- Chỉ dựa trên dữ liệu thật trong profile/mẫu được cung cấp; thiếu thông tin thì ghi rõ giả định, không bịa số liệu.
-- Output chặng trước là input của chặng sau; giữ nhất quán tên cột, tên measure, tên dimension.
-- Tên measure DAX: PascalCase hoặc có khoảng trắng nhất quán; luôn ghi công thức trong khối ```dax.
-- Điều chỉnh độ sâu/ngôn ngữ theo người xem dashboard (vị trí, chức vụ, thâm niên, bằng cấp).
+- Chỉ dựa trên dữ liệu thật được cung cấp; thiếu thông tin thì ghi rõ giả định (`[Giả định]`), không bịa số liệu, không bịa cột/bảng.
+- Output chặng trước là input của chặng sau; giữ nhất quán tên cột, tên bảng, tên measure, tên dimension (đúng từng ký tự).
+- Điều chỉnh độ sâu/ngôn ngữ theo người xem dashboard (phòng ban, vị trí, level, thâm niên).
+- Công thức DAX do **script** sinh từ `metrics-spec.json`; không tự gõ DAX rời rạc trong chặng khác.
 
-## Cấu trúc thư mục
-- `skills/<chặng>/SKILL.md` — SKILL của từng chặng
-- `output/<run-id>/<NN-chặng>/` — kết quả riêng biệt của từng chặng
+## Cấu trúc một SKILL (bắt buộc)
+```
+skills/<NN-chặng>/
+  SKILL.md       hướng dẫn cho model (frontmatter: name, title, description, tools?, handoff?)
+  references/    tài liệu tham chiếu (tiêu chuẩn, schema, mẫu công thức)
+  assets/        khung output, ví dụ, hình minh họa
+  scripts/       pre.js (chạy TRƯỚC model) và/hoặc post.js (chạy SAU model) — do server tự chạy
+```
+
+## Giao thức giữa các chặng
+- Kết quả chính của mỗi chặng là **`result.md`**, lưu trong `output/<run-id>/<NN-chặng>/`.
+- File phụ (JSON, DAX, ...) xuất bằng khối:
+  ```
+  <<<FILE: ten-file.json>>>
+  ...nội dung...
+  <<<END FILE>>>
+  ```
+  Server tách khối này thành file thật trong thư mục chặng (chỉ nhận đuôi .json .md .dax .csv .txt .tmdl .m .sql).
+- Các file nêu trong `handoff:` của SKILL (vd. `measures.json`, `model-spec.json`) được tự nạp vào prompt các chặng sau.
+- Chặng 3 và 4 có script: `pre.js` làm sạch dữ liệu / `post.js` dựng PBIP. Script lỗi → chặng báo lỗi, xem cửa sổ chi tiết lỗi trên trang chủ.
+
+## Thư mục
+- `skills/<chặng>/` — SKILL của từng chặng
+- `templates/` — hình mẫu Dashboard dùng chung (PNG/JPG/PDF) cho chặng Dashboard
+- `documents/` — tài liệu yêu cầu của người dùng (Analysis - layout, SKILL - Custom, IBCS - Standard)
+- `output/<run-id>/<NN-chặng>/` — kết quả riêng biệt của từng chặng (chặng 4 có thêm `pbip/<Tên>/`)
 - `MEMORY.md` — bộ nhớ tích lũy qua các lần chạy

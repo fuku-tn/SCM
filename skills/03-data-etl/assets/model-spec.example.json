@@ -1,0 +1,19 @@
+{
+  "modelName": "Doanh_thu_Q1",
+  "tables": [
+    {
+      "name": "Ban hang",
+      "role": "fact",
+      "columns": [
+        { "name": "Doanh thu", "format": "#,##0", "description": "Doanh thu (VND)", "summarizeBy": "sum" },
+        { "name": "Mã SP", "hidden": true, "summarizeBy": "none" }
+      ]
+    },
+    { "name": "San pham", "role": "dimension" }
+  ],
+  "relationships": [
+    { "fromTable": "Ban hang", "fromColumn": "Mã SP", "toTable": "San pham", "toColumn": "Mã SP", "cardinality": "manyToOne", "crossFilter": "single" }
+  ],
+  "dateColumn": { "table": "Ban hang", "column": "Ngày" },
+  "notes": ["Khóa Mã SP đã được chuẩn hóa (bỏ số 0 đầu) ở vòng 3."]
+}

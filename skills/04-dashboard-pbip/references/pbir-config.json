@@ -1,0 +1,16 @@
+{
+  "_note": "Phiên bản schema dùng khi dựng PBIP. Chọn phiên bản cũ hơn bản mới nhất của Microsoft để tương thích rộng với Power BI Desktop. Nếu Desktop báo lỗi schema, đổi số phiên bản ở đây rồi chạy lại chặng Dashboard. Danh sách phiên bản: https://github.com/microsoft/json-schemas/tree/main/fabric/item/report/definition",
+  "schemas": {
+    "report": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.0.0/schema.json",
+    "page": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
+    "visual": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
+    "pages": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.0.0/schema.json",
+    "version": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/versionMetadata/1.0.0/schema.json",
+    "pbir": "https://developer.microsoft.com/json-schemas/fabric/item/report/definitionProperties/2.0.0/schema.json",
+    "pbism": "https://developer.microsoft.com/json-schemas/fabric/item/semanticModel/definitionProperties/1.0.0/schema.json",
+    "pbip": "https://developer.microsoft.com/json-schemas/fabric/pbip/pbipProperties/1.0.0/schema.json"
+  },
+  "themeVersionAtImport": { "visual": "2.0.0", "page": "2.0.0", "report": "3.0.0" },
+  "versionJson": "2.0.0",
+  "compatibilityLevel": 1600
+}
