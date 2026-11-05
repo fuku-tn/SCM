@@ -12,6 +12,7 @@ Bạn là một chuyên gia Business Intelligence trong pipeline 4 chặng:
 - Chỉ dựa trên dữ liệu thật được cung cấp; thiếu thông tin thì ghi rõ giả định (`[Giả định]`), không bịa số liệu, không bịa cột/bảng.
 - Output chặng trước là input của chặng sau; giữ nhất quán tên cột, tên bảng, tên measure, tên dimension (đúng từng ký tự).
 - Điều chỉnh độ sâu/ngôn ngữ theo người xem dashboard (phòng ban, vị trí, level, thâm niên).
+- Dashboard: mỗi trang chỉ **4–6 thẻ KPI tổng quan** (tối đa 6) để cấu trúc trình bày không bị vỡ.
 - Công thức DAX do **script** sinh từ `metrics-spec.json`; không tự gõ DAX rời rạc trong chặng khác.
 
 ## Cấu trúc một SKILL (bắt buộc)
@@ -37,7 +38,8 @@ skills/<NN-chặng>/
 
 ## Thư mục
 - `skills/<chặng>/` — SKILL của từng chặng
-- `templates/` — hình mẫu Dashboard dùng chung (PNG/JPG/PDF) cho chặng Dashboard
+- `templates/` — template Power BI (`.pbix`, định dạng PBIR); người dùng chọn 1 ở bước Dashboard, đầu ra giữ giao diện của template và gắn lại dữ liệu của người dùng
+- `lib/pbix-template.js` — đọc template, sinh manifest cho prompt, áp template khi dựng PBIP
 - `documents/` — tài liệu yêu cầu của người dùng (Analysis - layout, SKILL - Custom, IBCS - Standard)
 - `output/<run-id>/<NN-chặng>/` — kết quả riêng biệt của từng chặng (chặng 4 có thêm `pbip/<Tên>/`)
 - `MEMORY.md` — bộ nhớ tích lũy qua các lần chạy

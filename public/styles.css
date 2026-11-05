@@ -343,3 +343,41 @@ body{padding:20px}
 .files a.zip{background:var(--accsoft);color:var(--acct);font-family:inherit;font-weight:600}
 .files a.zip:hover{background:var(--acc);color:var(--on-acc)}
 .nested{margin:0 0 10px}.nested summary{cursor:pointer;color:var(--mut);font-size:12px;margin:2px 0 8px}
+
+/* ===== Template Power BI picker ===== */
+.tplgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media(max-width:900px){.tplgrid{grid-template-columns:1fr}}
+.tplcard{display:flex;flex-direction:column;text-align:left;border:2px solid var(--line);background:var(--card);border-radius:20px;padding:12px;cursor:pointer;transition:.2s;color:var(--ink);gap:12px}
+.tplcard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.tplcard.on{border-color:var(--acc);background:var(--accsoft)}
+.tpl-prev{position:relative;display:block;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--card2);display:grid;place-items:center}
+.tpl-prev img{width:100%;height:100%;object-fit:cover;display:block}
+.tpl-chk{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:var(--card);border:2px solid var(--line);display:grid;place-items:center;font-weight:800;color:transparent;transition:.2s}
+.tplcard.on .tpl-chk{background:var(--acc);border-color:var(--acc);color:var(--on-acc)}
+.tpl-body{display:flex;flex-direction:column;gap:6px;padding:0 4px 4px}.tpl-body b{font-size:17px}
+.tpl-meta{font-size:12px;color:var(--mut)}
+.tpl-pages{display:flex;gap:6px;flex-wrap:wrap}.tpl-pages i{font-style:normal;font-size:11px;font-weight:600;background:var(--card2);padding:2px 9px;border-radius:999px}
+.tpl-sw{display:flex;gap:4px}.tpl-sw i{width:22px;height:14px;border-radius:5px;border:1px solid var(--line)}
+.seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(max-width:700px){.seg{grid-template-columns:1fr}}
+.seg button{display:flex;flex-direction:column;gap:2px;text-align:left;border:2px solid var(--line);background:var(--card);border-radius:16px;padding:12px 16px;cursor:pointer;color:var(--ink);transition:.15s}
+.seg button small{color:var(--mut);font-size:12px}
+.seg button.on{border-color:var(--acc);background:var(--accsoft)}
+.tpl-prev{background-size:cover;background-position:top center;background-color:var(--card2)}
+.tpl-prev img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+
+/* ===== Chạy từng chặng / tất cả + bảng cảnh báo thiếu thông tin ===== */
+.runbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;background:var(--card2);border-radius:18px;padding:14px 16px;margin-top:6px}
+.rb-l{display:flex;flex-direction:column;gap:8px;min-width:260px;flex:1}
+.rb-t{font-weight:700}
+.rb-m{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600}.rb-m select{width:auto;min-width:210px;padding:6px 28px 6px 10px;font-size:12px;background:var(--card)}
+.rb-all summary{cursor:pointer;color:var(--mut);font-size:12px}
+.rb-all[open]{background:var(--card);border-radius:14px;padding:10px 12px}
+.rb-r{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.warn-dot{color:var(--acct);font-weight:700}
+.modal.warn{border-top-color:var(--acc)}
+.modal.warn .pill{background:var(--accsoft);color:var(--acct)}
+ul.miss{margin:6px 0 0;padding-left:20px}ul.miss li{margin:3px 0;font-size:13px}
+.sessionbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 18px}
+.sessionbar[hidden]{display:none}
+.sb-l{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}.sb-l code{font-size:12px}.sb-r{display:flex;gap:8px}

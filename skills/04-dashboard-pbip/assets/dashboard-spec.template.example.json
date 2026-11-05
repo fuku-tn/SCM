@@ -1,0 +1,35 @@
+{
+  "template": "sale",
+  "projectName": "Banle_PhongCach",
+  "pages": { "keep": ["Home", "Overview", "Customer"] },
+  "bind": {
+    "2.56ba69": {
+      "title": "Doanh thu",
+      "roles": { "Data": ["Doanh thu (SUM)"] },
+      "reference": "Doanh thu (SUM) Delta % LM",
+      "referenceTitle": "So với tháng trước: "
+    },
+    "2.78ef75": { "title": "Lợi nhuận", "roles": { "Data": ["Lợi nhuận"] } },
+    "2.cca477": { "title": "Số đơn hàng", "roles": { "Data": ["Số đơn hàng (DISTINCTCOUNT)"] } },
+    "2.e9ae97": {
+      "title": "Doanh thu và số đơn theo tháng",
+      "roles": {
+        "Category": [{ "table": "Calendar", "column": "YearMonth" }],
+        "Y": ["Doanh thu (SUM)"],
+        "Y2": ["Số đơn hàng (DISTINCTCOUNT)"]
+      }
+    },
+    "2.78243b": {
+      "title": "Cơ cấu doanh thu theo nhóm sản phẩm",
+      "roles": { "Category": [{ "table": "San pham", "column": "Nhóm sản phẩm" }], "Y": ["Doanh thu (SUM)"] }
+    },
+    "2.5317c4": { "roles": { "Values": [{ "table": "Calendar", "column": "Year" }] } },
+    "2.4750a9": { "roles": { "Values": [{ "table": "Don hang", "column": "Khu vực" }] } }
+  },
+  "texts": {
+    "1.2ebe0a": "Bán lẻ Phong Cách\nHiệu suất kinh doanh",
+    "1.dbbd7e": "Doanh thu, lợi nhuận và đơn hàng theo thời gian, khu vực và nhóm sản phẩm",
+    "2.c87aa2": "Tổng quan hiệu suất bán hàng"
+  },
+  "drop": ["2.f9a724", "2.46ae5c", "2.eea44e", "2.65c4cd"]
+}

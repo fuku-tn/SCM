@@ -1,10 +1,10 @@
-/* Analysis: wizard 4 bước — điền đủ bước này mới sang bước kế tiếp */
+/* Analysis: 4 bước điền thông tin theo thứ tự tuỳ ý; chạy từng chặng hoặc tất cả; thiếu thông tin thì hiện bảng cảnh báo để chọn "Vẫn chạy" hoặc "Quay lại bổ sung" */
 const LEVELS = ['Intern / Thực tập', 'Fresher', 'Junior', 'Middle', 'Senior', 'Team Lead', 'Supervisor', 'Manager', 'Senior Manager', 'Director', 'C-level (CEO/CFO/COO...)'];
 const WSTEPS = [
   { name: 'Business Goal', sub: 'Ngữ cảnh & yêu cầu' },
   { name: 'Key Metrics', sub: 'Người xem, chỉ số, chiều' },
   { name: 'Import Data', sub: 'Transformation · Modeling' },
-  { name: 'Dashboard (PBIP)', sub: 'Theme màu & template' },
+  { name: 'Dashboard (PBIP)', sub: 'Template & màu theme' },
 ];
 const freshA = () => {
   let models = null; try { models = JSON.parse(localStorage.getItem('bie-models') || 'null'); } catch {}
@@ -16,7 +16,7 @@ const freshA = () => {
     sug: { metrics: { state: 'idle', items: [], key: '', err: '' }, dimensions: { state: 'idle', items: [], key: '', err: '' } },
     sugModel: 'haiku',
     data: null, sheets: [], pv: 0,
-    colors: [], themeFile: null, template: null,
+    colors: [], themeFile: null, tpl: null, tplList: null, colorMode: 'template',
     models: models && models.length === 4 ? models : ['sonnet', 'sonnet', 'sonnet', 'sonnet'],
     timers: {},
   };
@@ -38,10 +38,15 @@ const miss = [
   () => { const m = []; if (!A.context && !A.ctxText.trim()) m.push('Nhập ngữ cảnh công ty hoặc tải file'); if (!A.req.text.trim() && !A.req.file) m.push('Nhập yêu cầu phân tích hoặc tải file'); return m; },
   () => { const m = []; if (!ok21()) m.push('Điền đủ phần 2.1 (phòng ban, vị trí, level, thâm niên tại doanh nghiệp)'); else { if (!A.metrics.length) m.push('Chọn ít nhất 1 Key Metric'); else if (!A.dimensions.length) m.push('Chọn ít nhất 1 chiều phân tích'); } return m; },
   () => { const m = []; if (!A.data) m.push('Tải file CSV / Excel'); else if (!A.sheets.length) m.push('Chọn ít nhất 1 bảng'); return m; },
-  () => (A.colors.length < 5 ? [`Cần đủ 5 mã màu (đang có ${A.colors.length}/5)`] : []),
+  () => { const m = []; if (!A.tpl) m.push('Chọn 1 template Power BI'); if (A.colorMode === 'own' && A.colors.length < 5) m.push(`Cần đủ 5 mã màu (đang có ${A.colors.length}/5) hoặc chọn "Giữ màu của template"`); return m; },
 ];
 const stepOk = (i) => miss[i]().length === 0;
-const maxStep = () => { let i = 0; while (i < 3 && stepOk(i)) i++; return i; };
+// Thông tin mỗi chặng cần (chỉ số bước trong WSTEPS): Key Metrics và các chặng sau đều cần cả dữ liệu để đối chiếu cột
+const NEED = [[0], [0, 1, 2], [0, 1, 2], [0, 1, 2, 3]];
+const missingFor = (which) => {
+  const steps = which === 'all' ? [0, 1, 2, 3] : NEED[which];
+  return steps.map((i) => ({ step: i, name: WSTEPS[i].name, items: miss[i]() })).filter((g) => g.items.length);
+};
 
 // ---------- API helpers ----------
 async function ensureRun() { if (!A.runId) A.runId = (await (await api('/api/runs', { method: 'POST' })).json()).runId; return A.runId; }
@@ -136,28 +141,37 @@ function autoSuggest() {
 const LOCK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 function refresh() {
   const st = $('#stepper'); if (!st) return;
-  const mx = maxStep();
-  st.innerHTML = WSTEPS.map((s, i) => { const done = stepOk(i), locked = i > mx, cls = i === A.step ? 'active' : done ? 'done' : locked ? 'locked' : '';
-    return `<button class="stp ${cls}" data-i="${i}" ${locked ? 'aria-disabled="true"' : ''}><span class="stp-n">${done && i !== A.step ? '✓' : locked ? LOCK : i + 1}</span><span class="stp-t"><b>${s.name}</b><small>${s.sub}</small></span></button>`; }).join('');
-  const m = miss[A.step](), next = $('#wz-next'), hint = $('#wz-hint');
-  if (next) next.disabled = m.length > 0;
-  if (hint) hint.innerHTML = m.length ? `<span class="warn">Còn thiếu:</span> ${m.map(esc).join(' · ')}` : '<span class="good">✓ Đã đủ thông tin</span>';
-  if (A.step === 1) {
-    const sec = (id, on, note) => { const el = $('#' + id); if (!el) return; el.classList.toggle('locked', !on); el.inert = !on; el.querySelector('.lock-note').textContent = on ? '' : note; };
-    sec('sec-metrics', ok21(), 'Điền đủ phần 2.1 để mở khóa'); sec('sec-periods', ok21() && A.metrics.length > 0, 'Chọn ít nhất 1 Key Metric để mở khóa'); sec('sec-dims', ok21() && A.metrics.length > 0, 'Chọn ít nhất 1 Key Metric để mở khóa');
-    drawSug('metrics'); drawSug('dimensions'); autoSuggest();
-  }
+  // các bước mở tự do: ✓ khi đủ thông tin, "!" khi còn thiếu (không khóa)
+  st.innerHTML = WSTEPS.map((s, i) => { const done = stepOk(i), cls = i === A.step ? 'active' : done ? 'done' : '';
+    return `<button class="stp ${cls}" data-i="${i}"><span class="stp-n">${done && i !== A.step ? '✓' : i + 1}</span><span class="stp-t"><b>${s.name}</b><small>${s.sub}${done ? '' : ' · <span class="warn-dot" title="Còn thiếu thông tin">còn thiếu</span>'}</small></span></button>`; }).join('');
+  const m = miss[A.step](), hint = $('#wz-hint');
+  if (hint) hint.innerHTML = m.length ? `<span class="warn">Còn thiếu:</span> ${m.map(esc).join(' · ')}` : '<span class="good">✓ Bước này đã đủ thông tin</span>';
+  if (A.step === 1) { drawSug('metrics'); drawSug('dimensions'); autoSuggest(); }
   if (A.step === 3) drawSummary();
 }
-function go(i) { if (i > maxStep() || i < 0) return; A.step = i; render(); }
+function go(i) { if (i < 0 || i > 3) return; A.step = i; render(); }
 
-function foot(last) {
-  return `<div class="wz-foot"><button class="btn ghost" id="wz-back" ${A.step === 0 ? 'disabled' : ''}>← Quay lại</button><div class="wz-hint" id="wz-hint"></div>
-    ${last ? '<button class="btn acc" id="wz-next">▶ Chạy 4 chặng</button>' : '<button class="btn acc" id="wz-next">Tiếp tục →</button>'}</div>`;
+// Thanh chạy: chạy riêng chặng đang xem, hoặc chạy tất cả; chọn model cho từng chặng
+function foot() {
+  const i = A.step, name = WSTEPS[i].name;
+  return `<div class="runbar" id="runbar">
+      <div class="rb-l"><span class="rb-t">Chạy chặng ${i + 1} · ${name}</span>
+        <label class="rb-m">Model <select data-m="${i}">${modelOptions(A.models[i])}</select></label>
+        <details class="rb-all"><summary>Model cho cả 4 chặng</summary>
+          <div class="models">${META.stages.map((s, k) => `<div class="f" style="margin:0"><label>${k + 1}. ${esc(s.name)}</label><select data-m="${k}">${modelOptions(A.models[k])}</select></div>`).join('')}</div>
+          <div class="f" style="margin:10px 0 0;max-width:320px"><label>Áp dụng một model cho cả 4 chặng</label><select id="allm"><option value="">— chọn để áp dụng —</option>${modelOptions('')}</select></div></details></div>
+      <div class="rb-r"><button class="btn" id="run-one" type="button">▶ Chạy chặng ${i + 1}</button><button class="btn acc" id="run-all" type="button">▶ Chạy tất cả 4 chặng</button></div></div>
+    <div class="wz-foot"><button class="btn ghost" id="wz-back" ${i === 0 ? 'disabled' : ''}>← Quay lại</button><div class="wz-hint" id="wz-hint"></div>
+    ${i === 3 ? '' : '<button class="btn ghost" id="wz-next">Tiếp tục →</button>'}</div>`;
 }
 function bindFoot() {
   $('#wz-back').onclick = () => go(A.step - 1);
-  $('#wz-next').onclick = () => (A.step === 3 ? runAll() : go(A.step + 1));
+  const nx = $('#wz-next'); if (nx) nx.onclick = () => go(A.step + 1);
+  $('#run-one').onclick = () => runStages(A.step);
+  $('#run-all').onclick = () => runStages('all');
+  const save = () => { try { localStorage.setItem('bie-models', JSON.stringify(A.models)); } catch {} };
+  $('#runbar').querySelectorAll('select[data-m]').forEach((s) => (s.onchange = () => { A.models[+s.dataset.m] = s.value; save(); $('#runbar').querySelectorAll(`select[data-m="${s.dataset.m}"]`).forEach((o) => (o.value = s.value)); }));
+  $('#allm').onchange = (e) => { if (!e.target.value) return; A.models = A.models.map(() => e.target.value); save(); $('#runbar').querySelectorAll('select[data-m]').forEach((s) => (s.value = e.target.value)); };
 }
 
 // ---------- panels ----------
@@ -247,37 +261,98 @@ function drawSummary() {
   const row = (k, v) => `<div class="sm-r"><span>${k}</span><b>${v}</b></div>`;
   h.innerHTML = row('Ngữ cảnh', esc(A.context?.name || A.ctxText.trim().slice(0, 60) || '—')) + row('Yêu cầu', esc((A.req.text.trim().slice(0, 60) || (A.req.file ? '[file] ' + A.req.file.name : '—')))) +
     row('Người xem', esc([A.aud.department, A.aud.position, A.aud.level].filter(Boolean).join(' · ') || '—')) + row('Key Metrics', A.metrics.length + (A.periods.length ? ' · ' + A.periods.join(', ') : '')) + row('Dimensions', A.dimensions.length) +
-    row('Dữ liệu', esc(A.data?.name || '—') + (A.data ? ` (${A.sheets.length}/${A.data.profile.sheets.length} bảng)` : '')) + row('Theme', A.colors.map((c) => `<i class="sw" style="background:${c}"></i>`).join(''));
+    row('Dữ liệu', esc(A.data?.name || '—') + (A.data ? ` (${A.sheets.length}/${A.data.profile.sheets.length} bảng)` : '')) + row('Template', esc((A.tplList && (A.tplList.find((t) => t.id === A.tpl) || {}).name) || '—')) + row('Màu theme', A.colorMode === 'own' ? A.colors.map((c) => `<i class="sw" style="background:${c}"></i>`).join('') : 'Giữ màu của template');
+}
+async function drawTemplates() {
+  const host = $('#tpl-list'); if (!host) return;
+  if (!A.tplList) {
+    host.innerHTML = '<div class="tplgrid">' + '<div class="tplcard skel"><i class="shim" style="width:100%;height:170px;border-radius:14px"></i></div>'.repeat(2) + '</div>';
+    try { A.tplList = await jget('/api/templates'); } catch (e) { host.innerHTML = `<div class="err-box">Không đọc được danh sách template: ${esc(e.message)}</div>`; return; }
+    if (!$('#tpl-list')) return;
+  }
+  if (!A.tplList.length) { host.innerHTML = '<div class="err-box">Chưa có template nào. Hãy đặt file .pbix vào thư mục <code>templates/</code> rồi tải lại trang.</div>'; return; }
+  const sel = A.tplList.find((t) => t.id === A.tpl);
+  host.innerHTML = `<div class="tplgrid" role="radiogroup" aria-label="Template Power BI">${A.tplList.map((t) => `
+    <button type="button" role="radio" aria-checked="${t.id === A.tpl}" class="tplcard ${t.id === A.tpl ? 'on' : ''}" data-t="${esc(t.id)}">
+      <span class="tpl-prev" ${t.hasPreview ? `style="background-image:url('/api/templates/${encodeURIComponent(t.id)}/preview')"` : ''}><img src="/api/templates/${encodeURIComponent(t.id)}/wireframe.svg" alt="Sơ đồ bố cục ${esc(t.name)}" loading="lazy"><span class="tpl-chk">✓</span></span>
+      <span class="tpl-body"><b>${esc(t.name)}</b>
+        <span class="tpl-meta">${t.pages.length} trang · ${t.dataVisuals} biểu đồ dữ liệu · ${t.sizeMB} MB</span>
+        <span class="tpl-pages">${t.pages.map((p) => `<i>${esc(p.name)}</i>`).join('')}</span>
+        <span class="tpl-sw">${(t.themeColors || []).map((c) => `<i style="background:${c}" title="${c}"></i>`).join('')}</span></span>
+    </button>`).join('')}</div>`;
+  host.querySelectorAll('.tplcard').forEach((b) => (b.onclick = () => { A.tpl = b.dataset.t; drawTemplates(); refresh(); }));
+  if (sel) { const s = $('#tpl-sel'); if (s) s.textContent = sel.name; }
 }
 function panel3() {
-  $('#panel').innerHTML = `<div class="card wz-card"><div class="wz-title"><span class="fn-badge">4</span><div><h2>Dashboard (PBIP)</h2><p class="sub" style="margin:0">Chọn theme màu và (tuỳ chọn) một template dashboard mẫu.</p></div></div>
-    <div class="sec"><div class="sec-h"><span class="sec-n">4.1</span><b>Theme màu</b>${REQ}<small style="color:var(--mut)">đúng 5 mã màu (6 ký tự hex)</small></div><div id="colors"></div>
-      <div class="or"><span>hoặc tải file .txt chứa tối thiểu 5 mã màu</span></div><div id="dz-theme"></div></div>
-    <div class="sec"><div class="sec-h"><span class="sec-n">4.2</span><b>Template dashboard mẫu</b><small style="color:var(--mut)">không bắt buộc · PNG, JPG, PDF</small></div><div id="dz-tpl"></div></div>
+  $('#panel').innerHTML = `<div class="card wz-card"><div class="wz-title"><span class="fn-badge">4</span><div><h2>Dashboard (PBIP)</h2><p class="sub" style="margin:0">Chọn 1 template Power BI — file đầu ra sẽ có giao diện giống template, dữ liệu là của bạn.</p></div></div>
+    <div class="sec"><div class="sec-h"><span class="sec-n">4.1</span><b>Template Power BI</b>${REQ}<small style="color:var(--mut)">chọn 1 trong các template trong thư mục templates/</small></div><div id="tpl-list"></div></div>
+    <div class="sec"><div class="sec-h"><span class="sec-n">4.2</span><b>Màu theme</b></div>
+      <div class="seg" role="radiogroup" aria-label="Màu theme">
+        <button type="button" role="radio" data-cm="template" class="${A.colorMode === 'template' ? 'on' : ''}" aria-checked="${A.colorMode === 'template'}"><b>Giữ màu của template</b><small>Giống template nhất (khuyến nghị)</small></button>
+        <button type="button" role="radio" data-cm="own" class="${A.colorMode === 'own' ? 'on' : ''}" aria-checked="${A.colorMode === 'own'}"><b>Dùng 5 màu của tôi</b><small>Thay bảng màu dữ liệu của template</small></button></div>
+      <div id="own-colors" ${A.colorMode === 'own' ? '' : 'hidden'}>
+        <div class="sec-h" style="margin:16px 0 10px"><b>5 mã màu</b>${REQ}<small style="color:var(--mut)">đúng 5 mã (6 ký tự hex)</small></div><div id="colors"></div>
+        <div class="or"><span>hoặc tải file .txt chứa tối thiểu 5 mã màu</span></div><div id="dz-theme"></div></div></div>
     <div class="sec"><div class="sec-h"><span class="sec-n">✓</span><b>Tóm tắt</b></div><div id="summary" class="summary"></div></div>
-    <div class="sec"><div class="sec-h"><span class="sec-n">⚙</span><b>Model cho từng chặng</b></div>
-      <div class="models">${META.stages.map((s, i) => `<div class="f" style="margin:0"><label>${i + 1}. ${esc(s.name)}</label><select data-m="${i}">${modelOptions(A.models[i])}</select></div>`).join('')}</div>
-      <div class="f" style="margin:10px 0 0;max-width:320px"><label>Áp dụng một model cho cả 4 chặng</label><select id="allm"><option value="">— chọn để áp dụng —</option>${modelOptions('')}</select></div></div>
-    ${foot(true)}</div>`;
+    ${foot()}</div>`;
   drawColors();
   dz($('#dz-theme'), { slot: 'theme', exts: ['txt'], title: 'Kéo thả file .txt chứa mã màu vào đây', hint: 'Mỗi mã 6 ký tự hex; ít hơn 5 mã sẽ không được nhận', get: () => A.themeFile, set: (v) => (A.themeFile = v),
     meta: (c) => `${c.colors ? c.colors.length : 0} mã màu được nhận${c.total > 5 ? ` (file có ${c.total} mã, dùng 5 mã đầu)` : ''}`,
     onChange: (r) => { if (r?.colors) { A.colors = [...r.colors]; drawColors(); } } });
-  dz($('#dz-tpl'), { slot: 'template', exts: ['png', 'jpg', 'jpeg', 'pdf'], title: 'Kéo thả ảnh / PDF template dashboard vào đây', hint: '.png · .jpg · .pdf', thumb: true, get: () => A.template, set: (v) => (A.template = v), meta: (c) => `${fsize(c.size)} · ${c.kind === 'pdf' ? 'PDF' : 'Hình ảnh'}` });
-  $('#panel').querySelectorAll('select[data-m]').forEach((s) => (s.onchange = () => { A.models[+s.dataset.m] = s.value; try { localStorage.setItem('bie-models', JSON.stringify(A.models)); } catch {} }));
-  $('#allm').onchange = (e) => { if (!e.target.value) return; A.models = A.models.map(() => e.target.value); try { localStorage.setItem('bie-models', JSON.stringify(A.models)); } catch {} $('#panel').querySelectorAll('select[data-m]').forEach((s) => (s.value = e.target.value)); };
+  drawTemplates();
+  $('#panel').querySelectorAll('[data-cm]').forEach((b) => (b.onclick = () => { A.colorMode = b.dataset.cm; $('#panel').querySelectorAll('[data-cm]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', String(x === b)); }); $('#own-colors').hidden = A.colorMode !== 'own'; refresh(); }));
 }
 
-async function runAll() {
-  const b = $('#wz-next'); b.disabled = true;
-  const t = A.template && !A.template.busy ? A.template : null;
+// ---------- chạy ----------
+const buildForm = () => ({ requirement: A.req.text, requirementFileName: A.req.file?.name, contextFileName: A.context?.name, contextTyped: A.ctxText, template: A.tpl, colorMode: A.colorMode, audience: A.aud, metrics: A.metrics, periods: A.periods, dimensions: A.dimensions, sheets: A.sheets, colors: A.colorMode === 'own' ? A.colors : [] });
+
+// Bảng cảnh báo khi thiếu thông tin: người dùng chọn "Vẫn chạy" hoặc "Quay lại bổ sung"
+function showMissing(groups, label) {
+  return new Promise((resolve) => {
+    closeModal();
+    const bg = document.createElement('div'); bg.className = 'modal-bg';
+    bg.innerHTML = `<div class="modal warn" role="dialog" aria-modal="true" aria-labelledby="mm-t">
+      <div class="modal-h"><div><span class="pill">Thiếu thông tin</span><h3 id="mm-t">Chưa điền đủ thông tin để chạy ${esc(label)}</h3></div><button class="icon-btn" data-x aria-label="Đóng">✕</button></div>
+      <div class="modal-b"><p class="sub" style="margin:0 0 12px">Bạn có thể chạy ngay với thông tin hiện có — kết quả có thể kém chính xác hoặc chặng có thể báo lỗi — hoặc quay lại bổ sung.</p>
+        ${groups.map((g) => `<div class="m-sec"><b>Bước ${g.step + 1} · ${esc(g.name)}</b><ul class="miss">${g.items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}</div>
+      <div class="modal-f"><button class="btn ghost" data-back>← Quay lại bổ sung</button><button class="btn acc" data-go>▶ Vẫn chạy</button></div></div>`;
+    document.body.appendChild(bg);
+    const done = (v) => { closeModal(); resolve(v); };
+    bg.onclick = (e) => { if (e.target === bg) done('back'); };
+    bg.querySelector('[data-x]').onclick = () => done('back');
+    bg.querySelector('[data-back]').onclick = () => done('back');
+    bg.querySelector('[data-go]').onclick = () => done('go');
+    document.onkeydown = (e) => { if (e.key === 'Escape') done('back'); };
+    bg.querySelector('[data-back]').focus();
+  });
+}
+
+async function runStages(which) {
+  const label = which === 'all' ? 'cả 4 chặng' : `chặng ${which + 1} (${WSTEPS[which].name})`;
+  const groups = missingFor(which);
+  if (groups.length) {
+    const c = await showMissing(groups, label);
+    if (c === 'back') { go(groups[0].step); toast(`Quay lại Bước ${groups[0].step + 1} để bổ sung`); return; }
+  }
+  const btns = [$('#run-one'), $('#run-all')].filter(Boolean); btns.forEach((b) => (b.disabled = true));
   try {
-    await jsend(`/api/runs/${A.runId}/start`, 'POST', {
-      form: { requirement: A.req.text, requirementFileName: A.req.file?.name, contextFileName: A.context?.name, contextTyped: A.ctxText, templateFileName: t?.name, audience: A.aud, metrics: A.metrics, periods: A.periods, dimensions: A.dimensions, sheets: A.sheets, colors: A.colors },
-      models: A.models,
-    });
-    const id = A.runId; Object.values(A.timers).forEach(clearTimeout); A = freshA(); location.hash = '#home/' + id;
-  } catch (e) { toast(e.message); b.disabled = false; }
+    const id = await ensureRun();
+    await jsend(`/api/runs/${id}/start`, 'POST', { form: buildForm(), models: A.models, only: which === 'all' ? null : [which] });
+    A.started = true;
+    if (which === 'all') { Object.values(A.timers).forEach(clearTimeout); A = freshA(); }   // chạy tất cả → phiên mới sau đó
+    location.hash = '#home/' + id;                                                          // chạy 1 chặng → giữ phiên để chạy tiếp chặng sau
+  } catch (e) { toast(e.message); btns.forEach((b) => (b.disabled = false)); }
+}
+
+async function drawSession() {
+  const host = $('#sessionbar'); if (!host) return;
+  if (!A.runId || !A.started) { host.hidden = true; return; }
+  let r = null; try { r = await jget('/api/runs/' + A.runId); } catch {}
+  if (!$('#sessionbar')) return;
+  host.hidden = false;
+  host.innerHTML = `<div class="sb-l"><b>Đang làm việc trên phiên</b> <code>${esc(A.runId)}</code>${r ? ' ' + r.stages.map((s, i) => `<span class="pill ${s.status === 'done' ? 'ok' : s.status === 'error' ? 'err' : s.status === 'running' ? 'run' : 'mut'}" title="${esc(s.name)}">${i + 1} ${{ done: '✓', error: '✗', running: '…', pending: '—' }[s.status] || '—'}</span>`).join(' ') : ''}</div>
+    <div class="sb-r"><a class="btn ghost sm" href="#home/${esc(A.runId)}" style="text-decoration:none">Xem Workflow</a><button class="btn ghost sm" id="sb-new">＋ Phiên mới</button></div>`;
+  $('#sb-new').onclick = () => { if (!confirm('Bắt đầu phiên mới? Thông tin đang điền sẽ bị xóa.')) return; Object.values(A.timers).forEach(clearTimeout); A = freshA(); vAnalysis(); };
 }
 
 function render() {
@@ -288,8 +363,7 @@ function render() {
 }
 function vAnalysis() {
   $('#title').textContent = 'Analysis'; setMeter(null);
-  view.innerHTML = `<div class="stepper" id="stepper" role="tablist"></div><div id="panel"></div>`;
+  view.innerHTML = `<div class="sessionbar card" id="sessionbar" hidden></div><div class="stepper" id="stepper" role="tablist"></div><div id="panel"></div>`;
   $('#stepper').onclick = (e) => { const b = e.target.closest('.stp'); if (b) go(+b.dataset.i); };
-  if (A.step > maxStep()) A.step = maxStep();
-  render();
+  render(); drawSession();
 }

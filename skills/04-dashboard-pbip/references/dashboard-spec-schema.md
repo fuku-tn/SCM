@@ -2,6 +2,40 @@
 
 Bạn xuất file bằng khối `<<<FILE: dashboard-spec.json>>> … <<<END FILE>>>`. Script `post.js` đọc file này cùng `model-spec.json` và `measures.json` rồi dựng PBIP.
 
+Có **hai chế độ**: (A) **template** — khi người dùng đã chọn template Power BI (mặc định); (B) không template — tự bố cục theo lưới (phần "Không template" bên dưới).
+
+## A. Chế độ template
+```jsonc
+{
+  "template": "sale",                          // id template người dùng chọn (có trong prompt)
+  "projectName": "Banle_PhongCach",            // không dấu
+  "pages": { "keep": ["Home", "Overview"] },   // tên hoặc số trang; bỏ trống = giữ mọi trang không phải Tooltip
+  "bind": {                                    // gắn dữ liệu cho BIỂU ĐỒ DỮ LIỆU (key lấy từ bảng template)
+    "2.56ba69": {
+      "title": "Doanh thu",                    // tuỳ chọn; "" = ẩn tiêu đề
+      "subtitle": "VND",                       // tuỳ chọn
+      "roles": { "Data": ["Doanh thu (SUM)"] },// tên vai trò đúng như template; measure = chuỗi, cột = {table, column}
+      "reference": "Doanh thu (SUM) Delta % LM",   // chỉ cardVisual: measure hiển thị ở nhãn tham chiếu
+      "referenceTitle": "So với tháng trước: "
+    },
+    "2.e9ae97": {
+      "roles": {
+        "Category": [{ "table": "Calendar", "column": "YearMonth" }],
+        "Y": ["Doanh thu (SUM)"], "Y2": ["Số đơn hàng (DISTINCTCOUNT)"]
+      }
+    }
+  },
+  "texts": { "2.c87aa2": "Tổng quan hiệu suất bán hàng" },   // thay chữ textbox; \n = xuống dòng
+  "drop": ["2.f9a724"]                         // bỏ biểu đồ / textbox / hình (key). Biểu đồ dữ liệu không có trong "bind" cũng bị bỏ
+}
+```
+- Biểu đồ dữ liệu **không có** trong `bind` → bị bỏ (kèm khung nền phía sau nếu không còn biểu đồ nào dùng nó).
+- Trường không tồn tại / sai loại → bị bỏ khỏi vai trò, nếu vai trò rỗng thì cả biểu đồ bị bỏ (có cảnh báo).
+- Không có `bind` hợp lệ → script **tự gắn mặc định** (kết quả dùng được nhưng kém thông minh).
+- Chi tiết: `template-guide.md`.
+
+## B. Không template (bố cục theo lưới)
+
 ```jsonc
 {
   "projectName": "Doanh_thu_Q1",          // tên thư mục / file .pbip (không dấu)

@@ -11,3 +11,6 @@ skills/_backup/
 
 # Cấu hình cục bộ của Claude Code
 .claude/
+
+# Cache giải nén template Power BI
+templates/.cache/

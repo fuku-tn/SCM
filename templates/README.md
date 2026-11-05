@@ -1,7 +1,15 @@
 # templates/
 
-Thư viện hình mẫu Dashboard dùng chung (PNG, JPG, PDF).
+Thư viện **template Power BI** (`.pbix`) cho chặng **Dashboard (PBIP)**.
 
-Chặng **Dashboard (PBIP)** sẽ xem các file trong thư mục này **và** file template người dùng tải lên ở bước 4 của trang Analysis, rồi lấy bố cục (số trang, vị trí KPI, kiểu biểu đồ...) làm cảm hứng khi thiết kế.
+## Cách hoạt động
+- Mỗi file `.pbix` ở đây (kể cả trong thư mục con, ví dụ `Power BI Template/Dashboard HR.pbix`) hiện thành một thẻ để người dùng **chọn 1 template** ở bước 4 của trang **Analysis**.
+- File phải được lưu ở **định dạng PBIR** (Power BI Desktop → Options → Preview features → *Store reports using enhanced metadata format (PBIR)*), tức bên trong `.pbix` có thư mục `Report/definition/`.
+- Khi chạy, BIE giữ nguyên giao diện của template (nền, hình, logo, nút chuyển trang, màu theme, định dạng biểu đồ) và **gắn lại dữ liệu của người dùng** vào các biểu đồ dữ liệu.
+- Id của template = tên file bỏ chữ "Dashboard" ở đầu (vd. `Dashboard HR.pbix` → `hr`).
+- Template được giải nén một lần vào `templates/.cache/` (tự tạo lại khi file thay đổi; không đưa lên git).
 
-Cách dùng: thả ảnh dashboard mẫu vào đây (ví dụ `sales-overview.png`). Không bắt buộc.
+## Thêm template mới
+1. Lưu dashboard mẫu thành `.pbix` (PBIR) và thả vào thư mục này.
+2. Tải lại trang Analysis → thẻ template mới xuất hiện.
+3. Lưu ý: bookmark, drillthrough, bộ lọc riêng và custom visual của template **không** được mang theo.

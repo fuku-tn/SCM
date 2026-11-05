@@ -79,6 +79,16 @@ function profileData(buf, filename) {
 }
 
 // ---------- API: meta / docs / skills ----------
+// Template Power BI (.pbix) trong thư mục templates/ — người dùng chọn 1 ở bước Dashboard
+app.get('/api/templates', (req, res) => { try { res.json(TPL.listTemplates()); } catch (e) { res.status(500).json({ error: e.message }); } });
+app.get('/api/templates/:id/preview', (req, res) => {
+  if (!/^[\w-]+$/.test(req.params.id)) return res.sendStatus(400);
+  try { const t = TPL.loadTemplate(req.params.id); const p = t && TPL.previewImage(t); if (!p) return res.sendStatus(404); res.sendFile(p); } catch { res.sendStatus(500); }
+});
+app.get('/api/templates/:id/wireframe.svg', (req, res) => {
+  if (!/^[\w-]+$/.test(req.params.id)) return res.sendStatus(400);
+  try { const t = TPL.loadTemplate(req.params.id); if (!t) return res.sendStatus(404); res.type('image/svg+xml').send(TPL.wireframeSvg(t)); } catch { res.sendStatus(500); }
+});
 app.get('/api/meta', (req, res) => res.json({ stages: STAGES, models: MODELS, mock: MOCK, port: PORT }));
 
 app.get('/api/docs/:k', (req, res) => {
@@ -93,6 +103,8 @@ app.put('/api/docs/:k', (req, res) => {
 
 // ---- Skill helpers ----
 const AdmZip = require('adm-zip');
+process.env.BIE_ROOT = ROOT;
+const TPL = require('./lib/pbix-template.js');
 const TEXT_EXT = /\.(md|txt|json|csv|py|m|pq|dax|yml|yaml|sql|js|ts|tmdl|xml|sh|ps1|html|css|tsv)$/i;
 function parseFront(c) {
   const m = c.match(/^---\r?\n([\s\S]*?)\r?\n---/); const o = {};
@@ -357,6 +369,7 @@ function buildPrompt(run, stageIdx, preOut) {
   const ctxText = [f.contextTyped, rd(path.join(inDir, 'context.txt'))].filter(Boolean).join('\n\n'), reqText = rd(path.join(inDir, 'requirement.txt'));
   const canRead = /\bRead\b/.test(meta.tools || '');
   const tpls = templateFiles(run);
+  const tplChosen = f.template ? TPL.loadTemplate(f.template) : null;
   const parts = [];
   parts.push('# QUY ĐỊNH (CLAUDE.md)\n' + rd(DOCS.claude));
   parts.push('# BỘ NHỚ (MEMORY.md)\n' + rd(DOCS.memory));
@@ -371,11 +384,14 @@ function buildPrompt(run, stageIdx, preOut) {
     '## Chỉ số cần phân tích (Key Metrics, để tính DAX)\n' + ((f.metrics || []).map((x) => '- ' + x).join('\n') || '(trống)'),
     '## Kỳ so sánh cần tính (time intelligence; viết DAX cho từng chỉ số)\n' + ((f.periods || []).map((x) => '- ' + x + ' (' + (PERIOD_DESC[x] || x) + ')').join('\n') || '(không yêu cầu)'),
     '## Các chiều (Dimension) cần phân tích\n' + ((f.dimensions || []).map((x) => '- ' + x).join('\n') || '(trống)'),
-    '## Theme màu dashboard (đúng 5 mã)\n' + ((f.colors || []).join(', ') || '(không có)'),
-    '## Template dashboard mẫu\n' + (tpls.length
+    '## Màu theme dashboard\n' + (f.colorMode === 'own' && (f.colors || []).length
+      ? 'Người dùng chọn DÙNG 5 MÀU CỦA HỌ: ' + f.colors.join(', ') + ' (script sẽ thay vào bảng màu dữ liệu của template).'
+      : 'Người dùng chọn GIỮ MÀU CỦA TEMPLATE (không có màu riêng). Đừng nhắc tới 5 màu tuỳ chỉnh.'),
+    '## Template dashboard mẫu\n' + (tplChosen ? `Người dùng đã chọn template Power BI "${tplChosen.name}" — xem mục TEMPLATE POWER BI bên dưới.` : tpls.length
       ? (canRead ? 'Hãy dùng công cụ Read để XEM các file ảnh/PDF mẫu sau (đường dẫn tuyệt đối) và lấy bố cục làm cảm hứng:\n' : 'Có các file mẫu (chặng này không xem được nội dung):\n') + tpls.map((t) => `- ${t.path.replace(/\\/g, '/')} (${t.label})`).join('\n')
       : '(không có template)'),
   ].join('\n\n'));
+  if (tplChosen && stageIdx === 3) parts.push(TPL.manifestMarkdown(tplChosen));
   const checks = stageIdx >= 2 ? readJsonSafe(path.join(runDir(run.id), '03-data-etl', 'data-checks.json')) : null;
   if (checks) {
     // Từ chặng 3 trở đi dùng tóm tắt dữ liệu ĐÃ LÀM SẠCH (có min/max đầy đủ), không dùng 20 dòng mẫu của profile gốc dễ gây hiểu sai
@@ -389,7 +405,7 @@ function buildPrompt(run, stageIdx, preOut) {
     const slim = { filename: profile.filename, sheets: picked };
     parts.push(`# PROFILE DỮ LIỆU GỐC (file: ${profile.filename}; các bảng/sheet được chọn: ${picked.map((s) => s.name).join(', ') || '—'}; "sample" chỉ là 20 dòng ĐẦU, không đại diện cho toàn bộ dữ liệu)\n\`\`\`json\n` + JSON.stringify(slim, null, 1) + '\n```');
   }
-  for (let i = 0; i < stageIdx; i++) parts.push('# OUTPUT CHẶNG ' + (i + 1) + ': ' + STAGES[i].name + '\n' + rd(path.join(runDir(run.id), STAGES[i].id, 'result.md')));
+  for (let i = 0; i < stageIdx; i++) { const t = rd(path.join(runDir(run.id), STAGES[i].id, 'result.md')); parts.push('# OUTPUT CHẶNG ' + (i + 1) + ': ' + STAGES[i].name + '\n' + (t || '(chặng này chưa được chạy — không có kết quả; hãy làm với thông tin hiện có và ghi rõ những gì còn thiếu)')); }
   const ho = handoffText(run, stageIdx); if (ho) parts.push('# FILE BÀN GIAO TỪ CÁC CHẶNG TRƯỚC' + ho);
   if (preOut) parts.push('# KẾT QUẢ SCRIPT TIỀN XỬ LÝ (scripts/pre.js — do server chạy trước lượt này)\n' + preOut);
   parts.push('# QUY ƯỚC XUẤT FILE\nKết quả chính của bạn là Markdown (sẽ lưu thành result.md). Nếu SKILL yêu cầu thêm file (JSON, DAX...), xuất MỖI file bằng đúng khối sau (không bọc thêm ```):\n<<<FILE: ten-file.json>>>\n...nội dung file...\n<<<END FILE>>>\nServer sẽ tách các khối này ra thành file riêng trong thư mục của chặng.');
@@ -482,7 +498,8 @@ async function runPipeline(run, from, only) {
   }
   const allDone = run.stages.every((s) => s.status === 'done');
   run.status = allDone ? 'done' : ok ? 'partial' : 'error'; saveRun(run);
-  if (allDone) {
+  if (allDone && !run.memoryLogged) {
+    run.memoryLogged = true; saveRun(run);
     const tot = totals(run);
     const line = `- ${new Date().toISOString().slice(0, 16).replace('T', ' ')} · run ${run.id} · file ${run.file} · "${(run.form.requirement || '').slice(0, 80).replace(/\n/g, ' ')}" · ${tot.total} tokens`;
     fs.appendFileSync(DOCS.memory, '\n' + line + '\n');
@@ -505,21 +522,32 @@ function totals(run) {
 app.post('/api/runs/:id/start', (req, res) => {
   const run = loadRun(req.params.id);
   if (!run) return res.sendStatus(404);
-  if (running.has(run.id)) return res.status(409).json({ error: 'Đang chạy' });
-  const { form, models } = req.body;
-  const f = form || {}, inDir = path.join(runDir(run.id), '00-input');
+  if (running.has(run.id)) return res.status(409).json({ error: 'Phiên này đang chạy một chặng — hãy đợi chặng đó xong rồi chạy tiếp.' });
+  const { form, models, only } = req.body;
+  const f = form || {};
   run.form = { ...f, requirementTyped: (f.requirement || '').trim(), requirement: (f.requirement || '').trim() || (f.requirementFileName ? '[file] ' + f.requirementFileName : '') };
-  if (!fs.existsSync(path.join(inDir, 'profile.json'))) return res.status(400).json({ error: 'Chưa có dữ liệu (bước 3)' });
-  run.stages = STAGES.map((s, i) => ({ id: s.id, name: s.name, status: 'pending', model: (models && models[i]) || 'sonnet' }));
-  run.startedAt = Date.now();
-  saveRun(run);
-  runPipeline(run, 0, false);
+  if (f.template && !TPL.loadTemplate(String(f.template))) return res.status(400).json({ error: 'Template "' + f.template + '" không tồn tại trong thư mục templates/' });
+  const model = (i) => (models && models[i]) || (run.stages && run.stages[i] && run.stages[i].model) || 'sonnet';
+  const single = Array.isArray(only) && only.length === 1 && Number.isInteger(only[0]) && only[0] >= 0 && only[0] < STAGES.length ? only[0] : null;
+  if (single !== null) {
+    // Chạy RIÊNG một chặng (kể cả khi thiếu thông tin / chưa chạy chặng trước): giữ kết quả các chặng khác
+    if (!run.stages || run.stages.length !== STAGES.length) run.stages = STAGES.map((s, i) => ({ id: s.id, name: s.name, status: 'pending', model: model(i) }));
+    run.stages[single].model = model(single);
+    if (!run.startedAt) run.startedAt = Date.now();
+    saveRun(run);
+    runPipeline(run, single, true);
+  } else {
+    run.stages = STAGES.map((s, i) => ({ id: s.id, name: s.name, status: 'pending', model: model(i) }));
+    run.startedAt = Date.now();
+    saveRun(run);
+    runPipeline(run, 0, false);
+  }
   res.json({ ok: true });
 });
 app.post('/api/runs/:id/stages/:n/rerun', (req, res) => {
   const run = loadRun(req.params.id); const i = Number(req.params.n);
   if (!run || !run.stages[i]) return res.sendStatus(404);
-  if (running.has(run.id)) return res.status(409).json({ error: 'Đang chạy' });
+  if (running.has(run.id)) return res.status(409).json({ error: 'Phiên này đang chạy một chặng — hãy đợi chặng đó xong rồi chạy tiếp.' });
   if (req.body.model) run.stages[i].model = req.body.model;
   for (let k = 0; k < i; k++) if (run.stages[k].status !== 'done') return res.status(400).json({ error: 'Các chặng trước chưa hoàn thành' });
   runPipeline(run, i, !!req.body.only);

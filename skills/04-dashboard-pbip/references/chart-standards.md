@@ -14,6 +14,9 @@ Quy tắc định dạng chi tiết từng loại biểu đồ: xem `ibcs-standa
 
 Ngoài ra: `slicer` (lọc), `tableEx` (bảng chi tiết, căn trái chữ / phải số), `areaChart`, `funnel`, `pieChart`.
 
+### Quy tắc số lượng thẻ KPI (bắt buộc)
+Nhóm **Chỉ số tổng quan** chỉ có **4–6 thẻ KPI mỗi trang** (tối đa 6). Nhiều hơn làm cấu trúc trình bày bị vỡ. Ưu tiên chỉ số gắn trực tiếp với mục tiêu G ở chặng 1; kèm Delta / Delta % trong nhãn tham chiếu thay vì thêm thẻ riêng cho Delta.
+
 ## 2. Khi nào là "phân tích chuyên sâu theo 1 dimension"
 - Người dùng chỉ chọn **một** Dimension; hoặc
 - Yêu cầu phân tích ghi rõ: "chuyên sâu", "deep dive", "chi tiết theo {dimension}", "đi sâu vào {dimension}".
