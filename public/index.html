@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIE · Business Intelligence Engine</title>
+<link rel="icon" href="/assets/logo.png">
+<link rel="stylesheet" href="/styles.css">
+<script>try{const q=new URLSearchParams(location.search).get('theme');const t=q||localStorage.getItem('bie-theme');if(t)document.documentElement.dataset.theme=t;else if(matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.dataset.theme='dark'}catch(e){}</script>
+<script>try{if(localStorage.getItem('bie-side')==='1')document.documentElement.classList.add('side-collapsed')}catch(e){}</script>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="side-top">
+      <a class="brand" href="#home" title="Starttrain · The next analyst"><img src="/assets/logo.png" alt="Starttrain"><span class="lbl">BIE<small>Business Intelligence Engine</small></span></a>
+      <button class="collapse-btn" id="collapse" type="button" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+    </div>
+    <nav id="nav">
+      <a href="#home" data-v="home" title="Home"><i>⌂</i><span class="lbl">Home</span></a>
+      <a href="#analysis" data-v="analysis" title="Analysis"><i>◉</i><span class="lbl">Analysis</span></a>
+      <a href="#run" data-v="run" title="Results"><i>▶</i><span class="lbl">Results</span></a>
+      <a href="#skills" data-v="skills" title="Stages &amp; SKILLs"><i>✦</i><span class="lbl">Stages &amp; SKILLs</span></a>
+      <a href="#memory" data-v="memory" title="Memory"><i>❏</i><span class="lbl">Memory</span></a>
+      <a href="#history" data-v="history" title="History"><i>◷</i><span class="lbl">History</span></a>
+    </nav>
+    <div class="side-card">
+      <b>One click.<br><em>Four stages.</em></b>
+      <p>Upload CSV / Excel, pick a model, and let BIE run each SKILL.</p>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="top">
+      <h1 id="title">Phân tích mới</h1>
+      <div class="top-r">
+        <div class="meter" id="meter" title="Token của lần chạy đang xem"><span class="m-lbl">Token</span><b id="m-tok">0</b><div class="m-bar"><i id="m-fill"></i></div><span class="m-ctx" id="m-ctx">Context —</span></div>
+        <button class="icon-btn" id="theme" title="Đổi giao diện sáng/tối" aria-label="Đổi giao diện">◐</button>
+      </div>
+    </header>
+    <section id="view"></section>
+  </main>
+</div>
+<div id="toast" class="toast"></div>
+<script src="/home.js"></script>
+<script src="/analysis.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

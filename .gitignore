@@ -1,0 +1,13 @@
+node_modules/
+.env
+*.log
+
+# Kết quả chạy (dữ liệu người dùng) — chỉ giữ thư mục
+output/*
+!output/.gitkeep
+
+# Bản sao lưu SKILL khi nạp đè
+skills/_backup/
+
+# Cấu hình cục bộ của Claude Code
+.claude/
