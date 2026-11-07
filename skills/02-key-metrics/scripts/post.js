@@ -29,6 +29,17 @@ const ieq = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowe
 const spec = readJson(path.join(stageDir, 'metrics-spec.json'));
 if (!spec || !Array.isArray(spec.metrics)) { console.error('Không có metrics-spec.json hợp lệ (cần mảng "metrics"). Model phải xuất file này bằng khối <<<FILE: metrics-spec.json>>>.'); process.exit(1); }
 
+// Ngôn ngữ dashboard = English: nhãn (label) trở thành tên measure/dimension hiển thị → không được còn tiếng Việt
+try {
+  const rj = JSON.parse(fs.readFileSync(path.join(runDir, 'run.json'), 'utf8'));
+  if (rj.form && rj.form.dashboardLanguage === 'en') {
+    const VN = /[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i;
+    const bad = [];
+    for (const k of ['metrics', 'derived', 'performance', 'dimensions']) for (const x of spec[k] || []) if (x && x.label && VN.test(x.label)) bad.push(`${k}:"${x.label}"`);
+    if (bad.length) warn('Ngôn ngữ dashboard = English nhưng label còn tiếng Việt (sẽ thành tên measure/nhãn hiển thị): ' + bad.slice(0, 8).join(', '));
+  }
+} catch { /* không có run.json → bỏ qua */ }
+
 const NUM_AGG = ['SUM', 'MAX', 'MIN', 'AVG', 'MEDIAN', 'RANGE'];
 const CAT_AGG = ['COUNT', 'DISTINCTCOUNT'];
 const PERIOD_TO_TAG = { YoY: 'LY', QoQ: 'LQ', MoM: 'LM', DoD: 'LD' };

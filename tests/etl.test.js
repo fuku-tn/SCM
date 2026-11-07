@@ -86,3 +86,19 @@ test('Tiêu đề tiếng Việt có dấu được giữ nguyên từng ký t�
     assert.deepStrictEqual(clean(d, 'data.csv')[0], ['Nhân viên', 'Phòng ban', 'Lương cơ bản']);
   } finally { h.rm(d); }
 });
+
+test('Excel: ô ngày không bị lệch múi giờ (00:00:00 không thành 16:59:56 của ngày trước)', () => {
+  const XLSX = require('xlsx');
+  const ws = { A1: { t: 's', v: 'Order Date' }, B1: { t: 's', v: 'Sales' }, '!ref': 'A1:B4' };
+  [44199, 44200, 44201].forEach((s, i) => { ws['A' + (i + 2)] = { t: 'n', v: s, z: 'yyyy-mm-dd' }; ws['B' + (i + 2)] = { t: 'n', v: 10 * (i + 1) }; });
+  const d = h.makeRun({ csv: 'x\n1\n' });
+  try {
+    h.fs.rmSync(h.path.join(d, '00-input', 'data', 'data.csv'));
+    XLSX.writeFile({ SheetNames: ['S'], Sheets: { S: ws } }, h.path.join(d, '00-input', 'data', 'data.xlsx'));
+    const run = h.readJson(h.path.join(d, 'run.json')); run.file = 'data.xlsx'; h.fs.writeFileSync(h.path.join(d, 'run.json'), JSON.stringify(run));
+    const r = h.etl(d); assert.strictEqual(r.pre.status, 0, r.pre.out);
+    const rows = clean(d, 'S.csv');
+    assert.deepStrictEqual(rows.slice(1).map((x) => x[0]), ['2021-01-03', '2021-01-04', '2021-01-05']);
+    assert.strictEqual(checks(d).tables[0].columns[0].type, 'date');
+  } finally { h.rm(d); }
+});

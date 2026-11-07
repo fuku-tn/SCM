@@ -5,6 +5,7 @@ Một lượt model ĐỘC LẬP (chỉ đọc) chấm `result.md`, `dashboard-s
 <!-- AC-BEGIN -->
 - AC1 [C] Bản dựng PBIP hợp lệ: `pbip-validation.md`/post.log báo 0 vấn đề cấu trúc; project có thư mục dữ liệu `data/` kèm file CSV.
 - AC2 [C] Mỗi trang có 4–6 thẻ KPI tổng quan (không vượt 6).
+- AC8 [C] Ngôn ngữ dashboard đúng lựa chọn của người dùng (prompt/`run.json`: English hoặc Tiếng Việt): tên measure, tiêu đề trang/biểu đồ, textbox, referenceTitle không lẫn ngôn ngữ khác (tên bảng/cột của dữ liệu được giữ nguyên).
 - AC3 [C] Mọi measure và cột dùng trong dashboard-spec tồn tại trong measures.json/model-spec (đúng từng ký tự); không bịa measure/cột.
 - AC4 [C] Dashboard bám Business Goal: các mục tiêu G#/câu hỏi Q# chính có ít nhất một trang/biểu đồ trả lời; nếu người dùng chọn template thì giữ giao diện template (không tự đổi bố cục/màu ngoài lựa chọn).
 - AC5 Phù hợp hồ sơ người xem (số trang, số KPI, mức chi tiết); các cảnh báo "Người xem:" nếu có được giải thích hoặc chấp nhận hợp lý.

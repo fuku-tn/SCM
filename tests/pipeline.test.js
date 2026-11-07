@@ -99,3 +99,26 @@ test('Template HR (nhiều KPI gốc): mỗi trang không quá 6 thẻ KPI', () 
     assert.ok(!v.hard.some((x) => /KPI/i.test(x)), v.hard.join(' | '));
   } finally { h.rm(d); }
 });
+
+test('M cho cột ngày khóa: datetime được đọc rồi cắt về date (không ép type date trực tiếp)', () => {
+  const rows = [['Mã đơn', 'Ngày', 'Doanh thu']].concat(Array.from({ length: 30 }, (_, i) => [i + 1, `2024-0${1 + (i % 9)}-1${i % 9} ${10 + (i % 10)}:30:00`, 100 + i]));
+  const d = h.makeRun({ csv: rows.map((r) => r.join(',')).join('\n') + '\n', form: { dashboardLanguage: 'vi' } });
+  try {
+    const r = h.etl(d); assert.strictEqual(r.post.status, 0, r.pre.out + r.post.out);
+    h.fs.writeFileSync(h.path.join(d, '02-key-metrics', 'metrics-spec.json'), JSON.stringify({ metrics: [{ id: 'rev', label: 'Doanh thu', kind: 'numerical', table: 'data', column: 'Doanh thu', aggregations: ['SUM'] }], dimensions: [{ id: 'date', label: 'Ngày', table: 'data', column: 'Ngày', isDate: true }] }));
+    assert.strictEqual(h.script('02-key-metrics', 'post', d).status, 0);
+    const s4 = h.script('04-dashboard-pbip', 'post', d); assert.strictEqual(s4.status, 0, s4.out);
+    const proj = h.fs.readdirSync(h.path.join(d, '04-dashboard-pbip', 'pbip'))[0];
+    const tm = h.fs.readFileSync(h.path.join(d, '04-dashboard-pbip', 'pbip', proj, proj + '.SemanticModel', 'definition', 'tables', 'data.tmdl'), 'utf8');
+    if (/dateTime/.test(tm)) { assert.match(tm, /DateOnly = Table\.TransformColumns/); assert.match(tm, /type datetime/); }
+  } finally { h.rm(d); }
+});
+
+test('Ngôn ngữ English: cảnh báo khi label/tiêu đề còn tiếng Việt', () => {
+  const d = h.makeRun({ sheets: SHEETS, form: { dashboardLanguage: 'en', metrics: ['Doanh thu'] } });
+  try {
+    h.etl(d); h.fs.writeFileSync(h.path.join(d, '02-key-metrics', 'metrics-spec.json'), JSON.stringify(SPEC));
+    const r = h.script('02-key-metrics', 'post', d); assert.strictEqual(r.status, 0, r.out);
+    assert.match(r.out, /label còn tiếng Việt/);
+  } finally { h.rm(d); }
+});

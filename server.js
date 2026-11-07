@@ -47,8 +47,39 @@ const saveRun = (run) => wr(path.join(runDir(run.id), 'run.json'), JSON.stringif
 const safeId = (s) => /^[\w\-]+$/.test(s);
 
 // ---------- Data profiling ----------
+// Không dùng cellDates của SheetJS: nó đổi ngày theo múi giờ máy (00:00:00 → 23:59:56 của ngày trước).
+// Excel: đổi serial → UTC bằng số học; CSV: đọc chuỗi thô rồi tự nhận số / ngày.
+const serialToDate = (n) => new Date(Math.round((n - 25569) * 86400) * 1000);
+const DATE_ISO = /^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/;
+const DATE_DMY = /^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/;
+function strToDate(s) {
+  let m = s.match(DATE_ISO); if (m) return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)));
+  m = s.match(DATE_DMY); if (!m) return null;
+  let d = +m[1], mo = +m[2]; if (mo > 12 && d <= 12) [d, mo] = [mo, d]; if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  return new Date(Date.UTC(+m[3], mo - 1, d, +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)));
+}
+function readForProfile(buf, filename) {
+  if (/\.(csv|tsv)$/i.test(filename || '')) {
+    const txt = Buffer.from(buf).toString('utf8').replace(/^﻿/, ''); const first = txt.split(/\r?\n/, 1)[0] || '';
+    const cnt = (ch) => first.split(ch).length - 1; const sc = cnt(';'), cc = cnt(','), tc = cnt('\t');
+    const FS = tc > cc && tc > sc ? '\t' : sc > cc ? ';' : ',';
+    const wb = XLSX.read(txt, { type: 'string', raw: true, FS });
+    for (const ws of Object.values(wb.Sheets)) for (const [a, cell] of Object.entries(ws)) {
+      if (a[0] === '!' || !cell || typeof cell.v !== 'string') continue;
+      const s = cell.v.trim(); const d = strToDate(s);
+      if (d) { cell.v = d; cell.t = 'd'; } else if (/^[-+]?\d+(\.\d+)?$/.test(s) && !/^0\d+$/.test(s)) { cell.v = Number(s); cell.t = 'n'; }
+    }
+    return wb;
+  }
+  const wb = XLSX.read(buf, { type: 'buffer', cellNF: true });
+  for (const ws of Object.values(wb.Sheets)) for (const [a, cell] of Object.entries(ws)) {
+    if (a[0] === '!' || !cell) continue;
+    if (cell.t === 'n' && typeof cell.v === 'number' && cell.v >= 1 && cell.z && XLSX.SSF.is_date(cell.z)) { cell.v = serialToDate(cell.v); cell.t = 'd'; }
+  }
+  return wb;
+}
 function profileData(buf, filename) {
-  const wb = XLSX.read(buf, { type: 'buffer', cellDates: true, raw: false });
+  const wb = readForProfile(buf, filename);
   const sheets = wb.SheetNames.map((name) => {
     const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: null, raw: true });
     const cols = rows.length ? Object.keys(rows[0]) : [];
@@ -397,6 +428,18 @@ function ensureEda(run) {
   } catch (e) { console.error('EDA lỗi (bỏ qua):', e.message); return ''; }
 }
 
+// Ngôn ngữ chữ hiển thị trên dashboard (tên measure, tiêu đề, nhãn...). Mặc định 'vi' nếu phiên cũ không khai báo.
+function languageRule(f) {
+  const en = (f && f.dashboardLanguage) === 'en';
+  if (!en) return '# NGÔN NGỮ DASHBOARD: TIẾNG VIỆT\nChữ hiển thị trên dashboard (tên measure, tiêu đề trang/biểu đồ, nhãn, textbox) viết bằng tiếng Việt; thuật ngữ BI (KPI, YoY, MoM…) giữ tiếng Anh. Tên bảng/cột của dữ liệu giữ nguyên.';
+  return '# NGÔN NGỮ DASHBOARD: ENGLISH (BẮT BUỘC — ghi đè quy định "trả lời tiếng Việt" ở CLAUDE.md cho phần chữ hiển thị trên dashboard)\n' +
+    'Mọi chữ NGƯỜI XEM THẤY trong file Power BI phải bằng TIẾNG ANH: tên measure (kể cả measure script sinh từ `label` trong metrics-spec.json), nhãn dimension, tiêu đề trang, tiêu đề/phụ đề biểu đồ, nội dung textbox, `referenceTitle`, đơn vị, nhãn nút.\n' +
+    '- Dịch tên chỉ số/chiều người dùng chọn bằng tiếng Việt sang tiếng Anh ngắn gọn, đúng thuật ngữ BI (Doanh thu → Revenue, Lợi nhuận gộp → Gross Profit, Số đơn hàng → Orders, Khu vực → Region). Dùng đúng cùng một tên ở mọi chặng.\n' +
+    '- Tên bảng và tên cột của DỮ LIỆU giữ NGUYÊN (không dịch) vì phải khớp dữ liệu.\n' +
+    '- Ví dụ: referenceTitle "vs. same period last year: " (không phải "So với cùng kỳ năm trước: "); tiêu đề biểu đồ nêu thông điệp bằng tiếng Anh.\n' +
+    '- Phần giải thích/lập luận trong result.md vẫn viết tiếng Việt như CLAUDE.md. Tuyệt đối không để lẫn tiếng Việt vào chữ hiển thị trên dashboard.';
+}
+
 function buildPrompt(run, stageIdx, preOut, feedback) {
   const st = STAGES[stageIdx], meta = skillMeta(st.id);
   const f = run.form, a = f.audience || {}, inDir = path.join(runDir(run.id), '00-input');
@@ -411,6 +454,7 @@ function buildPrompt(run, stageIdx, preOut, feedback) {
   parts.push('# BỘ NHỚ (MEMORY.md)\n' + rd(DOCS.memory));
   parts.push('# SKILL CỦA CHẶNG HIỆN TẠI: ' + st.name + '\n' + rd(path.join(SKILLS, st.id, 'SKILL.md')) + resourceText(st.id));
   { const kt = knowledgeText(st.id); if (kt) parts.push(kt); }
+  if (stageIdx === 1 || stageIdx === 3) parts.push(languageRule(run.form));
   parts.push('# THÔNG TIN NGƯỜI DÙNG NHẬP\n' + [
     '## Ngữ cảnh doanh nghiệp' + (f.contextFileName ? ` (kèm file ${f.contextFileName})` : '') + '\n' + (ctxText || '(trống)'),
     '## Yêu cầu phân tích' + (f.requirementFileName ? ` (kèm file ${f.requirementFileName})` : '') + '\n' + ([f.requirementTyped, reqText].filter(Boolean).join('\n\n') || '(trống)'),

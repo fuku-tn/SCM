@@ -17,6 +17,7 @@ const freshA = () => {
     sugModel: 'haiku',
     data: null, sheets: [], pv: 0,
     colors: [], themeFile: null, tpl: null, tplList: null, colorMode: 'template',
+    lang: (() => { try { return localStorage.getItem('bie-lang') === 'vi' ? 'vi' : 'en'; } catch { return 'en'; } })(),
     models: models && models.length === 4 ? models : ['sonnet', 'sonnet', 'sonnet', 'sonnet'],
     gate: (() => { try { const g = JSON.parse(localStorage.getItem('bie-gate') || 'null'); if (g && typeof g === 'object') return { enabled: !!g.enabled, model: g.model || 'sonnet' }; } catch {} return { enabled: false, model: 'sonnet' }; })(),
     timers: {},
@@ -267,7 +268,7 @@ function drawSummary() {
   const row = (k, v) => `<div class="sm-r"><span>${k}</span><b>${v}</b></div>`;
   h.innerHTML = row('Ngữ cảnh', esc(A.context?.name || A.ctxText.trim().slice(0, 60) || '—')) + row('Yêu cầu', esc((A.req.text.trim().slice(0, 60) || (A.req.file ? '[file] ' + A.req.file.name : '—')))) +
     row('Người xem', esc([A.aud.department, A.aud.position, A.aud.level].filter(Boolean).join(' · ') || '—')) + row('Key Metrics', A.metrics.length + (A.periods.length ? ' · ' + A.periods.join(', ') : '')) + row('Dimensions', A.dimensions.length) +
-    row('Dữ liệu', esc(A.data?.name || '—') + (A.data ? ` (${A.sheets.length}/${A.data.profile.sheets.length} bảng)` : '')) + row('Template', esc((A.tplList && (A.tplList.find((t) => t.id === A.tpl) || {}).name) || '—')) + row('Màu theme', A.colorMode === 'own' ? A.colors.map((c) => `<i class="sw" style="background:${c}"></i>`).join('') : 'Giữ màu của template');
+    row('Dữ liệu', esc(A.data?.name || '—') + (A.data ? ` (${A.sheets.length}/${A.data.profile.sheets.length} bảng)` : '')) + row('Template', esc((A.tplList && (A.tplList.find((t) => t.id === A.tpl) || {}).name) || '—')) + row('Ngôn ngữ dashboard', A.lang === 'vi' ? 'Tiếng Việt' : 'English') + row('Màu theme', A.colorMode === 'own' ? A.colors.map((c) => `<i class="sw" style="background:${c}"></i>`).join('') : 'Giữ màu của template');
 }
 async function drawTemplates() {
   const host = $('#tpl-list'); if (!host) return;
@@ -292,7 +293,11 @@ async function drawTemplates() {
 function panel3() {
   $('#panel').innerHTML = `<div class="card wz-card"><div class="wz-title"><span class="fn-badge">4</span><div><h2>Dashboard (PBIP)</h2><p class="sub" style="margin:0">Chọn 1 template Power BI — file đầu ra sẽ có giao diện giống template, dữ liệu là của bạn.</p></div></div>
     <div class="sec"><div class="sec-h"><span class="sec-n">4.1</span><b>Template Power BI</b>${REQ}<small style="color:var(--mut)">chọn 1 trong các template trong thư mục templates/</small></div><div id="tpl-list"></div></div>
-    <div class="sec"><div class="sec-h"><span class="sec-n">4.2</span><b>Màu theme</b></div>
+    <div class="sec"><div class="sec-h"><span class="sec-n">4.2</span><b>Ngôn ngữ dashboard</b><small style="color:var(--mut)">tên measure, tiêu đề trang/biểu đồ, nhãn hiển thị trong file Power BI</small></div>
+      <div class="seg" role="radiogroup" aria-label="Ngôn ngữ dashboard">
+        <button type="button" role="radio" data-lang="en" class="${A.lang === 'en' ? 'on' : ''}" aria-checked="${A.lang === 'en'}"><b>English</b><small>Toàn bộ chữ trên dashboard bằng tiếng Anh</small></button>
+        <button type="button" role="radio" data-lang="vi" class="${A.lang === 'vi' ? 'on' : ''}" aria-checked="${A.lang === 'vi'}"><b>Tiếng Việt</b><small>Chữ trên dashboard bằng tiếng Việt</small></button></div></div>
+    <div class="sec"><div class="sec-h"><span class="sec-n">4.3</span><b>Màu theme</b></div>
       <div class="seg" role="radiogroup" aria-label="Màu theme">
         <button type="button" role="radio" data-cm="template" class="${A.colorMode === 'template' ? 'on' : ''}" aria-checked="${A.colorMode === 'template'}"><b>Giữ màu của template</b><small>Giống template nhất (khuyến nghị)</small></button>
         <button type="button" role="radio" data-cm="own" class="${A.colorMode === 'own' ? 'on' : ''}" aria-checked="${A.colorMode === 'own'}"><b>Dùng 5 màu của tôi</b><small>Thay bảng màu dữ liệu của template</small></button></div>
@@ -306,11 +311,12 @@ function panel3() {
     meta: (c) => `${c.colors ? c.colors.length : 0} mã màu được nhận${c.total > 5 ? ` (file có ${c.total} mã, dùng 5 mã đầu)` : ''}`,
     onChange: (r) => { if (r?.colors) { A.colors = [...r.colors]; drawColors(); } } });
   drawTemplates();
+  $('#panel').querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { A.lang = b.dataset.lang; try { localStorage.setItem('bie-lang', A.lang); } catch {} $('#panel').querySelectorAll('[data-lang]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', String(x === b)); }); }));
   $('#panel').querySelectorAll('[data-cm]').forEach((b) => (b.onclick = () => { A.colorMode = b.dataset.cm; $('#panel').querySelectorAll('[data-cm]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', String(x === b)); }); $('#own-colors').hidden = A.colorMode !== 'own'; refresh(); }));
 }
 
 // ---------- chạy ----------
-const buildForm = () => ({ requirement: A.req.text, requirementFileName: A.req.file?.name, contextFileName: A.context?.name, contextTyped: A.ctxText, template: A.tpl, colorMode: A.colorMode, audience: A.aud, metrics: A.metrics, periods: A.periods, dimensions: A.dimensions, sheets: A.sheets, colors: A.colorMode === 'own' ? A.colors : [] });
+const buildForm = () => ({ requirement: A.req.text, requirementFileName: A.req.file?.name, contextFileName: A.context?.name, contextTyped: A.ctxText, template: A.tpl, colorMode: A.colorMode, dashboardLanguage: A.lang, audience: A.aud, metrics: A.metrics, periods: A.periods, dimensions: A.dimensions, sheets: A.sheets, colors: A.colorMode === 'own' ? A.colors : [] });
 
 // Bảng cảnh báo khi thiếu thông tin: người dùng chọn "Vẫn chạy" hoặc "Quay lại bổ sung"
 function showMissing(groups, label) {

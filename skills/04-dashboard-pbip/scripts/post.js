@@ -41,6 +41,7 @@ const VERSION_JSON = CFG.versionJson || '2.0.0';
 const COMPAT = CFG.compatibilityLevel || 1600;
 
 const run = readJson(path.join(runDir, 'run.json')) || {};
+const EN = !!(run.form && run.form.dashboardLanguage === 'en'); // chữ hiển thị trên dashboard bằng tiếng Anh
 const modelSpec = readJson(path.join(runDir, '03-data-etl', 'model-spec.json'));
 const mjson = readJson(path.join(runDir, '02-key-metrics', 'measures.json'));
 const warnings = [], fatals = [];
@@ -126,10 +127,10 @@ function defaultSpec() {
   const first = kpis[0] || base[0];
   const dimsList = (mjson && mjson.dimensions) || [];
   const catDim = dimsList.find((d) => !d.isDate && canon(d.table, d.column));
-  if (first && hasCalendar) visuals.push({ id: 'trend', type: 'lineChart', title: `${first.name} theo tháng`, category: { table: 'Calendar', column: 'YearMonth' }, measures: [first.name], grid: { col: 0, row: 2, w: 7, h: 5 } });
-  if (first && catDim) visuals.push({ id: 'cmp', type: 'clusteredBarChart', title: `${first.name} theo ${catDim.label}`, category: { table: catDim.table, column: catDim.column }, measures: [first.name], grid: { col: 7, row: 2, w: 5, h: 5 } });
-  if (first && catDim) visuals.push({ id: 'tbl', type: 'tableEx', title: 'Chi tiết', columns: [{ table: catDim.table, column: catDim.column }], measures: base.slice(0, 4).map((m) => m.name), grid: { col: 0, row: 7, w: 12, h: 5 } });
-  return { projectName: 'BIE_Dashboard', title: 'Dashboard', pages: [{ id: 'overview', name: 'Tổng quan', visuals }] };
+  if (first && hasCalendar) visuals.push({ id: 'trend', type: 'lineChart', title: EN ? `${first.name} by month` : `${first.name} theo tháng`, category: { table: 'Calendar', column: 'YearMonth' }, measures: [first.name], grid: { col: 0, row: 2, w: 7, h: 5 } });
+  if (first && catDim) visuals.push({ id: 'cmp', type: 'clusteredBarChart', title: EN ? `${first.name} by ${catDim.label}` : `${first.name} theo ${catDim.label}`, category: { table: catDim.table, column: catDim.column }, measures: [first.name], grid: { col: 7, row: 2, w: 5, h: 5 } });
+  if (first && catDim) visuals.push({ id: 'tbl', type: 'tableEx', title: EN ? 'Details' : 'Chi tiết', columns: [{ table: catDim.table, column: catDim.column }], measures: base.slice(0, 4).map((m) => m.name), grid: { col: 0, row: 7, w: 12, h: 5 } });
+  return { projectName: 'BIE_Dashboard', title: 'Dashboard', pages: [{ id: 'overview', name: EN ? 'Overview' : 'Tổng quan', visuals }] };
 }
 // Template Power BI người dùng đã chọn (lib/pbix-template.js) — nếu có thì dựng báo cáo theo template
 const TPL = (() => { try { return require(path.join(process.env.BIE_ROOT || path.resolve(__dirname, '..', '..', '..'), 'lib', 'pbix-template.js')); } catch (e) { console.log('Không nạp được lib/pbix-template.js: ' + e.message); return null; } })();
@@ -274,15 +275,23 @@ const tableTmdl = (t) => {
     if (c.hidden) L.push('\t\tisHidden');
     L.push(`\t\tlineageTag: ${guid('col:' + t.name + ':' + c.name)}`, `\t\tsummarizeBy: ${c.summarizeBy || 'none'}`, `\t\tsourceColumn: ${c.name}`, '', '\t\tannotation SummarizationSetBy = Automatic', '');
   }
+  // Cột ngày làm khóa nối Calendar phải là kiểu date. Nếu dữ liệu có cả giờ thì ép thẳng sang `type date` sẽ lỗi hàng loạt
+  // → đọc là datetime rồi mới cắt về date (Date.From) ở bước riêng.
+  let dateOnlyCol = null;
   const typed = t.columns.map((c) => {
     let mt = MT[c.type] || 'type text';
-    if (hasCalendar && ieq(t.name, modelSpec.dateColumn.table) && ieq(c.name, modelSpec.dateColumn.column)) mt = 'type date';
+    if (hasCalendar && ieq(t.name, modelSpec.dateColumn.table) && ieq(c.name, modelSpec.dateColumn.column)) {
+      if (c.type === 'datetime') { mt = 'type datetime'; dateOnlyCol = c.name; } else mt = 'type date';
+    }
     return `{"${ml(c.name)}", ${mt}}`;
   }).join(', ');
+  const lastStep = dateOnlyCol ? 'DateOnly' : 'Typed';
   L.push(`\tpartition ${tq(t.name)} = m`, '\t\tmode: import', '\t\tsource =', '\t\t\t\tlet',
     `\t\t\t\t\tSource = Csv.Document(File.Contents(DataFolder & "\\${ml(t.file)}"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),`,
     '\t\t\t\t\tPromoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),',
-    `\t\t\t\t\tTyped = Table.TransformColumnTypes(Promoted, {${typed}}, "en-US")`, '\t\t\t\tin', '\t\t\t\t\tTyped', '', '\tannotation PBI_ResultType = Table', '');
+    `\t\t\t\t\tTyped = Table.TransformColumnTypes(Promoted, {${typed}}, "en-US")${dateOnlyCol ? ',' : ''}`,
+    ...(dateOnlyCol ? [`\t\t\t\t\tDateOnly = Table.TransformColumns(Typed, {{"${ml(dateOnlyCol)}", each Date.From(_), type date}})`] : []),
+    '\t\t\t\tin', `\t\t\t\t\t${lastStep}`, '', '\tannotation PBI_ResultType = Table', '');
   return L.join('\n');
 };
 for (const t of tables) wtmdl(path.join(smDir, 'definition', 'tables', t.name.replace(/[\\/:*?"<>|]/g, '_') + '.tmdl'), tableTmdl(t));
@@ -461,6 +470,15 @@ try {
   const kpiOf = (k) => ['card', 'cardVisual', 'kpi'].reduce((s, t) => s + (k[t] || 0), 0);
   AUD.checkDashboard((run.form && run.form.audience) || {}, pageSummary.map((p) => ({ name: p.name, visuals: p.visuals, kpis: kpiOf(p.kinds) }))).forEach((w) => warn('Người xem: ' + w));
 } catch (e) { warn('Không đối chiếu được hồ sơ người xem: ' + e.message); }
+// ngôn ngữ dashboard: chữ HIỂN THỊ (không phải tham chiếu bảng/cột) phải đúng ngôn ngữ đã chọn
+if (EN) {
+  const VN = /[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i;
+  const SHOW = new Set(['title', 'subtitle', 'text', 'referenceTitle', 'label', 'caption', 'heading', 'pageTitle', 'displayName']);
+  const hits = [];
+  const walkSpec = (n, p) => { if (Array.isArray(n)) n.forEach((x, i) => walkSpec(x, p + '[' + i + ']')); else if (n && typeof n === 'object') for (const [k, v] of Object.entries(n)) { if (typeof v === 'string') { if ((SHOW.has(k) || (k === 'name' && /pages[d+]$/.test(p))) && VN.test(v)) hits.push(p + '.' + k + ' = "' + v.slice(0, 50) + '"'); } else walkSpec(v, p + '.' + k); } };
+  walkSpec(spec, 'spec');
+  if (hits.length) { warn('Ngôn ngữ dashboard = English nhưng còn chữ tiếng Việt: ' + hits.slice(0, 6).join('; ') + (hits.length > 6 ? ' …(+' + (hits.length - 6) + ')' : '')); }
+}
 // kiểm tra cơ học bản build (lỗi làm Desktop không mở được / nạp 0 dòng / quy tắc KPI)
 const vb = require('./validate_build.js').validateBuild(root);
 vb.hard.forEach((h) => problems.push('Build: ' + h));

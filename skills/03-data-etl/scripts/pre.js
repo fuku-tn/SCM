@@ -57,6 +57,8 @@ function findDataFile() {
 }
 
 // ---------- đọc một sheet thành lưới ô, kèm thông tin ô gộp / công thức / màu nền ----------
+// serial Excel → Date (UTC, đại diện cho giờ-ngày hiển thị), làm tròn đến giây để 00:00:00 không bị lệch
+const serialToDate = (n) => new Date(Math.round((n - 25569) * 86400) * 1000);
 function loadGrid(ws) {
   const out = { rows: [], formulas: new Set(), merges: 0, fills: {} };
   if (!ws || !ws['!ref']) return out;
@@ -73,6 +75,9 @@ function loadGrid(ws) {
     for (let c = rg.s.c; c <= rg.e.c; c++) {
       const cell = ws[XLSX.utils.encode_cell({ r, c })];
       let v = cell ? cell.v : null;
+      // Ô ngày của Excel: đọc số serial + định dạng, đổi bằng số học (không qua múi giờ máy) → đúng "giá trị nhìn thấy trong Excel"
+      if (cell && cell.t === 'n' && typeof v === 'number' && cell.z && v >= 1 && XLSX.SSF.is_date(cell.z)) v = serialToDate(v);
+      else if (v instanceof Date && !isNaN(v)) v = new Date(Date.UTC(v.getFullYear(), v.getMonth(), v.getDate(), v.getHours(), v.getMinutes(), v.getSeconds()));
       if (cell && cell.f) out.formulas.add((r - rg.s.r) + ',' + (c - rg.s.c));
       if ((v === null || v === undefined) && mergedVal[r + ',' + c] !== undefined) v = mergedVal[r + ',' + c]; // gỡ ô gộp: điền lại giá trị
       if (cell && cell.s && cell.s.fgColor && cell.s.fgColor.rgb && cell.s.patternType === 'solid') out.fills[(r - rg.s.r) + ',' + (c - rg.s.c)] = String(cell.s.fgColor.rgb);
@@ -429,7 +434,7 @@ function refreshStats(t) {
     let FS = ext === '.tsv' ? '\t' : ',';
     if (ext === '.csv') { const sc = cnt(';'), cc = cnt(','), tc = cnt('\t'); if (tc > cc && tc > sc) FS = '\t'; else if (sc > cc) FS = ';'; }
     wb = XLSX.read(txt, { type: 'string', raw: true, FS });
-  } else wb = XLSX.read(fs.readFileSync(file), { type: 'buffer', cellDates: true, cellFormula: true, cellStyles: true });
+  } else wb = XLSX.read(fs.readFileSync(file), { type: 'buffer', cellNF: true, cellFormula: true, cellStyles: true });
   let names = wb.SheetNames.slice();
   if (wanted) { const w = names.filter((n) => wanted.includes(n)); if (w.length) names = w; }
   const baseName = path.basename(file, ext);
