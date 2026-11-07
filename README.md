@@ -3,7 +3,7 @@
 Ứng dụng web chạy cục bộ (Node.js, `http://localhost:6688`) biến **một file CSV/Excel** thành **project Power BI (PBIP)** qua 4 chặng, mỗi chặng là một **SKILL**:
 
 ```
-Business Goal  →  Key Metrics  →  Data (ETL)  →  Dashboard (PBIP)
+Business Context  →  Key Metrics  →  Data (ETL)  →  Dashboard (PBIP)
 ```
 
 Model (Claude, qua `claude` CLI) lo phần suy luận; **script xác định** lo phần phải chính xác: làm sạch dữ liệu, sinh DAX, dựng PBIP, kiểm tra cấu trúc. Giao diện tiếng Việt, thuật ngữ chuyên ngành giữ tiếng Anh.
@@ -35,13 +35,23 @@ Biến môi trường:
 ## Cách dùng
 
 1. Mở trang **Analysis** và đi qua 4 bước (có thể làm **theo thứ tự bất kỳ**):
-   1. *Business Goal* — ngữ cảnh doanh nghiệp (gõ hoặc nạp file `.md/.pdf/.docx`) và yêu cầu phân tích.
-   2. *Key Metrics* — tải dữ liệu, chọn sheet, chọn chỉ số / kỳ so sánh (YoY, MoM, QoQ, DoD) / dimension (có nút gợi ý).
+   1. *Business Context* — ngữ cảnh doanh nghiệp và yêu cầu phân tích (gõ hoặc nạp file `.md/.pdf/.docx`). Có nút **tải file mẫu Word** (`.docx`, 2 phần: Ngữ cảnh / Yêu cầu); nạp file mẫu vào ô nào BIE cũng tự tách đúng phần.
+   2. *Key Metrics* — khai báo **người xem trực tiếp (Direct, bắt buộc)**: phòng ban, vị trí, level, **giới tính, học vấn**, thâm niên; và **người xem gián tiếp (Indirect, không bắt buộc, có thể nhiều người)**. Mỗi nhóm có **file mẫu `.docx` tải về điền** (Direct: ghi chú về người đọc + các dòng "Nhãn: giá trị"; Indirect: bảng nhiều người) — tải file lên thì form được điền sẵn / tự tạo thẻ cho từng người, phần ghi chú tự do được đưa vào prompt. Sau đó chọn chỉ số / kỳ so sánh (YoY, MoM, QoQ, DoD) / dimension (có nút gợi ý).
    3. *Data (ETL)* — xem tình trạng dữ liệu; làm sạch chạy khi bạn bấm chạy.
-   4. *Dashboard* — người xem (phòng ban, vị trí, level, thâm niên), chọn **template Power BI**, giữ màu template hoặc dùng 5 màu của bạn.
+   4. *Dashboard* — chọn **template mẫu** (trong `templates/`) **hoặc tải template `.pbix` của bạn** (PBIR, < 100MB); ngôn ngữ dashboard; **xem trước & duyệt bố cục** (xem bên dưới); giữ màu template hoặc dùng 5 màu của bạn.
 2. Chọn model cho từng chặng, rồi **Chạy chặng này** hoặc **Chạy tất cả 4 chặng**. Nếu thiếu thông tin cho chặng đang chạy, một bảng cảnh báo cho phép *Vẫn chạy* hoặc *Quay lại bổ sung*.
 3. Xem kết quả ở trang **Results** (mỗi chặng có `result.md`, file phụ, nút tải `.zip`). Trang **Home** hiển thị luồng 4 chặng: đang chạy, xong, lỗi (bấm vào để xem chi tiết lỗi).
 4. Giải nén project PBIP, mở file `.pbip`.
+
+### Bố cục dashboard: xem trước, góp ý, duyệt (mục 4.3)
+
+Trước khi chạy chặng 4, bấm **Đề xuất bố cục**: AI (có quy tắc kiểm tra bằng code) đề xuất **số trang và biểu đồ từng trang** theo câu chuyện *tổng quan → xu hướng → so sánh/phân rã → chi tiết*, bám các trang của template.
+
+- Template quyết định **số ô biểu đồ, vị trí và loại** của mỗi trang. Template chỉ 1 trang mà cần nhiều trang → **nhân bản trang** (mỗi bản giữ đúng số biểu đồ của trang gốc).
+- Màn hình review hiển thị sơ đồ từng trang + bảng biểu đồ: đổi loại (trong cùng họ: cột/thanh/đường/vùng, pie/donut), sửa tiêu đề, đặt **Top N**, bỏ ô, ghi **góp ý cho từng biểu đồ** hoặc góp ý chung rồi **Cập nhật theo góp ý** để AI sửa. Khi hài lòng bấm **Duyệt**.
+- **Giới hạn số giá trị hiển thị**: nếu chiều có quá nhiều giá trị (vd. 42 sản phẩm trên cột/thanh ≤ 12–15, donut ≤ 5) → tự đề xuất Top N (hoặc đổi chiều ít giá trị cho donut). Top N làm bằng measure xếp hạng (DAX do script sinh), tiêu đề nên ghi "Top N".
+- Bản đã duyệt lưu ở `00-input/dashboard-plan.json` và được đưa vào prompt chặng 4 như **hợp đồng** (số trang, ô, loại, Top N, tiêu đề); Evaluator có tiêu chí kiểm tra tuân thủ. Đổi chỉ số/chiều/template/ngôn ngữ sau khi duyệt → bố cục báo "không còn khớp".
+- Template của riêng bạn: file `.pbix` phải lưu ở **PBIR** (Options → Preview features → *Store reports using enhanced metadata format (PBIR)*); file hỏng/sai định dạng bị từ chối kèm hướng dẫn.
 
 ### Lần đầu mở PBIP: bấm Refresh
 
@@ -66,7 +76,7 @@ Bật ở thanh chạy (`Kiểm chứng độc lập & tự sửa`). Sau mỗi c
 
 | Cơ chế | Mô tả |
 |---|---|
-| **EDA tất định** (`lib/eda.js`) | Tính trên dữ liệu đã làm sạch: phân phối, ngoại lệ, xu hướng/MoM/YoY, mùa vụ, cơ cấu theo nhóm, tập trung, tương quan, chất lượng. Mỗi phát hiện có mã `F#`, chèn vào prompt chặng 1, 2, 4; Business Goal phải trích `F#` làm bằng chứng và `post.js` kiểm tra mã có thật. |
+| **EDA tất định** (`lib/eda.js`) | Tính trên dữ liệu đã làm sạch: phân phối, ngoại lệ, xu hướng/MoM/YoY, mùa vụ, cơ cấu theo nhóm, tập trung, tương quan, chất lượng. Mỗi phát hiện có mã `F#`, chèn vào prompt chặng 1, 2, 4; Business Context phải trích `F#` làm bằng chứng và `post.js` kiểm tra mã có thật. |
 | **Hồ sơ người xem** (`lib/audience.js`) | Từ level + thâm niên, **code** tính nhóm người xem, số KPI/trang, số trang, mức chi tiết; chèn vào prompt và cảnh báo ở chặng 4 nếu dashboard lệch. |
 | **Knowledge base** (`knowledge-base/rulesets/`) | Ruleset chọn KPI, thủ pháp DAX, thiết kế mô hình, chọn biểu đồ. SKILL khai báo `knowledge: a, b` trong frontmatter để nạp. |
 | **Validator PBIP** (`validate_build.js`) | Kiểm tra cơ học bản build: JSON/BOM, TMDL, đường dẫn, tham chiếu cột/measure có tồn tại, quan hệ, 4–6 thẻ KPI/trang… Lỗi cứng làm chặng 4 báo lỗi. |

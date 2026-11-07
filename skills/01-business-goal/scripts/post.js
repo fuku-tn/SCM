@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Stage 1 · Business Goal — post.js
+ * Stage 1 · Business Context — post.js
  * Chạy SAU lượt trả lời của model.
  *
  *   node post.js <runDir> <stageDir>
@@ -54,7 +54,7 @@ idsOf(qRows, 'Q').filter((q) => q && !new RegExp('\\b' + q + '\\b').test(dText) 
 if (!gRows.length) evidence.push('Không tìm thấy bảng mục tiêu G# (cột Mã bắt đầu bằng G1, G2…).');
 
 fs.writeFileSync(path.join(stageDir, 'business-goal.md'), md, 'utf8');
-const report = ['# Kiểm tra cấu trúc Business Goal', '', `- Số mục (heading): ${headings.length}`, `- Độ dài: ${md.length} ký tự`, `- Mã phát hiện F# được trích: ${cited.length ? cited.join(', ') : '(không có)'}`, '', '| Mục bắt buộc | Có |', '|---|---|', ...rows.map((r) => `| ${r.name} | ${r.ok ? '✅' : '❌ thiếu'} |`), '', '## Bằng chứng & truy vết', ...(evidence.length ? evidence.map((e) => '- ⚠ ' + e) : ['- ✅ Bằng chứng F# hợp lệ, truy vết G → Q → D liền mạch.']), ''].join('\n');
+const report = ['# Kiểm tra cấu trúc Business Context', '', `- Số mục (heading): ${headings.length}`, `- Độ dài: ${md.length} ký tự`, `- Mã phát hiện F# được trích: ${cited.length ? cited.join(', ') : '(không có)'}`, '', '| Mục bắt buộc | Có |', '|---|---|', ...rows.map((r) => `| ${r.name} | ${r.ok ? '✅' : '❌ thiếu'} |`), '', '## Bằng chứng & truy vết', ...(evidence.length ? evidence.map((e) => '- ⚠ ' + e) : ['- ✅ Bằng chứng F# hợp lệ, truy vết G → Q → D liền mạch.']), ''].join('\n');
 fs.writeFileSync(path.join(stageDir, 'business-goal-check.md'), report, 'utf8');
 console.log(`business-goal.md đã lưu (${md.length} ký tự, ${headings.length} mục).`);
 if (missing.length) console.log('⚠ Thiếu mục: ' + missing.map((m) => m.name).join(', '));

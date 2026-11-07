@@ -1,7 +1,9 @@
 /* Analysis: 4 bước điền thông tin theo thứ tự tuỳ ý; chạy từng chặng hoặc tất cả; thiếu thông tin thì hiện bảng cảnh báo để chọn "Vẫn chạy" hoặc "Quay lại bổ sung" */
 const LEVELS = ['Intern / Thực tập', 'Fresher', 'Junior', 'Middle', 'Senior', 'Team Lead', 'Supervisor', 'Manager', 'Senior Manager', 'Director', 'C-level (CEO/CFO/COO...)'];
+const GENDERS = ['Nam', 'Nữ', 'Khác / không muốn nêu'];
+const EDUCATIONS = ['THPT', 'Trung cấp / Cao đẳng', 'Đại học', 'Thạc sĩ / MBA', 'Tiến sĩ'];
 const WSTEPS = [
-  { name: 'Business Goal', sub: 'Ngữ cảnh & yêu cầu' },
+  { name: 'Business Context', sub: 'Ngữ cảnh & yêu cầu' },
   { name: 'Key Metrics', sub: 'Người xem, chỉ số, chiều' },
   { name: 'Import Data', sub: 'Transformation · Modeling' },
   { name: 'Dashboard (PBIP)', sub: 'Template & màu theme' },
@@ -11,7 +13,9 @@ const freshA = () => {
   return {
     runId: null, step: 0,
     context: null, ctxText: '', req: { text: '', file: null },
-    aud: { department: '', position: '', level: '', tenureCompany: '', tenureCareer: '' },
+    aud: { department: '', position: '', level: '', gender: '', education: '', tenureCompany: '', tenureCareer: '' },   // người xem TRỰC TIẾP (Direct) — bắt buộc
+    indirect: [], audFile: { direct: null, indirect: null },                                                            // người xem GIÁN TIẾP (Indirect) — không bắt buộc
+    tplMode: 'sample', pbix: null, plan: null, planKey: '', planApproved: false, planModel: 'sonnet',
     metrics: [], periods: [], dimensions: [],
     sug: { metrics: { state: 'idle', items: [], key: '', err: '' }, dimensions: { state: 'idle', items: [], key: '', err: '' } },
     sugModel: 'haiku',
@@ -35,12 +39,21 @@ const PERIODS = [
 const REQ = '<span class="req" title="Bắt buộc">*</span>';
 
 // ---------- validation ----------
-const ok21 = () => !!(A.aud.department.trim() && A.aud.position.trim() && A.aud.level && A.aud.tenureCompany.trim());
+const ok21 = () => !!(A.aud.department.trim() && A.aud.position.trim() && A.aud.level && A.aud.gender && A.aud.education && A.aud.tenureCompany.trim());
+const tplId = () => (A.tplMode === 'upload' ? (A.pbix ? 'upload' : '') : A.tpl || '');
+const planKeyNow = () => JSON.stringify({ m: A.metrics, d: A.dimensions, t: tplId(), n: A.pbix?.name || '', l: A.lang, s: A.sheets, a: A.aud.level });
+const planStale = () => !!A.plan && A.planKey !== planKeyNow();
 const miss = [
   () => { const m = []; if (!A.context && !A.ctxText.trim()) m.push('Nhập ngữ cảnh công ty hoặc tải file'); if (!A.req.text.trim() && !A.req.file) m.push('Nhập yêu cầu phân tích hoặc tải file'); return m; },
-  () => { const m = []; if (!ok21()) m.push('Điền đủ phần 2.1 (phòng ban, vị trí, level, thâm niên tại doanh nghiệp)'); else { if (!A.metrics.length) m.push('Chọn ít nhất 1 Key Metric'); else if (!A.dimensions.length) m.push('Chọn ít nhất 1 chiều phân tích'); } return m; },
+  () => { const m = []; if (!ok21()) m.push('Điền đủ phần 2.1 người xem trực tiếp (phòng ban, vị trí, level, giới tính, học vấn, thâm niên tại doanh nghiệp)'); else { if (!A.metrics.length) m.push('Chọn ít nhất 1 Key Metric'); else if (!A.dimensions.length) m.push('Chọn ít nhất 1 chiều phân tích'); } return m; },
   () => { const m = []; if (!A.data) m.push('Tải file CSV / Excel'); else if (!A.sheets.length) m.push('Chọn ít nhất 1 bảng'); return m; },
-  () => { const m = []; if (!A.tpl) m.push('Chọn 1 template Power BI'); if (A.colorMode === 'own' && A.colors.length < 5) m.push(`Cần đủ 5 mã màu (đang có ${A.colors.length}/5) hoặc chọn "Giữ màu của template"`); return m; },
+  () => {
+    const m = [];
+    if (A.tplMode === 'upload') { if (!A.pbix) m.push('Tải file template .pbix của bạn (hoặc chuyển sang "Template mẫu")'); } else if (!A.tpl) m.push('Chọn 1 template Power BI');
+    if (A.colorMode === 'own' && A.colors.length < 5) m.push(`Cần đủ 5 mã màu (đang có ${A.colors.length}/5) hoặc chọn "Giữ màu của template"`);
+    if (tplId()) { if (!A.plan) m.push('Chưa xem và duyệt bố cục dashboard (bấm "Đề xuất bố cục" ở mục 4.3) — nếu bỏ qua, chặng 4 sẽ tự thiết kế'); else if (planStale()) m.push('Bố cục đã duyệt không còn khớp (bạn đã đổi chỉ số/chiều/template/ngôn ngữ) — đề xuất lại ở mục 4.3'); else if (!A.planApproved) m.push('Bố cục mới ở dạng nháp — bấm "Xem & chỉnh bố cục" rồi "Duyệt"'); }
+    return m;
+  },
 ];
 const stepOk = (i) => miss[i]().length === 0;
 // Thông tin mỗi chặng cần (chỉ số bước trong WSTEPS): Key Metrics và các chặng sau đều cần cả dữ liệu để đối chiếu cột
@@ -81,6 +94,7 @@ function dz(host, o) {
   const handle = async (f) => {
     const ext = f.name.split('.').pop().toLowerCase();
     if (!o.exts.includes(ext)) { err = `"${f.name}" không hợp lệ — chỉ nhận ${o.exts.map((e) => '.' + e).join(', ')}`; draw(); toast(err); return; }
+    if (o.maxMB && f.size >= o.maxMB * 1048576) { err = `"${f.name}" nặng ${fsize(f.size)} — file phải nhỏ hơn ${o.maxMB}MB`; draw(); toast(err); return; }
     err = ''; o.set({ busy: true, name: f.name, size: f.size }); draw(); const t0 = Date.now();
     try {
       const res = await postSlot(o.slot, f); const wait = (o.minBusy || 0) - (Date.now() - t0); if (wait > 0) await sleep(wait);
@@ -183,7 +197,8 @@ function bindFoot() {
 
 // ---------- panels ----------
 function panel0() {
-  $('#panel').innerHTML = `<div class="card wz-card"><div class="wz-title"><span class="fn-badge">1</span><div><h2>Business Goal</h2><p class="sub" style="margin:0">Cho BIE biết bối cảnh doanh nghiệp và bạn muốn phân tích điều gì.</p></div></div>
+  $('#panel').innerHTML = `<div class="card wz-card"><div class="wz-title"><span class="fn-badge">1</span><div><h2>Business Context</h2><p class="sub" style="margin:0">Cho BIE biết bối cảnh doanh nghiệp và bạn muốn phân tích điều gì.</p></div></div>
+    <div class="sample-bar"><a class="btn ghost sm" href="/api/samples/business-context" download>⬇ Tải file mẫu Business Context (.docx)</a><span class="sub" style="margin:0">Điền file Word rồi tải lên một trong hai ô bên dưới — BIE tự tách phần “Ngữ cảnh” và “Yêu cầu phân tích”.</span></div>
     <div class="f"><label>Ngữ cảnh công ty ${REQ} <small>— gõ trực tiếp hoặc tải file (.md, .pdf, .docx)</small></label>
       <textarea id="ctx" placeholder="VD: Công ty bán lẻ thời trang, 20 cửa hàng trên toàn quốc, doanh thu ~50 tỷ/năm, đang muốn cải thiện hiệu quả từng cửa hàng...">${esc(A.ctxText)}</textarea>
       <div class="or"><span>hoặc</span></div><div id="dz-context"></div></div>
@@ -191,7 +206,8 @@ function panel0() {
       <textarea id="req" placeholder="VD: Theo dõi doanh thu & lợi nhuận theo khu vực, phát hiện sản phẩm tăng trưởng chậm...">${esc(A.req.text)}</textarea>
       <div class="or"><span>hoặc</span></div><div id="dz-req"></div></div>
     ${foot()}</div>`;
-  dz($('#dz-context'), { slot: 'context', exts: ['md', 'pdf', 'docx'], title: 'Tải file ngữ cảnh công ty (không bắt buộc nếu đã điền)', hint: '.md · .pdf · .docx', get: () => A.context, set: (v) => (A.context = v), meta: textMeta, onChange: () => (A.sug.metrics.state = A.sug.metrics.state) });
+  dz($('#dz-context'), { slot: 'context', exts: ['md', 'pdf', 'docx'], title: 'Tải file ngữ cảnh công ty (không bắt buộc nếu đã điền)', hint: '.md · .pdf · .docx', get: () => A.context, set: (v) => (A.context = v), meta: textMeta,
+    onChange: (res) => { if (res && res.alsoRequirement && !A.req.file && !A.req.text.trim()) { A.req.file = { ...res.alsoRequirement, ext: 'docx' }; toast('Đã tách phần “Yêu cầu phân tích” từ file mẫu'); panel0(); bindFoot(); refresh(); } } });
   dz($('#dz-req'), { slot: 'requirement', exts: ['md', 'pdf', 'docx'], title: 'Tải file yêu cầu phân tích (không bắt buộc nếu đã điền)', hint: '.md · .pdf · .docx', get: () => A.req.file, set: (v) => (A.req.file = v), meta: textMeta });
   $('#req').oninput = (e) => { A.req.text = e.target.value; refresh(); };
   $('#ctx').oninput = (e) => { A.ctxText = e.target.value; refresh(); };
@@ -200,18 +216,50 @@ function panel0() {
 function panel1() {
   const a = A.aud, inp = (k, label, ph, req) => `<div class="f"><label>${label} ${req ? REQ : '<small>(không bắt buộc)</small>'}</label><input type="text" data-k="${k}" placeholder="${ph}" value="${esc(a[k])}"></div>`;
   $('#panel').innerHTML = `<div class="card wz-card"><div class="wz-title"><span class="fn-badge">2</span><div><h2>Key Metrics</h2><p class="sub" style="margin:0">Khai báo người xem dashboard, sau đó chọn chỉ số và chiều cần phân tích.</p></div></div>
-    <div class="sec"><div class="sec-h"><span class="sec-n">2.1</span><b>Thông tin người xem dashboard</b></div>
+    <div class="sec"><div class="sec-h"><span class="sec-n">2.1</span><b>Người xem trực tiếp (Direct)</b>${REQ}<small style="color:var(--mut)">người đọc và ra quyết định từ dashboard — dashboard được thiết kế cho họ</small></div>
+      <div class="sample-bar"><a class="btn ghost sm" href="/api/samples/audience-direct" download>⬇ Tải file mẫu Direct (.docx)</a><span class="sub" style="margin:0">Điền file mẫu rồi tải lên: BIE tự điền sẵn form bên dưới và đọc phần ghi chú về người đọc.</span></div>
       <div class="row2">${inp('department', 'Phòng ban', 'VD: Kinh doanh', 1)}${inp('position', 'Vị trí công việc hiện tại', 'VD: Trưởng nhóm bán hàng', 1)}
         <div class="f"><label>Level ${REQ}</label><select data-k="level"><option value="">— chọn level —</option>${LEVELS.map((l) => `<option ${l === a.level ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
-        ${inp('tenureCompany', 'Thâm niên tại doanh nghiệp hiện tại', 'VD: 3 năm 6 tháng', 1)}${inp('tenureCareer', 'Thâm niên kể từ khi đi làm', 'VD: 8 năm', 0)}</div></div>
-    <div class="sec" id="sec-metrics"><div class="sec-h"><span class="sec-n">2.2</span><b>Key Metrics sẽ phân tích</b>${REQ}<span class="lock-note"></span></div>
+        <div class="f"><label>Giới tính ${REQ}</label><select data-k="gender"><option value="">— chọn —</option>${GENDERS.map((l) => `<option ${l === a.gender ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+        <div class="f"><label>Học vấn ${REQ}</label><select data-k="education"><option value="">— chọn —</option>${EDUCATIONS.map((l) => `<option ${l === a.education ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+        ${inp('tenureCompany', 'Thâm niên tại doanh nghiệp hiện tại', 'VD: 3 năm 6 tháng', 1)}${inp('tenureCareer', 'Thâm niên kể từ khi đi làm', 'VD: 8 năm', 0)}</div>
+      <div class="f" style="margin-top:6px"><label>Ghi chú về người đọc <small>(không bắt buộc — tải file .docx / .md / .pdf)</small></label><div id="dz-aud-direct"></div></div></div>
+    <div class="sec" id="sec-indirect"><div class="sec-h"><span class="sec-n">2.2</span><b>Người xem gián tiếp (Indirect)</b><small style="color:var(--mut)">không bắt buộc · nhận kết quả hoặc bị ảnh hưởng, không trực tiếp dùng dashboard</small></div>
+      <div class="sample-bar"><a class="btn ghost sm" href="/api/samples/audience-indirect" download>⬇ Tải file mẫu Indirect (.docx)</a><span class="sub" style="margin:0">Có thể có nhiều người: điền bảng trong file mẫu (mỗi hàng một người/nhóm) rồi tải lên — BIE tự tạo thẻ cho từng người. File khác định dạng vẫn được đọc làm ghi chú.</span></div>
+      <div id="ind-list"></div>
+      <div class="ind-add"><button type="button" class="btn ghost sm" id="ind-add">＋ Thêm người xem gián tiếp</button></div>
+      <div class="f" style="margin-top:10px"><label>Hoặc tải file mô tả người xem gián tiếp <small>(.docx / .md / .pdf)</small></label><div id="dz-aud-indirect"></div></div></div>
+    <div class="sec" id="sec-metrics"><div class="sec-h"><span class="sec-n">2.3</span><b>Key Metrics sẽ phân tích</b>${REQ}<span class="lock-note"></span></div>
       <div id="tags-metrics"></div><div id="sug-metrics" class="sug-box"></div></div>
-    <div class="sec" id="sec-periods"><div class="sec-h"><span class="sec-n">2.3</span><b>Kỳ so sánh cần tính</b><small style="color:var(--mut)">chọn nhiều · không bắt buộc</small><span class="lock-note"></span></div>
+    <div class="sec" id="sec-periods"><div class="sec-h"><span class="sec-n">2.4</span><b>Kỳ so sánh cần tính</b><small style="color:var(--mut)">chọn nhiều · không bắt buộc</small><span class="lock-note"></span></div>
       <div class="pcards">${PERIODS.map((p) => `<button type="button" class="pcard ${A.periods.includes(p.k) ? 'on' : ''}" data-p="${p.k}" aria-pressed="${A.periods.includes(p.k)}"><span class="pc-chk"></span><b>${p.k}</b><span class="pc-n">${p.name}</span><small>${p.d}</small></button>`).join('')}</div></div>
-    <div class="sec" id="sec-dims"><div class="sec-h"><span class="sec-n">2.4</span><b>Các chiều (Dimension) đi cùng chỉ số</b>${REQ}<span class="lock-note"></span></div>
+    <div class="sec" id="sec-dims"><div class="sec-h"><span class="sec-n">2.5</span><b>Các chiều (Dimension) đi cùng chỉ số</b>${REQ}<span class="lock-note"></span></div>
       <div id="tags-dims"></div><div id="sug-dimensions" class="sug-box"></div></div>
     ${foot()}</div>`;
   $('#panel').querySelectorAll('[data-k]').forEach((el) => { const h = () => { A.aud[el.dataset.k] = el.value; refresh(); }; el.oninput = h; el.onchange = h; });
+  const fillDirect = (res) => {
+    if (res && res.blank) toast('File mẫu chưa được điền — chưa đọc được thông tin nào');
+    const f = res && res.parsed && res.parsed.fields; if (!f) return;
+    let n = 0; for (const [k, v] of Object.entries(f)) if (k !== 'name' && v && !String(A.aud[k] || '').trim()) { A.aud[k] = v; n++; }
+    if (n) { toast(`Đã điền sẵn ${n} trường từ file`); panel1(); bindFoot(); refresh(); }
+  };
+  dz($('#dz-aud-direct'), { slot: 'audienceDirect', exts: ['docx', 'md', 'pdf'], title: 'Tải file ghi chú về người xem trực tiếp (không bắt buộc)', hint: '.docx · .md · .pdf — nên dùng file mẫu ở trên', get: () => A.audFile.direct, set: (v) => (A.audFile.direct = v), meta: textMeta, onChange: fillDirect });
+  const drawInd = () => {
+    const host = $('#ind-list'); if (!host) return;
+    const sel = (k, i, opts, v, ph) => `<select data-ik="${k}" data-i="${i}"><option value="">${ph}</option>${opts.map((o) => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+    const inpI = (k, i, v, ph) => `<input type="text" data-ik="${k}" data-i="${i}" placeholder="${ph}" value="${esc(v || '')}">`;
+    host.innerHTML = A.indirect.length ? A.indirect.map((p, i) => `<div class="ind-card"><div class="ind-h"><b>Người xem gián tiếp ${i + 1}</b><button class="icon-btn sm" data-rm="${i}" title="Xóa" aria-label="Xóa người xem ${i + 1}">✕</button></div>
+      <div class="ind-grid">${inpI('name', i, p.name, 'Họ tên / nhóm (VD: Giám đốc Kinh doanh)')}${inpI('department', i, p.department, 'Phòng ban')}${inpI('position', i, p.position, 'Vị trí')}
+        ${sel('level', i, LEVELS, p.level, 'Level')}${sel('gender', i, GENDERS, p.gender, 'Giới tính')}${sel('education', i, EDUCATIONS, p.education, 'Học vấn')}
+        ${inpI('tenureCompany', i, p.tenureCompany, 'Thâm niên tại DN')}${inpI('tenureCareer', i, p.tenureCareer, 'Thâm niên đi làm')}${inpI('note', i, p.note, 'Họ cần gì từ dashboard?')}</div></div>`).join('') : '<div class="sub" style="margin:0 0 8px">Chưa có người xem gián tiếp nào — bỏ qua cũng được.</div>';
+    host.querySelectorAll('[data-ik]').forEach((el) => { const h = () => { A.indirect[+el.dataset.i][el.dataset.ik] = el.value; refresh(); }; el.oninput = h; el.onchange = h; });
+    host.querySelectorAll('[data-rm]').forEach((b) => (b.onclick = () => { A.indirect.splice(+b.dataset.rm, 1); drawInd(); refresh(); }));
+  };
+  $('#ind-add').onclick = () => { A.indirect.push({}); drawInd(); };
+  dz($('#dz-aud-indirect'), { slot: 'audienceIndirect', exts: ['docx', 'md', 'pdf'], title: 'Tải file mô tả người xem gián tiếp (không bắt buộc)', hint: '.docx · .md · .pdf — bảng nhiều người theo file mẫu sẽ tự tạo thẻ',
+    get: () => A.audFile.indirect, set: (v) => (A.audFile.indirect = v), meta: (c) => textMeta(c) + (c.people ? ` · ${c.people.length} người đọc được từ bảng` : ''),
+    onChange: (res) => { if (res && res.blank) toast('File mẫu chưa được điền — chưa đọc được người nào'); if (res && res.people && res.people.length) { A.indirect = A.indirect.filter((p) => Object.values(p).some((x) => String(x || '').trim())).concat(res.people); drawInd(); toast(`Đã tạo ${res.people.length} thẻ người xem gián tiếp từ file`); } } });
+  drawInd();
   $('#panel').querySelectorAll('.pcard').forEach((b) => (b.onclick = () => {
     const k = b.dataset.p; A.periods = A.periods.includes(k) ? A.periods.filter((x) => x !== k) : PERIODS.map((p) => p.k).filter((x) => x === k || A.periods.includes(x));
     b.classList.toggle('on', A.periods.includes(k)); b.setAttribute('aria-pressed', String(A.periods.includes(k))); refresh();
@@ -267,8 +315,8 @@ function drawSummary() {
   const h = $('#summary'); if (!h) return;
   const row = (k, v) => `<div class="sm-r"><span>${k}</span><b>${v}</b></div>`;
   h.innerHTML = row('Ngữ cảnh', esc(A.context?.name || A.ctxText.trim().slice(0, 60) || '—')) + row('Yêu cầu', esc((A.req.text.trim().slice(0, 60) || (A.req.file ? '[file] ' + A.req.file.name : '—')))) +
-    row('Người xem', esc([A.aud.department, A.aud.position, A.aud.level].filter(Boolean).join(' · ') || '—')) + row('Key Metrics', A.metrics.length + (A.periods.length ? ' · ' + A.periods.join(', ') : '')) + row('Dimensions', A.dimensions.length) +
-    row('Dữ liệu', esc(A.data?.name || '—') + (A.data ? ` (${A.sheets.length}/${A.data.profile.sheets.length} bảng)` : '')) + row('Template', esc((A.tplList && (A.tplList.find((t) => t.id === A.tpl) || {}).name) || '—')) + row('Ngôn ngữ dashboard', A.lang === 'vi' ? 'Tiếng Việt' : 'English') + row('Màu theme', A.colorMode === 'own' ? A.colors.map((c) => `<i class="sw" style="background:${c}"></i>`).join('') : 'Giữ màu của template');
+    row('Người xem trực tiếp', esc([A.aud.department, A.aud.position, A.aud.level, A.aud.education].filter(Boolean).join(' · ') || '—')) + row('Người xem gián tiếp', A.indirect.filter(indFilled).length ? A.indirect.filter(indFilled).length + ' người/nhóm' : (A.audFile.indirect ? 'từ file' : 'không có')) + row('Key Metrics', A.metrics.length + (A.periods.length ? ' · ' + A.periods.join(', ') : '')) + row('Dimensions', A.dimensions.length) +
+    row('Dữ liệu', esc(A.data?.name || '—') + (A.data ? ` (${A.sheets.length}/${A.data.profile.sheets.length} bảng)` : '')) + row('Template', esc(A.tplMode === 'upload' ? (A.pbix?.template ? A.pbix.template.name + ' (của bạn)' : '—') : ((A.tplList && (A.tplList.find((t) => t.id === A.tpl) || {}).name) || '—'))) + row('Bố cục dashboard', !A.plan ? 'chưa đề xuất' : planStale() ? 'không còn khớp' : (A.planApproved ? '✓ đã duyệt · ' : 'nháp · ') + planCounts(A.plan).pages + ' trang · ' + planCounts(A.plan).visuals + ' biểu đồ') + row('Ngôn ngữ dashboard', A.lang === 'vi' ? 'Tiếng Việt' : 'English') + row('Màu theme', A.colorMode === 'own' ? A.colors.map((c) => `<i class="sw" style="background:${c}"></i>`).join('') : 'Giữ màu của template');
 }
 async function drawTemplates() {
   const host = $('#tpl-list'); if (!host) return;
@@ -287,17 +335,25 @@ async function drawTemplates() {
         <span class="tpl-pages">${t.pages.map((p) => `<i>${esc(p.name)}</i>`).join('')}</span>
         <span class="tpl-sw">${(t.themeColors || []).map((c) => `<i style="background:${c}" title="${c}"></i>`).join('')}</span></span>
     </button>`).join('')}</div>`;
-  host.querySelectorAll('.tplcard').forEach((b) => (b.onclick = () => { A.tpl = b.dataset.t; drawTemplates(); refresh(); }));
+  host.querySelectorAll('.tplcard').forEach((b) => (b.onclick = () => { A.tpl = b.dataset.t; drawTemplates(); drawPlanBox(); refresh(); }));
   if (sel) { const s = $('#tpl-sel'); if (s) s.textContent = sel.name; }
 }
 function panel3() {
   $('#panel').innerHTML = `<div class="card wz-card"><div class="wz-title"><span class="fn-badge">4</span><div><h2>Dashboard (PBIP)</h2><p class="sub" style="margin:0">Chọn 1 template Power BI — file đầu ra sẽ có giao diện giống template, dữ liệu là của bạn.</p></div></div>
-    <div class="sec"><div class="sec-h"><span class="sec-n">4.1</span><b>Template Power BI</b>${REQ}<small style="color:var(--mut)">chọn 1 trong các template trong thư mục templates/</small></div><div id="tpl-list"></div></div>
+    <div class="sec"><div class="sec-h"><span class="sec-n">4.1</span><b>Template Power BI</b>${REQ}</div>
+      <div class="seg" role="radiogroup" aria-label="Nguồn template">
+        <button type="button" role="radio" data-tm="sample" class="${A.tplMode === 'sample' ? 'on' : ''}" aria-checked="${A.tplMode === 'sample'}"><b>Dùng template mẫu</b><small>Chọn 1 trong các template có sẵn của BIE</small></button>
+        <button type="button" role="radio" data-tm="upload" class="${A.tplMode === 'upload' ? 'on' : ''}" aria-checked="${A.tplMode === 'upload'}"><b>Tải template của bạn</b><small>File .pbix (định dạng PBIR), nhỏ hơn 100MB</small></button></div>
+      <div id="tpl-sample" ${A.tplMode === 'sample' ? '' : 'hidden'} style="margin-top:14px"><div id="tpl-list"></div></div>
+      <div id="tpl-upload" ${A.tplMode === 'upload' ? '' : 'hidden'} style="margin-top:14px"><div id="dz-pbix"></div><div id="pbix-view"></div>
+        <p class="sub" style="margin:10px 0 0">Template có thể chỉ 1 trang — BIE sẽ nhân bản trang để đủ phân tích mọi chỉ số, mỗi trang giữ đúng số biểu đồ của trang template. Bookmark, drillthrough và custom visual không được mang theo.</p></div></div>
     <div class="sec"><div class="sec-h"><span class="sec-n">4.2</span><b>Ngôn ngữ dashboard</b><small style="color:var(--mut)">tên measure, tiêu đề trang/biểu đồ, nhãn hiển thị trong file Power BI</small></div>
       <div class="seg" role="radiogroup" aria-label="Ngôn ngữ dashboard">
         <button type="button" role="radio" data-lang="en" class="${A.lang === 'en' ? 'on' : ''}" aria-checked="${A.lang === 'en'}"><b>English</b><small>Toàn bộ chữ trên dashboard bằng tiếng Anh</small></button>
         <button type="button" role="radio" data-lang="vi" class="${A.lang === 'vi' ? 'on' : ''}" aria-checked="${A.lang === 'vi'}"><b>Tiếng Việt</b><small>Chữ trên dashboard bằng tiếng Việt</small></button></div></div>
-    <div class="sec"><div class="sec-h"><span class="sec-n">4.3</span><b>Màu theme</b></div>
+    <div class="sec"><div class="sec-h"><span class="sec-n">4.3</span><b>Bố cục dashboard</b><small style="color:var(--mut)">xem trước các trang &amp; biểu đồ, góp ý rồi duyệt — trước khi chạy chặng 4</small></div>
+      <div id="plan-box"></div></div>
+    <div class="sec"><div class="sec-h"><span class="sec-n">4.4</span><b>Màu theme</b></div>
       <div class="seg" role="radiogroup" aria-label="Màu theme">
         <button type="button" role="radio" data-cm="template" class="${A.colorMode === 'template' ? 'on' : ''}" aria-checked="${A.colorMode === 'template'}"><b>Giữ màu của template</b><small>Giống template nhất (khuyến nghị)</small></button>
         <button type="button" role="radio" data-cm="own" class="${A.colorMode === 'own' ? 'on' : ''}" aria-checked="${A.colorMode === 'own'}"><b>Dùng 5 màu của tôi</b><small>Thay bảng màu dữ liệu của template</small></button></div>
@@ -311,12 +367,18 @@ function panel3() {
     meta: (c) => `${c.colors ? c.colors.length : 0} mã màu được nhận${c.total > 5 ? ` (file có ${c.total} mã, dùng 5 mã đầu)` : ''}`,
     onChange: (r) => { if (r?.colors) { A.colors = [...r.colors]; drawColors(); } } });
   drawTemplates();
-  $('#panel').querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { A.lang = b.dataset.lang; try { localStorage.setItem('bie-lang', A.lang); } catch {} $('#panel').querySelectorAll('[data-lang]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', String(x === b)); }); }));
+  drawPbix(); drawPlanBox();
+  $('#panel').querySelectorAll('[data-tm]').forEach((b) => (b.onclick = () => {
+    A.tplMode = b.dataset.tm; $('#panel').querySelectorAll('[data-tm]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', String(x === b)); });
+    $('#tpl-sample').hidden = A.tplMode !== 'sample'; $('#tpl-upload').hidden = A.tplMode !== 'upload'; drawPlanBox(); refresh();
+  }));
+  $('#panel').querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { A.lang = b.dataset.lang; try { localStorage.setItem('bie-lang', A.lang); } catch {} drawPlanBox(); $('#panel').querySelectorAll('[data-lang]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', String(x === b)); }); }));
   $('#panel').querySelectorAll('[data-cm]').forEach((b) => (b.onclick = () => { A.colorMode = b.dataset.cm; $('#panel').querySelectorAll('[data-cm]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', String(x === b)); }); $('#own-colors').hidden = A.colorMode !== 'own'; refresh(); }));
 }
 
 // ---------- chạy ----------
-const buildForm = () => ({ requirement: A.req.text, requirementFileName: A.req.file?.name, contextFileName: A.context?.name, contextTyped: A.ctxText, template: A.tpl, colorMode: A.colorMode, dashboardLanguage: A.lang, audience: A.aud, metrics: A.metrics, periods: A.periods, dimensions: A.dimensions, sheets: A.sheets, colors: A.colorMode === 'own' ? A.colors : [] });
+const indFilled = (p) => Object.values(p).some((x) => String(x || '').trim());
+const buildForm = () => ({ requirement: A.req.text, requirementFileName: A.req.file?.name, contextFileName: A.context?.name, contextTyped: A.ctxText, template: A.tplMode === 'upload' ? '' : A.tpl, templateSource: A.tplMode === 'upload' ? 'upload' : 'sample', colorMode: A.colorMode, dashboardLanguage: A.lang, audience: A.aud, indirect: A.indirect.filter(indFilled), metrics: A.metrics, periods: A.periods, dimensions: A.dimensions, sheets: A.sheets, colors: A.colorMode === 'own' ? A.colors : [] });
 
 // Bảng cảnh báo khi thiếu thông tin: người dùng chọn "Vẫn chạy" hoặc "Quay lại bổ sung"
 function showMissing(groups, label) {
@@ -349,6 +411,8 @@ async function runStages(which) {
   const btns = [$('#run-one'), $('#run-all')].filter(Boolean); btns.forEach((b) => (b.disabled = true));
   try {
     const id = await ensureRun();
+    if (planStale()) { await fetch(`/api/runs/${id}/plan`, { method: 'DELETE' }).catch(() => {}); A.plan = null; A.planApproved = false; }   // bố cục cũ không còn khớp → không dùng
+    else if (A.plan && !A.planApproved) await fetch(`/api/runs/${id}/plan`, { method: 'DELETE' }).catch(() => {});                          // bản nháp chưa duyệt → chặng 4 tự thiết kế
     await jsend(`/api/runs/${id}/start`, 'POST', { form: buildForm(), models: A.models, gate: A.gate, only: which === 'all' ? null : [which] });
     A.started = true;
     if (which === 'all') { Object.values(A.timers).forEach(clearTimeout); A = freshA(); }   // chạy tất cả → phiên mới sau đó

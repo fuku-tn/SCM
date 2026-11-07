@@ -1,4 +1,4 @@
-# Evaluator — Chặng 1 · Business Goal
+# Evaluator — Chặng 1 · Business Context
 
 Một lượt model ĐỘC LẬP (chỉ đọc) chấm `result.md` theo các tiêu chí dưới đây. `[C]` = critical (trượt → FAIL, chặng chạy lại tối đa 2 lần kèm phản hồi); không có `[C]` = minor (chỉ ghi chú).
 Người sinh kết quả cũng nên đọc danh sách này để tự kiểm tra trước khi trả lời.

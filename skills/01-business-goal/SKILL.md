@@ -1,11 +1,11 @@
 ---
 name: business-goal
-title: Business Goal
+title: Business Context
 description: Tiếp nhận thông tin doanh nghiệp, yêu cầu phân tích và người xem dashboard; ghi ra file .md có cấu trúc logic (bối cảnh → mục tiêu → câu hỏi → quyết định → tiêu chí thành công) để các chặng sau dùng lại.
 knowledge: kpi-selection
 ---
 
-# SKILL: Business Goal (Chặng 1)
+# SKILL: Business Context (Chặng 1)
 
 ## Mục đích
 Biến thông tin rời rạc người dùng cung cấp (ngữ cảnh công ty, yêu cầu phân tích, thông tin người xem) thành **một tài liệu Markdown duy nhất, logic và dùng lại được** cho Key Metrics, Data (ETL) và Dashboard (PBIP).
@@ -22,7 +22,7 @@ Kết quả của chặng này là `result.md` (script tự lưu thêm bản `bu
 ## Đầu vào (có trong prompt)
 - Ngữ cảnh doanh nghiệp (gõ trực tiếp và/hoặc từ file .md/.pdf/.docx)
 - Yêu cầu phân tích (gõ và/hoặc từ file)
-- Người xem dashboard: phòng ban, vị trí, level, thâm niên tại doanh nghiệp, thâm niên đi làm
+- Người xem TRỰC TIẾP (Direct — thiết kế cho họ): phòng ban, vị trí, level, giới tính, học vấn, thâm niên tại doanh nghiệp, thâm niên đi làm, ghi chú về người đọc; và người xem GIÁN TIẾP (Indirect — nếu có, có thể nhiều người) với nhu cầu của họ. Giới tính chỉ để ghi nhận hồ sơ, không dùng để suy ra sở thích/năng lực
 - Key Metrics, kỳ so sánh, Dimension người dùng đã chọn; profile dữ liệu (chỉ để biết dữ liệu có gì — chưa phân tích sâu)
 
 ## Quy trình

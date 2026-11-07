@@ -9,7 +9,7 @@ knowledge: kpi-selection, dax-craft
 # SKILL: Key Metrics (Chặng 2)
 
 ## Mục đích
-Từ Business Goal và các chỉ số / chiều / kỳ so sánh người dùng đã chọn, tạo ra **bộ measure DAX** và **bản đồ ghép Measure–Dimension** cho chặng Dashboard.
+Từ Business Context và các chỉ số / chiều / kỳ so sánh người dùng đã chọn, tạo ra **bộ measure DAX** và **bản đồ ghép Measure–Dimension** cho chặng Dashboard.
 Kết quả: `result.md` + `metrics-spec.json` (bạn viết) → script `post.js` **sinh công thức DAX xác định** vào `measures.json`, `measures.dax` và nối vào `result.md`.
 
 ## Cấu trúc SKILL (bắt buộc)
@@ -21,7 +21,7 @@ Kết quả: `result.md` + `metrics-spec.json` (bạn viết) → script `post.j
 | `scripts/` | `post.js` — kiểm tra spec với dữ liệu thật, sinh DAX, nối kết quả vào result.md |
 
 ## Đầu vào
-Output chặng 1 (Business Goal) · danh sách Key Metrics, kỳ so sánh (YoY/MoM/QoQ/DoD), Dimension người dùng chọn · profile dữ liệu của các bảng/sheet đã chọn (tên bảng = tên sheet).
+Output chặng 1 (Business Context) · danh sách Key Metrics, kỳ so sánh (YoY/MoM/QoQ/DoD), Dimension người dùng chọn · profile dữ liệu của các bảng/sheet đã chọn (tên bảng = tên sheet).
 
 ## Quy trình
 1. **Ánh xạ**: mỗi Key Metric người dùng chọn → bảng + cột thật trong profile. Metric không có cột tương ứng:

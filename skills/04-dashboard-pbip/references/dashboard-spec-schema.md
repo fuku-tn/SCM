@@ -29,6 +29,26 @@ Có **hai chế độ**: (A) **template** — khi người dùng đã chọn tem
   "drop": ["2.f9a724"]                         // bỏ biểu đồ / textbox / hình (key). Biểu đồ dữ liệu không có trong "bind" cũng bị bỏ
 }
 ```
+### Mở rộng: nhiều trang từ một trang template, đổi loại biểu đồ, Top N
+```jsonc
+{
+  "pages": {
+    "keep": ["1", "2"],                                   // trang template giữ lại (số trang)
+    "clones": [{ "id": "p3", "from": "2", "name": "Region analysis" }],   // NHÂN BẢN trang template 2 thành trang mới (template ít trang mà cần nhiều trang)
+    "rename": { "2": "Sales overview" },                  // đổi tên trang gốc
+    "order": ["1", "2", "p3"]                             // thứ tự trang trong báo cáo (số trang hoặc id bản clone)
+  },
+  "bind": {
+    "2.78243b":    { "title": "Revenue by product", "roles": { "Category": [{ "table": "Orders", "column": "Product Name" }], "Y": ["Revenue"] }, "visualType": "clusteredBarChart", "topN": 10 },
+    "p3:2.78243b": { "roles": { "...": "…" } }            // khóa của bản clone = "<cloneId>:<key>" (cũng áp dụng cho texts và drop)
+  }
+}
+```
+- **Mỗi bản clone có đúng số ô biểu đồ của trang template nguồn**; ô nào không gắn dữ liệu bị bỏ cùng khung nền.
+- `visualType` (tuỳ chọn): đổi loại biểu đồ **trong cùng họ** — `clusteredColumnChart | clusteredBarChart | stackedColumnChart | stackedBarChart | lineChart | areaChart` hoặc `pieChart | donutChart`. Ngoài họ → bỏ qua kèm cảnh báo. Vai trò dữ liệu giữ nguyên.
+- `topN` (tuỳ chọn, số nguyên): chỉ hiện N nhóm đầu của chiều (Category) theo **measure đầu tiên**. **Script sinh measure xếp hạng (DAX) và thay vào biểu đồ** — bạn chỉ khai báo số, không tự viết DAX. Dùng cho chiều có nhiều giá trị (xem cột `distinct`): bar ≤ 15, column ≤ 12, donut/pie ≤ 5.
+- Có **bố cục đã duyệt** trong prompt → dùng đúng các trang/khóa/loại/Top N ở đó.
+
 - Biểu đồ dữ liệu **không có** trong `bind` → bị bỏ (kèm khung nền phía sau nếu không còn biểu đồ nào dùng nó).
 - Trường không tồn tại / sai loại → bị bỏ khỏi vai trò, nếu vai trò rỗng thì cả biểu đồ bị bỏ (có cảnh báo).
 - Không có `bind` hợp lệ → script **tự gắn mặc định** (kết quả dùng được nhưng kém thông minh).

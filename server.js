@@ -17,7 +17,7 @@ fs.mkdirSync(OUTPUT, { recursive: true });
 fs.mkdirSync(SCRATCH, { recursive: true });
 
 const STAGES = [
-  { id: '01-business-goal', name: 'Business Goal' },
+  { id: '01-business-goal', name: 'Business Context' },
   { id: '02-key-metrics', name: 'Key Metrics' },
   { id: '03-data-etl', name: 'Data (ETL)' },
   { id: '04-dashboard-pbip', name: 'Dashboard (PBIP)' },
@@ -120,6 +120,20 @@ app.get('/api/templates/:id/wireframe.svg', (req, res) => {
   if (!/^[\w-]+$/.test(req.params.id)) return res.sendStatus(400);
   try { const t = TPL.loadTemplate(req.params.id); if (!t) return res.sendStatus(404); res.type('image/svg+xml').send(TPL.wireframeSvg(t)); } catch { res.sendStatus(500); }
 });
+// Template .pbix của riêng phiên (người dùng tải lên ở bước Dashboard)
+app.get('/api/runs/:id/pbix/preview', (req, res) => {
+  if (!safeId(req.params.id)) return res.sendStatus(400);
+  try { const t = TPL.resolveForRun(runDir(req.params.id), { templateSource: 'upload' }); const p = t && TPL.previewImage(t); if (!p) return res.sendStatus(404); res.sendFile(p); } catch { res.sendStatus(500); }
+});
+app.get('/api/runs/:id/pbix/wireframe.svg', (req, res) => {
+  if (!safeId(req.params.id)) return res.sendStatus(400);
+  try { const t = TPL.resolveForRun(runDir(req.params.id), { templateSource: 'upload' }); if (!t) return res.sendStatus(404); res.type('image/svg+xml').send(TPL.wireframeSvg(t)); } catch { res.sendStatus(500); }
+});
+// File mẫu Word để người dùng tải về điền (Business Context, người xem Direct / Indirect)
+app.get('/api/samples/:k', (req, res) => {
+  const s = require('./lib/samples.js').SAMPLES[req.params.k]; if (!s) return res.sendStatus(404);
+  res.set({ 'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'Content-Disposition': `attachment; filename="${s.file}"` }).send(s.build());
+});
 app.get('/api/meta', (req, res) => res.json({ stages: STAGES, models: MODELS, mock: MOCK, port: PORT }));
 
 app.get('/api/docs/:k', (req, res) => {
@@ -220,19 +234,21 @@ const SLOTS = {
   data: { ext: ['csv', 'tsv', 'xlsx', 'xls', 'xlsm'], label: 'Dữ liệu' },
   theme: { ext: ['txt'], label: 'Theme màu' },
   template: { ext: ['png', 'jpg', 'jpeg', 'pdf'], label: 'Template dashboard' },
+  audienceDirect: { ext: ['md', 'pdf', 'docx'], text: true, label: 'Hồ sơ người xem trực tiếp (Direct)' },
+  audienceIndirect: { ext: ['md', 'pdf', 'docx'], text: true, label: 'Hồ sơ người xem gián tiếp (Indirect)' },
+  pbix: { ext: ['pbix'], label: 'Template Power BI của bạn', maxMB: 100 },
 };
+const SMP = require('./lib/samples.js');
 const MAX_TEXT = 60000;
 const decodeXml = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
-async function extractText(ext, buf) {
-  if (ext === 'md' || ext === 'txt') return buf.toString('utf8');
-  if (ext === 'docx') {
-    const xml = new AdmZip(buf).readAsText('word/document.xml');
-    if (!xml) throw new Error('File .docx không hợp lệ');
-    return decodeXml(xml.replace(/<w:tab\/>/g, '\t').replace(/<w:br[^>]*\/>/g, '\n').split('</w:p>').map((p) => [...p.matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/g)].map((m) => m[1]).join('')).join('\n'));
-  }
-  if (ext === 'pdf') { const pdf = require('pdf-parse/lib/pdf-parse.js'); return (await pdf(buf)).text; }
+// Đọc file văn bản: { text, tables } — bảng .docx / Markdown được giữ cấu trúc (hàng "a | b | c")
+async function extractDoc(ext, buf) {
+  if (ext === 'md' || ext === 'txt') { const text = buf.toString('utf8'); return { text, tables: SMP.mdTables(text) }; }
+  if (ext === 'docx') return SMP.docxBlocks(buf);
+  if (ext === 'pdf') { const pdf = require('pdf-parse/lib/pdf-parse.js'); const text = (await pdf(buf)).text; return { text, tables: [] }; }
   throw new Error('Định dạng không hỗ trợ');
 }
+const extractText = async (ext, buf) => (await extractDoc(ext, buf)).text;
 const newRunId = () => new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14) + '-' + Math.random().toString(36).slice(2, 6);
 
 app.post('/api/runs', (req, res) => {
@@ -252,18 +268,54 @@ app.post('/api/runs/:id/files/:slot', upload.single('file'), async (req, res) =>
   const cfg = SLOTS[slot];
   if (!cfg.ext.includes(ext)) return res.status(400).json({ error: `${cfg.label}: chỉ nhận file ${cfg.ext.map((e) => '.' + e).join(', ')}` + (ext === 'doc' ? ' (file .doc cũ hãy lưu lại thành .docx)' : '') });
   if (slot === 'template' && req.file.size > 20 * 1024 * 1024) return res.status(400).json({ error: 'Template tối đa 20MB' });
+  if (cfg.maxMB && req.file.size >= cfg.maxMB * 1024 * 1024) return res.status(400).json({ error: `${cfg.label}: file phải nhỏ hơn ${cfg.maxMB}MB (file của bạn ${(req.file.size / 1048576).toFixed(1)}MB)` });
   const inDir = path.join(runDir(id), '00-input');
   try {
     const dir = path.join(inDir, slot);
     fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, name), req.file.buffer);
     const base = { name, size: req.file.size };
+    if (slot === 'pbix') {
+      let t;
+      try { t = TPL.loadTemplateFile(path.join(dir, name), { id: 'upload', name: name.replace(/\.pbix$/i, '') }); }   // ném lỗi dễ hiểu nếu không phải PBIR
+      catch (e) { fs.rmSync(dir, { recursive: true, force: true }); throw new Error(/PBIR|Report\/definition/.test(e.message) ? e.message : 'Không đọc được file .pbix — file hỏng hoặc không phải báo cáo Power BI lưu ở định dạng PBIR (' + e.message.slice(0, 120) + ')'); }
+      return res.json({ ...base, template: TPL.describe(t) });
+    }
     if (cfg.text) {
-      let text = (await extractText(ext, req.file.buffer)).replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim();
+      const doc = await extractDoc(ext, req.file.buffer);
+      let text = doc.text.replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim();
       if (!text) throw new Error('Không đọc được nội dung chữ trong file (PDF dạng ảnh scan?)');
+      const extra = {};
+      // File mẫu Business Context gồm 2 phần: tách "Ngữ cảnh" và "Yêu cầu phân tích" khi tải vào ô nào cũng được
+      if (slot === 'context' || slot === 'requirement') {
+        const k = text.indexOf(SMP.MARK_REQ);
+        if (k >= 0) {
+          const part2 = text.slice(k).trim();
+          if (slot === 'requirement') text = part2;
+          else {
+            text = text.slice(0, k).trim();
+            if (!fs.existsSync(path.join(inDir, 'requirement.txt'))) {
+              const rq = part2.slice(0, MAX_TEXT); wr(path.join(inDir, 'requirement.txt'), rq);
+              fs.mkdirSync(path.join(inDir, 'requirement'), { recursive: true }); fs.writeFileSync(path.join(inDir, 'requirement', name), req.file.buffer);
+              extra.alsoRequirement = { name, size: req.file.size, chars: rq.length, tokens: estTokens(rq), preview: rq.slice(0, 500) };
+            }
+          }
+        }
+      }
+      // Hồ sơ người xem: đọc sẵn các trường để điền form
+      const isSample = /— Mẫu điền/.test(text.slice(0, 200));   // file mẫu của BIE: chỉ giữ phần người dùng đã điền (bỏ chữ hướng dẫn/gợi ý)
+      if (slot === 'audienceDirect') {
+        extra.parsed = SMP.parseDirect(text);
+        if (isSample) { text = [...Object.entries(extra.parsed.fields).map(([k, v]) => `${k}: ${v}`), ...extra.parsed.notes].join('\n'); if (!text) { extra.blank = true; text = '(file mẫu chưa điền)'; } }
+      }
+      if (slot === 'audienceIndirect') {
+        extra.people = SMP.parseIndirect(doc.tables);
+        if (isSample) { text = extra.people.map((p, i) => `${i + 1}. ` + Object.entries(p).map(([k, v]) => `${k}: ${v}`).join('; ')).join('\n') + (extra.people.length ? '' : ''); if (!text) { extra.blank = true; text = '(file mẫu chưa điền)'; } }
+      }
+      if (extra.blank) return res.json({ ...base, ...extra, chars: 0, tokens: 0, preview: 'File mẫu chưa được điền — chưa đọc được thông tin nào.' });
       const truncated = text.length > MAX_TEXT; if (truncated) text = text.slice(0, MAX_TEXT);
       wr(path.join(inDir, slot + '.txt'), text);
-      return res.json({ ...base, chars: text.length, tokens: estTokens(text), truncated, preview: text.slice(0, 500) });
+      return res.json({ ...base, ...extra, chars: text.length, tokens: estTokens(text), truncated, preview: text.slice(0, 500) });
     }
     if (slot === 'data') {
       const profile = profileData(req.file.buffer, name);
@@ -306,7 +358,7 @@ app.post('/api/runs/:id/suggest', async (req, res) => {
     'Bạn là chuyên gia Business Intelligence. Trả lời bằng tiếng Việt; thuật ngữ chuyên ngành (KPI, measure, dimension...) giữ tiếng Anh.',
     '## Ngữ cảnh doanh nghiệp\n' + (ctx || '(không có)'),
     '## Yêu cầu phân tích\n' + (req2 || '(không có)'),
-    `## Người xem dashboard\n- Phòng ban: ${a.department || '?'}\n- Vị trí: ${a.position || '?'}\n- Level: ${a.level || '?'}\n- Thâm niên tại doanh nghiệp hiện tại: ${a.tenureCompany || '?'}\n- Thâm niên từ khi đi làm: ${a.tenureCareer || '(không khai báo)'}`,
+    `## Người xem trực tiếp của dashboard\n- Phòng ban: ${a.department || '?'}\n- Vị trí: ${a.position || '?'}\n- Level: ${a.level || '?'}\n- Học vấn: ${a.education || '(không khai báo)'}\n- Thâm niên tại doanh nghiệp hiện tại: ${a.tenureCompany || '?'}\n- Thâm niên từ khi đi làm: ${a.tenureCareer || '(không khai báo)'}`,
     kind === 'metrics'
       ? '## Nhiệm vụ\nGợi ý 8–10 chỉ số (Key Metrics / measure để viết DAX) phù hợp nhất với người xem và yêu cầu trên. Sắp xếp từ quan trọng nhất.'
       : `## Các chỉ số đã chọn\n${chosen || '(chưa có)'}\n\n## Nhiệm vụ\nGợi ý 8–10 chiều phân tích (dimension) phù hợp để cắt lát các chỉ số đã chọn. Sắp xếp từ quan trọng nhất.`,
@@ -325,6 +377,60 @@ app.post('/api/runs/:id/suggest', async (req, res) => {
     saveRun(run);
     res.json({ items, usage: r.usage, model: r.model });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---------- Đề xuất bố cục dashboard (review trước khi chạy chặng 4) ----------
+const PLAN = require('./lib/plan.js');
+const planFile = (id, approved) => path.join(runDir(id), '00-input', approved ? 'dashboard-plan.json' : 'dashboard-plan.draft.json');
+function planCtx(run, form) {
+  const tpl = TPL.resolveForRun(runDir(run.id), form);
+  if (!tpl) throw new Error(form.templateSource === 'upload' ? 'Chưa tải file .pbix template của bạn' : 'Chưa chọn template Power BI');
+  const profile = readJsonSafe(path.join(runDir(run.id), '00-input', 'profile.json')) || { sheets: [] };
+  if (!profile.sheets.length) throw new Error('Chưa có dữ liệu — hãy tải file CSV/Excel ở bước 3 trước');
+  const picked = form.sheets && form.sheets.length ? form.sheets : profile.sheets.map((s) => s.name);
+  return { tpl, form: { ...form, sheets: picked }, profile, lang: form.dashboardLanguage === 'vi' ? 'vi' : 'en', aud: AUD.audienceProfile(form.audience || {}) };
+}
+function planPrompt(run, ctx, feedback, prev) {
+  const inDir = path.join(runDir(run.id), '00-input'), f = ctx.form;
+  return PLAN.buildPrompt({ form: f, tpl: ctx.tpl, profile: ctx.profile, lang: ctx.lang, feedback, prev, audMd: AUD.profileMarkdown(f.audience || {}), indirectMd: AUD.indirectMarkdown(f.indirect),
+    ctxText: [f.contextTyped, rd(path.join(inDir, 'context.txt'))].filter(Boolean).join('\n\n'), reqText: [f.requirement, rd(path.join(inDir, 'requirement.txt'))].filter(Boolean).join('\n\n') });
+}
+app.post('/api/runs/:id/plan', async (req, res) => {
+  const run = safeId(req.params.id) && loadRun(req.params.id); if (!run) return res.sendStatus(404);
+  try {
+    const { form = {}, model, feedback, plan: prev } = req.body;
+    const ctx = planCtx(run, form);
+    const hRaw = PLAN.heuristic(ctx);
+    let raw, via = 'ai', note = '';
+    try {
+      const r = await callClaude(planPrompt(run, ctx, feedback, prev), modelName(model), JSON.stringify(hRaw));
+      run.extra = run.extra || []; run.extra.push({ label: 'Đề xuất bố cục dashboard', model: r.model, usage: r.usage, cost: r.cost, ms: r.ms, at: new Date().toISOString() }); saveRun(run);
+      raw = PLAN.parseAi(r.text);
+    } catch (e) { raw = hRaw; via = 'rules'; note = 'AI không trả về bố cục hợp lệ (' + e.message.slice(0, 120) + ') → dùng bố cục theo quy tắc.'; }
+    const plan = PLAN.normalize(raw, ctx); plan.via = via; plan.status = 'draft'; if (note) plan.notes.unshift(note);
+    if (feedback && MOCK) plan.notes.unshift('(MOCK) chế độ giả lập không áp dụng góp ý.');
+    wr(planFile(run.id, false), JSON.stringify(plan, null, 2));
+    res.json({ plan });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+// Kiểm tra lại plan sau khi người dùng sửa tay (đổi loại biểu đồ, Top N, bỏ ô…) — không gọi AI
+app.post('/api/runs/:id/plan/check', (req, res) => {
+  const run = safeId(req.params.id) && loadRun(req.params.id); if (!run) return res.sendStatus(404);
+  try { const { form = {}, plan } = req.body; res.json({ plan: PLAN.normalize(plan, planCtx(run, form)) }); } catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.put('/api/runs/:id/plan', (req, res) => {
+  const run = safeId(req.params.id) && loadRun(req.params.id); if (!run) return res.sendStatus(404);
+  try {
+    const { form = {}, plan: raw } = req.body; const plan = PLAN.normalize(raw, planCtx(run, form));
+    if (!plan.pages.some((p) => p.visuals.some((v) => !v.remove && v.slot))) throw new Error('Bố cục không có biểu đồ nào');
+    plan.status = 'approved'; plan.approvedAt = new Date().toISOString();
+    wr(planFile(run.id, true), JSON.stringify(plan, null, 2));
+    res.json({ plan });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.delete('/api/runs/:id/plan', (req, res) => {
+  if (!safeId(req.params.id) || !loadRun(req.params.id)) return res.sendStatus(400);
+  fs.rmSync(planFile(req.params.id, true), { force: true }); fs.rmSync(planFile(req.params.id, false), { force: true }); res.json({ ok: true });
 });
 
 // ---------- Claude CLI ----------
@@ -448,7 +554,9 @@ function buildPrompt(run, stageIdx, preOut, feedback) {
   const ctxText = [f.contextTyped, rd(path.join(inDir, 'context.txt'))].filter(Boolean).join('\n\n'), reqText = rd(path.join(inDir, 'requirement.txt'));
   const canRead = /\bRead\b/.test(meta.tools || '');
   const tpls = templateFiles(run);
-  const tplChosen = f.template ? TPL.loadTemplate(f.template) : null;
+  let tplChosen = null; try { tplChosen = TPL.resolveForRun(runDir(run.id), f); } catch { /* template hỏng → như chưa chọn */ }
+  const dirNote = rd(path.join(inDir, 'audienceDirect.txt')), indNote = rd(path.join(inDir, 'audienceIndirect.txt'));
+  const approvedPlan = stageIdx === 3 ? readJsonSafe(path.join(inDir, 'dashboard-plan.json')) : null;
   const parts = [];
   parts.push('# QUY ĐỊNH (CLAUDE.md)\n' + rd(DOCS.claude));
   parts.push('# BỘ NHỚ (MEMORY.md)\n' + rd(DOCS.memory));
@@ -458,11 +566,13 @@ function buildPrompt(run, stageIdx, preOut, feedback) {
   parts.push('# THÔNG TIN NGƯỜI DÙNG NHẬP\n' + [
     '## Ngữ cảnh doanh nghiệp' + (f.contextFileName ? ` (kèm file ${f.contextFileName})` : '') + '\n' + (ctxText || '(trống)'),
     '## Yêu cầu phân tích' + (f.requirementFileName ? ` (kèm file ${f.requirementFileName})` : '') + '\n' + ([f.requirementTyped, reqText].filter(Boolean).join('\n\n') || '(trống)'),
-    '## Người xem dashboard\n' + [
+    '## Người xem TRỰC TIẾP (Direct) — người đọc và ra quyết định từ dashboard; dashboard được thiết kế cho họ\n' + [
       '- Phòng ban: ' + (a.department || '?'), '- Vị trí công việc hiện tại: ' + (a.position || '?'), '- Level: ' + (a.level || '?'),
+      '- Giới tính: ' + (a.gender || '(không khai báo)'), '- Học vấn: ' + (a.education || '(không khai báo)'),
       '- Thâm niên tại doanh nghiệp hiện tại: ' + (a.tenureCompany || '?'), '- Thâm niên từ khi đi làm: ' + (a.tenureCareer || '(không khai báo)'),
-    ].join('\n'),
-    '## Hồ sơ người xem (tính bằng code từ level + thâm niên — tuân thủ)\n' + AUD.profileMarkdown(a),
+    ].join('\n') + (dirNote ? '\n\n### Ghi chú về người xem trực tiếp (từ file người dùng tải lên)\n' + dirNote.slice(0, 6000) : ''),
+    '## Hồ sơ người xem trực tiếp (tính bằng code từ level, học vấn + thâm niên — tuân thủ)\n' + AUD.profileMarkdown(a),
+    ...((AUD.indirectMarkdown(f.indirect) || indNote) ? ['## Người xem GIÁN TIẾP (Indirect) — nhận kết quả hoặc bị ảnh hưởng, không trực tiếp thao tác\n' + [AUD.indirectMarkdown(f.indirect), indNote ? '### Ghi chú từ file người dùng tải lên (trích các thông tin cần thiết về từng người/nhóm: vai trò, nhu cầu, mức hiểu biết)\n' + indNote.slice(0, 8000) : ''].filter(Boolean).join('\n\n')] : []),
     '## Chỉ số cần phân tích (Key Metrics, để tính DAX)\n' + ((f.metrics || []).map((x) => '- ' + x).join('\n') || '(trống)'),
     '## Kỳ so sánh cần tính (time intelligence; viết DAX cho từng chỉ số)\n' + ((f.periods || []).map((x) => '- ' + x + ' (' + (PERIOD_DESC[x] || x) + ')').join('\n') || '(không yêu cầu)'),
     '## Các chiều (Dimension) cần phân tích\n' + ((f.dimensions || []).map((x) => '- ' + x).join('\n') || '(trống)'),
@@ -474,6 +584,8 @@ function buildPrompt(run, stageIdx, preOut, feedback) {
       : '(không có template)'),
   ].join('\n\n'));
   if (tplChosen && stageIdx === 3) parts.push(TPL.manifestMarkdown(tplChosen));
+  if (tplChosen && approvedPlan && approvedPlan.pages) parts.push(PLAN.toMarkdown(approvedPlan, tplChosen));
+  else if (tplChosen && stageIdx === 3) parts.push('# BỐ CỤC DASHBOARD: CHƯA CÓ BẢN DUYỆT\nNgười dùng chưa duyệt bố cục. Hãy tự thiết kế: nếu cần nhiều trang hơn template có, dùng `pages.clones` (nhân bản trang template) để mọi chỉ số/chiều được phân tích; giữ đúng số ô biểu đồ của trang template; đặt `topN` cho chiều có nhiều giá trị.');
   const checks = stageIdx >= 2 ? readJsonSafe(path.join(runDir(run.id), '03-data-etl', 'data-checks.json')) : null;
   if (checks) {
     // Từ chặng 3 trở đi dùng tóm tắt dữ liệu ĐÃ LÀM SẠCH (có min/max đầy đủ), không dùng 20 dòng mẫu của profile gốc dễ gây hiểu sai
@@ -683,7 +795,8 @@ app.post('/api/runs/:id/start', (req, res) => {
   if (gate !== undefined) run.gate = gate && gate.enabled ? { enabled: true, model: modelName(gate.model) } : { enabled: false };
   const f = form || {};
   run.form = { ...f, requirementTyped: (f.requirement || '').trim(), requirement: (f.requirement || '').trim() || (f.requirementFileName ? '[file] ' + f.requirementFileName : '') };
-  if (f.template && !TPL.loadTemplate(String(f.template))) return res.status(400).json({ error: 'Template "' + f.template + '" không tồn tại trong thư mục templates/' });
+  if (f.templateSource === 'upload') { let ok = false; try { ok = !!TPL.resolveForRun(runDir(run.id), f); } catch (e) { return res.status(400).json({ error: e.message }); } if (!ok) return res.status(400).json({ error: 'Chưa tải file .pbix template của bạn lên' }); }
+  else if (f.template && !TPL.loadTemplate(String(f.template))) return res.status(400).json({ error: 'Template "' + f.template + '" không tồn tại trong thư mục templates/' });
   const model = (i) => (models && models[i]) || (run.stages && run.stages[i] && run.stages[i].model) || 'sonnet';
   const single = Array.isArray(only) && only.length === 1 && Number.isInteger(only[0]) && only[0] >= 0 && only[0] < STAGES.length ? only[0] : null;
   if (single !== null) {

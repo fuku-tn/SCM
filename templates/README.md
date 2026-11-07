@@ -13,3 +13,7 @@ Thư viện **template Power BI** (`.pbix`) cho chặng **Dashboard (PBIP)**.
 1. Lưu dashboard mẫu thành `.pbix` (PBIR) và thả vào thư mục này.
 2. Tải lại trang Analysis → thẻ template mới xuất hiện.
 3. Lưu ý: bookmark, drillthrough, bộ lọc riêng và custom visual của template **không** được mang theo.
+
+## Template do người dùng tải lên
+Ngoài các template trong thư mục này, ở bước 4 của Analysis người dùng có thể **tải file `.pbix` của riêng họ** (PBIR, < 100MB). File được lưu theo phiên (`output/<run-id>/00-input/pbix/`), giải nén vào `templates/.cache/` và dùng như template thường; không đưa vào thư viện chung.
+Template chỉ có 1 trang vẫn dùng được: BIE **nhân bản trang** để đủ trang phân tích (`pages.clones` trong dashboard-spec).

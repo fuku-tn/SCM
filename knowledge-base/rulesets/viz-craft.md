@@ -35,3 +35,15 @@ Kết hợp với `references/ibcs-standard.md` và `references/chart-standards.
 - Hai trục Y khác đơn vị trên một biểu đồ.
 - Nhãn dữ liệu chồng chéo; quá nhiều series (> 6).
 - Biểu đồ không có kết nối tới KPI (không giúp trả lời câu hỏi nào).
+
+## Giới hạn số giá trị hiển thị (cardinality)
+Trước khi gắn một chiều vào biểu đồ, xem số giá trị khác nhau (`distinct`) của cột đó:
+| Biểu đồ | Tối đa | Nếu vượt |
+|---|---|---|
+| Bar ngang | 15 | Top N (mặc định 10) hoặc chọn chiều gộp nhóm hơn |
+| Column | 12 | Top N (mặc định 10); thời gian dài thì dùng line |
+| Stacked bar/column | 8–10 | Top N + gộp phần còn lại; cân nhắc 100% stacked |
+| Line (nhiều series) | 5–8 series | Chỉ vẽ Top N series, hoặc lọc bằng slicer |
+| Donut / Pie | 5 | KHÔNG dùng; đổi sang bar Top N hoặc chiều ít giá trị hơn (tỷ trọng chỉ đúng khi đủ cả tập) |
+| Treemap | 20 | Top N (mặc định 15) |
+Top N được làm bằng measure xếp hạng (script sinh DAX) — tiêu đề nên ghi rõ "Top N" để người xem biết đây không phải toàn bộ.

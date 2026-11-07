@@ -40,6 +40,12 @@ Kết quả: `result.md` (thiết kế & bảng gắn dữ liệu) + `dashboard-
 7. **IBCS**: chọn dữ liệu sao cho hợp chuẩn (donut/pie ≤ 4 phần: chọn dimension ít giá trị — xem cột `distinct` trong tóm tắt dữ liệu; thời gian trái→phải; chi phí/rủi ro đảo màu độ lệch…). Định dạng hình thức do template quyết định; ghi chỗ lệch IBCS vào "Việc cần chỉnh thủ công".
 8. **Xuất `dashboard-spec.json`** đúng `references/dashboard-spec-schema.md` (chế độ template).
 
+## Bố cục đã duyệt, nhân bản trang, Top N
+- Nếu prompt có mục **BỐ CỤC DASHBOARD ĐÃ ĐƯỢC NGƯỜI DÙNG DUYỆT**: đó là hợp đồng. Giữ đúng số trang, thứ tự, trang nguồn của template, ô (key), loại biểu đồ (`visualType`), `topN` và tiêu đề; phần của bạn là điền `roles` bằng đúng tên measure / cột thật. Góp ý của người dùng ghi trong cột "góp ý" phải được thể hiện.
+- Template có ít trang nhưng cần nhiều trang để phân tích đủ chỉ số/chiều → **nhân bản trang** bằng `pages.clones` (khóa bind của bản clone: `<cloneId>:<key>`). Mỗi trang (kể cả clone) giữ đúng số ô biểu đồ của trang template nguồn.
+- Chiều có nhiều giá trị (xem `distinct`): đặt `topN` (script tự sinh DAX xếp hạng) hoặc chọn chiều/biểu đồ khác; không dùng donut/pie với chiều > 5 giá trị.
+- Chi tiết cú pháp: `references/dashboard-spec-schema.md` mục "Mở rộng".
+
 ## Quy tắc
 - **KPI tổng quan: mỗi trang chỉ 4–6 thẻ (tối đa 6, không hơn).** Thẻ KPI = `card` / `cardVisual` / `kpi`. Nhiều hơn 6 thì cấu trúc trình bày bị vỡ. Chọn 4–6 chỉ số quan trọng nhất theo mục tiêu G; thẻ KPI dư của template → `drop`. Template chỉ có dưới 4 thẻ thì gắn hết. Script tự cắt phần vượt 6 (theo thứ tự đọc) và cảnh báo.
 - Dùng **đúng `key`** trong bảng template (vd. `2.56ba69`), **đúng tên** measure (từng ký tự, theo `measures.json`) và `{table, column}` (theo `model-spec.json`; bảng `Calendar` có `Date, Year, Quarter, Month, MonthNo, YearQuarter, YearMonth, Day`).

@@ -1,4 +1,4 @@
-# Business Goal — {Tên doanh nghiệp / dự án}
+# Business Context — {Tên doanh nghiệp / dự án}
 
 > Tài liệu này được dùng lại ở các chặng Key Metrics, Data (ETL) và Dashboard (PBIP). Mã G/Q/D dùng để truy vết.
 

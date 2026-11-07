@@ -393,3 +393,51 @@ ul.miss{margin:6px 0 0;padding-left:20px}ul.miss li{margin:3px 0;font-size:13px}
 .evalbox table{width:100%;border-collapse:collapse;margin-top:8px}
 .evalbox td,.evalbox th{padding:5px 8px;text-align:left;border-bottom:1px solid var(--line,rgba(128,128,128,.2));vertical-align:top}
 .evalbox .fb{white-space:pre-wrap;margin-top:8px}
+
+/* ---- file mẫu, người xem gián tiếp, template upload, review bố cục ---- */
+.sample-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}
+.sample-bar .btn{text-decoration:none;white-space:nowrap}
+.ind-card{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:12px 14px;margin-bottom:10px}
+.ind-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px}
+.ind-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media(max-width:900px){.ind-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.ind-grid{grid-template-columns:1fr}}
+.ind-grid input,.ind-grid select{width:100%}
+.ind-add{margin:2px 0 4px}
+.pbix-info{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:18px;margin-top:14px;align-items:start}
+@media(max-width:700px){.pbix-info{grid-template-columns:1fr}}
+.pbix-info .tpl-prev{display:block;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card2);aspect-ratio:16/9}
+.pbix-info .tpl-prev img{width:100%;height:100%;object-fit:contain;display:block}
+.pbix-pages{display:flex;flex-direction:column}
+.pbix-pg{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.plan-act{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.plan-sum{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.plan-modal{width:min(1180px,100%);max-height:92vh}
+.pl-story{background:var(--accsoft);border-radius:14px;padding:10px 14px;font-size:13px;margin:4px 0 10px}
+.pl-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-bottom:10px}
+.pl-legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-1px}
+.pl-legend i.dash{background:none;border:1.5px dashed #9aa0a8}
+.pl-warn{border:1px solid var(--line);border-radius:14px;padding:8px 14px;margin-bottom:12px;font-size:13px;background:var(--card2)}
+.pl-warn summary{cursor:pointer;font-weight:700}.pl-warn ul{margin:8px 0 2px 18px;padding:0}.pl-warn li.mut{color:var(--mut)}
+.pl-page{border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:14px;background:var(--card)}
+.pl-ph{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pl-id{background:var(--ink);color:var(--shell);font-weight:800;font-size:12px;border-radius:8px;padding:3px 9px}
+.pl-ph input{flex:1;min-width:180px;font-weight:700;font-size:15px}
+.pl-msg{width:100%;margin:8px 0 10px;font-size:13px}
+.pl-body{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:900px){.pl-body{grid-template-columns:1fr}}
+.pl-wf{border:1px solid var(--line);border-radius:12px;overflow:hidden;color:var(--ink);position:sticky;top:0}
+.pl-wf svg{display:block;width:100%;height:auto}
+.pl-tbl{overflow:auto}
+.pl-tbl table{width:100%;border-collapse:collapse;font-size:12.5px}
+.pl-tbl th{text-align:left;color:var(--mut);font-weight:700;padding:4px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+.pl-tbl td{padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+.pl-tbl tr.off td{opacity:.5}
+.pl-tbl input[type=text],.pl-tbl input:not([type]),.pl-tbl select{width:100%;min-width:110px;padding:5px 8px;font-size:12.5px}
+.pl-tbl input.topn{width:74px;min-width:0}
+.pl-tbl .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.pl-tbl .mut,.pl-tbl small.mut{color:var(--mut)}
+.pl-tbl .gd{font-size:11.5px;margin-top:3px;color:var(--acct)}.pl-tbl .gd.warn{color:var(--err)}.pl-tbl .gd.info{color:var(--mut)}
+.pl-tbl .rs{font-size:11.5px;color:var(--mut);margin-top:2px}
+.pl-fb{margin-top:6px}.pl-fb label{display:block;font-weight:700;font-size:13px;margin-bottom:6px}.pl-fb textarea{width:100%}
+.pl-tbl td:first-child{white-space:nowrap}
