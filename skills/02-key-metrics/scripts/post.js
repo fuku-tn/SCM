@@ -42,9 +42,9 @@ try {
 
 const NUM_AGG = ['SUM', 'MAX', 'MIN', 'AVG', 'MEDIAN', 'RANGE'];
 const CAT_AGG = ['COUNT', 'DISTINCTCOUNT'];
-const PERIOD_TO_TAG = { YoY: 'LY', QoQ: 'LQ', MoM: 'LM', DoD: 'LD' };
-const TAG_DAX = { LY: "SAMEPERIODLASTYEAR('Calendar'[Date])", LQ: "DATEADD('Calendar'[Date], -1, QUARTER)", LM: "DATEADD('Calendar'[Date], -1, MONTH)", LD: "DATEADD('Calendar'[Date], -1, DAY)" };
-const TAG_LABEL = { LY: 'cùng kỳ năm trước', LQ: 'quý trước', LM: 'tháng trước', LD: 'ngày trước' };
+const PERIOD_TO_TAG = { YoY: 'LY', QoQ: 'LQ', MoM: 'LM', DoD: 'LD', PY: 'PY', PQ: 'PQ', PM: 'PM' };
+const TAG_DAX = { LY: "SAMEPERIODLASTYEAR('Calendar'[Date])", LQ: "DATEADD('Calendar'[Date], -1, QUARTER)", LM: "DATEADD('Calendar'[Date], -1, MONTH)", LD: "DATEADD('Calendar'[Date], -1, DAY)", PY: "PREVIOUSYEAR('Calendar'[Date])", PQ: "PREVIOUSQUARTER('Calendar'[Date])", PM: "PREVIOUSMONTH('Calendar'[Date])" };
+const TAG_LABEL = { LY: 'cùng kỳ năm trước', LQ: 'quý trước', LM: 'tháng trước', LD: 'ngày trước', PY: 'năm liền trước', PQ: 'quý liền trước', PM: 'tháng liền trước' };
 const q = (s) => "'" + String(s).replace(/'/g, "''") + "'";
 const col = (t, c) => `${q(t)}[${String(c).replace(/\]/g, ']]')}]`;
 const AGG_DAX = {

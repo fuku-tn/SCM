@@ -35,8 +35,12 @@ Bảng `Calendar` do chặng Dashboard tự tạo và nối với cột ngày c�
 | QoQ (Quarter over Quarter) | LQ — quý trước | `CALCULATE([M], DATEADD('Calendar'[Date], -1, QUARTER))` |
 | MoM (Month over Month) | LM — tháng trước | `CALCULATE([M], DATEADD('Calendar'[Date], -1, MONTH))` |
 | DoD (Day over Day) | LD — ngày trước | `CALCULATE([M], DATEADD('Calendar'[Date], -1, DAY))` |
+| PY — năm liền trước | PY | `CALCULATE([M], PREVIOUSYEAR('Calendar'[Date]))` |
+| PQ — quý liền trước | PQ | `CALCULATE([M], PREVIOUSQUARTER('Calendar'[Date]))` |
+| PM — tháng liền trước | PM | `CALCULATE([M], PREVIOUSMONTH('Calendar'[Date]))` |
 
-Tên: `{Measure} LY`, `{Measure} LQ`, `{Measure} LM`, `{Measure} LD`.
+Tên: `{Measure} LY`, `{Measure} LQ`, `{Measure} LM`, `{Measure} LD`, `{Measure} PY`, `{Measure} PQ`, `{Measure} PM`.
+"Cùng kỳ" (LY/LQ/LM) dịch đúng kỳ về trước (cùng giai đoạn trong kỳ); "liền trước" (PY/PQ/PM) là toàn bộ kỳ liền kề trước đó.
 
 ## 5. Delta và % Delta
 ```

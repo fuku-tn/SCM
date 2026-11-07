@@ -21,7 +21,7 @@ Kết quả: `result.md` + `metrics-spec.json` (bạn viết) → script `post.j
 | `scripts/` | `post.js` — kiểm tra spec với dữ liệu thật, sinh DAX, nối kết quả vào result.md |
 
 ## Đầu vào
-Output chặng 1 (Business Context) · danh sách Key Metrics, kỳ so sánh (YoY/MoM/QoQ/DoD), Dimension người dùng chọn · profile dữ liệu của các bảng/sheet đã chọn (tên bảng = tên sheet).
+Output chặng 1 (Business Context) · danh sách Key Metrics, kỳ so sánh (cùng kỳ YoY/QoQ/MoM; liền trước PY/PQ/PM) và Version (Budget/Target/Forecast…, nếu chọn), Dimension người dùng chọn · profile dữ liệu của các bảng/sheet đã chọn (tên bảng = tên sheet).
 
 ## Quy trình
 1. **Ánh xạ**: mỗi Key Metric người dùng chọn → bảng + cột thật trong profile. Metric không có cột tương ứng:
@@ -33,7 +33,7 @@ Output chặng 1 (Business Context) · danh sách Key Metrics, kỳ so sánh (Yo
    - Categorical: `COUNT, DISTINCTCOUNT`
    - **Không bắt buộc tính hết.** Chỉ chọn phép tính phục vụ yêu cầu và người xem (vd. doanh thu: SUM là chính; AVG/MAX khi cần phân tích đơn hàng).
 4. **Performance** = một giá trị `SUM` chia cho `COUNT` hoặc `DISTINCTCOUNT` (vd. Doanh thu / số khách hàng). Chỉ tạo khi có ý nghĩa kinh doanh.
-5. **Theo thời gian** — chỉ theo kỳ người dùng đã chọn: `YoY→LY`, `QoQ→LQ`, `MoM→LM`, `DoD→LD`. Người dùng không chọn kỳ nào → **không** tạo measure thời gian. Chọn measure nền cần so sánh bằng `timeApplyTo` (thường SUM chính và Performance).
+5. **Theo thời gian** — chỉ theo kỳ người dùng đã chọn: `YoY→LY`, `QoQ→LQ`, `MoM→LM` (cùng kỳ), `PY`, `PQ`, `PM` (kỳ liền trước nguyên kỳ: PREVIOUSYEAR/QUARTER/MONTH). **Version** (Budget/Target/Forecast/Rolling Forecast/Outlook 6 tháng) không có DAX sinh sẵn: chỉ làm khi dữ liệu có cột/sheet tương ứng (khai báo thành metric cơ bản + `derived`), nếu không thì ghi vào "Giả định và những việc không thực hiện được". Người dùng không chọn kỳ nào → **không** tạo measure thời gian. Chọn measure nền cần so sánh bằng `timeApplyTo` (thường SUM chính và Performance).
 6. **Delta và % Delta** cho từng kỳ so sánh (script tự sinh cho mọi measure trong `timeApplyTo`).
 7. **Ghép Measure–Dimension** theo 4 quan hệ `1-1`, `N-1`, `1-N`, `N-N` (xem `references/measure-dimension-matrix.md`). Mỗi ghép ghi: mục đích, nhóm biểu đồ (tổng quan / xu hướng / so sánh / tỷ trọng / phân phối / phân tầng) và loại biểu đồ gợi ý.
 8. **Phụ lục (h) — dùng để vẽ Dashboard về sau**: tổng hợp các ghép ở bước 7 thành bảng đưa thẳng cho chặng Dashboard.

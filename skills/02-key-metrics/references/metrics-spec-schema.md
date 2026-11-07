@@ -42,7 +42,7 @@ Bạn xuất file này bằng khối `<<<FILE: metrics-spec.json>>> … <<<END F
 ```
 
 ## Ghi chú
-- **Kỳ so sánh không khai báo ở đây**: script lấy từ lựa chọn của người dùng (YoY/MoM/QoQ/DoD). Khai báo khác sẽ bị bỏ qua.
+- **Kỳ so sánh không khai báo ở đây**: script lấy từ lựa chọn của người dùng (YoY/MoM/QoQ/DoD cùng kỳ; PY/PQ/PM liền trước). Khai báo khác sẽ bị bỏ qua.
 - Không có cột ngày → không tạo measure thời gian.
 - Metric/dimension trỏ tới bảng/cột không có trong dữ liệu sẽ bị **loại** và ghi cảnh báo trong `result.md`.
 - Measure Delta/LY… do script đặt tên: `{Measure} Delta LY`, `{Measure} Delta % LM`…

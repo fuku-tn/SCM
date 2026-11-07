@@ -468,7 +468,8 @@ function callClaude(prompt, model, mockText, opts = {}) {
 }
 
 // ---------- Prompt assembly ----------
-const PERIOD_DESC = { YoY: 'Year over Year — so với cùng kỳ năm trước (LY)', MoM: 'Month over Month — so với tháng trước (LM)', QoQ: 'Quarter over Quarter — so với quý trước (LQ)', DoD: 'Day over Day — so với ngày trước (LD)' };
+const VERSION_DESC = { BUD: 'Budget (ngân sách)', TGT: 'Target (mục tiêu)', FCST: 'Forecast (dự báo)', RFCST: 'Rolling Forecast (dự báo cuốn chiếu)', OUT6: 'Outlook 6 tháng (triển vọng 6 tháng tới)' };
+const PERIOD_DESC = { PY: 'So với năm liền trước (PY — cả năm trước, PREVIOUSYEAR)', PQ: 'So với quý liền trước (PQ — cả quý trước, PREVIOUSQUARTER)', PM: 'So với tháng liền trước (PM — cả tháng trước, PREVIOUSMONTH)', YoY: 'Year over Year — so với cùng kỳ năm trước (LY)', MoM: 'Month over Month — so với tháng trước (LM)', QoQ: 'Quarter over Quarter — so với quý trước (LQ)', DoD: 'Day over Day — so với ngày trước (LD)' };
 const TEMPLATES_DIR = path.join(ROOT, 'templates');
 const IMG_EXT = /\.(png|jpe?g|pdf)$/i;
 const readJsonSafe = (p) => { try { return JSON.parse(rd(p)); } catch { return null; } };
@@ -575,6 +576,7 @@ function buildPrompt(run, stageIdx, preOut, feedback) {
     ...((AUD.indirectMarkdown(f.indirect) || indNote) ? ['## Người xem GIÁN TIẾP (Indirect) — nhận kết quả hoặc bị ảnh hưởng, không trực tiếp thao tác\n' + [AUD.indirectMarkdown(f.indirect), indNote ? '### Ghi chú từ file người dùng tải lên (trích các thông tin cần thiết về từng người/nhóm: vai trò, nhu cầu, mức hiểu biết)\n' + indNote.slice(0, 8000) : ''].filter(Boolean).join('\n\n')] : []),
     '## Chỉ số cần phân tích (Key Metrics, để tính DAX)\n' + ((f.metrics || []).map((x) => '- ' + x).join('\n') || '(trống)'),
     '## Kỳ so sánh cần tính (time intelligence; viết DAX cho từng chỉ số)\n' + ((f.periods || []).map((x) => '- ' + x + ' (' + (PERIOD_DESC[x] || x) + ')').join('\n') || '(không yêu cầu)'),
+    ...((f.versions || []).length ? ['## So sánh với Version (kế hoạch / dự báo) — người dùng đã chọn\n' + f.versions.map((x) => '- ' + (VERSION_DESC[x] || x)).join('\n') + '\nLưu ý: script KHÔNG sinh DAX cho Version. Chỉ làm được nếu dữ liệu ở chặng 3 có cột/sheet tương ứng (vd. cột Budget, sheet Target): khai báo giá trị version là metric cơ bản trong metrics-spec.json và so sánh bằng `derived` (vd. `{rev.SUM} - {budget.SUM}`). Không có dữ liệu → ghi rõ trong "Giả định và những việc không thực hiện được", KHÔNG bịa số liệu.'] : []),
     '## Các chiều (Dimension) cần phân tích\n' + ((f.dimensions || []).map((x) => '- ' + x).join('\n') || '(trống)'),
     '## Màu theme dashboard\n' + (f.colorMode === 'own' && (f.colors || []).length
       ? 'Người dùng chọn DÙNG 5 MÀU CỦA HỌ: ' + f.colors.join(', ') + ' (script sẽ thay vào bảng màu dữ liệu của template).'

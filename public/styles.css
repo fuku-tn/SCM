@@ -441,3 +441,20 @@ ul.miss{margin:6px 0 0;padding-left:20px}ul.miss li{margin:3px 0;font-size:13px}
 .pl-tbl .rs{font-size:11.5px;color:var(--mut);margin-top:2px}
 .pl-fb{margin-top:6px}.pl-fb label{display:block;font-weight:700;font-size:13px;margin-bottom:6px}.pl-fb textarea{width:100%}
 .pl-tbl td:first-child{white-space:nowrap}
+
+/* ---- kỳ so sánh: 3 dropdown chọn nhiều ---- */
+.cmp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+@media(max-width:900px){.cmp-grid{grid-template-columns:1fr}}
+.dd{position:relative}
+.dd summary{list-style:none;cursor:pointer;background:var(--card2);border:2px solid transparent;border-radius:14px;padding:11px 38px 11px 14px;font-size:14px;position:relative;min-height:44px;display:flex;align-items:center}
+.dd summary::-webkit-details-marker{display:none}
+.dd summary::after{content:"▾";position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--mut)}
+.dd[open] summary{border-color:var(--acc)}
+.dd .dd-v.empty{color:var(--mut)}
+.dd-menu{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:8;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 36px rgba(0,0,0,.18);padding:6px;max-height:320px;overflow:auto}
+.dd-o{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:10px;cursor:pointer}
+.dd-o:hover{background:var(--accsoft)}
+.dd-o input{margin-top:3px;accent-color:var(--acc)}
+.dd-o b{display:block;font-size:13px}.dd-o small{color:var(--mut);font-size:11.5px}
+.warn-box{margin:12px 0 4px;padding:10px 14px;border-radius:14px;background:var(--accsoft);color:var(--acct);font-size:13px;border:1px solid var(--acc)}
+.cmp-grid>.f{align-self:start;height:auto}.cmp-grid .dd{flex:none;height:auto}.cmp-grid .dd summary{height:46px;box-sizing:border-box}

@@ -120,3 +120,16 @@ test('Chặng 4: nhân bản trang template, đổi pie↔donut, Top N sinh meas
   assert.match(tm, /\(Top 3\)/); assert.match(tm, /RANKX\(ALL\('Don hang'\[Khu vực\]\)/);
   const v = validateBuild(root); assert.deepStrictEqual(v.hard, [], v.hard.join('\n'));
 });
+
+test('Kỳ so sánh "liền trước" (PY/PQ/PM) sinh measure PREVIOUS*; Version không sinh DAX', () => {
+  const d = h.makeRun({ name: 'cmp', sheets: SHEETS, form: { periods: ['PY', 'PM', 'YoY'], versions: ['BUD'], metrics: ['Doanh thu'] } });
+  try {
+    assert.strictEqual(h.etl(d).post.status, 0);
+    h.fs.writeFileSync(h.path.join(d, '02-key-metrics', 'metrics-spec.json'), JSON.stringify({ ...SPEC2, timeApplyTo: ['rev.SUM'] }));
+    const r = h.script('02-key-metrics', 'post', d); assert.strictEqual(r.status, 0, r.out);
+    const ms = h.readJson(h.path.join(d, '02-key-metrics', 'measures.json')).measures;
+    const by = (n) => ms.find((m) => / PY$/.test(m.name) && n === 'PY') || ms.find((m) => new RegExp(' ' + n + '$').test(m.name));
+    assert.match(by('PY').expression, /PREVIOUSYEAR\('Calendar'\[Date\]\)/); assert.match(by('PM').expression, /PREVIOUSMONTH/); assert.match(by('LY').expression, /SAMEPERIODLASTYEAR/);
+    assert.ok(!ms.some((m) => /Budget|BUD/i.test(m.name)), 'Version không tự sinh measure');
+  } finally { h.rm(d); }
+});

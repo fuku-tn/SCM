@@ -16,7 +16,7 @@ const freshA = () => {
     aud: { department: '', position: '', level: '', gender: '', education: '', tenureCompany: '', tenureCareer: '' },   // người xem TRỰC TIẾP (Direct) — bắt buộc
     indirect: [], audFile: { direct: null, indirect: null },                                                            // người xem GIÁN TIẾP (Indirect) — không bắt buộc
     tplMode: 'sample', pbix: null, plan: null, planKey: '', planApproved: false, planModel: 'sonnet',
-    metrics: [], periods: [], dimensions: [],
+    metrics: [], periods: [], versions: [], dimensions: [],
     sug: { metrics: { state: 'idle', items: [], key: '', err: '' }, dimensions: { state: 'idle', items: [], key: '', err: '' } },
     sugModel: 'haiku',
     data: null, sheets: [], pv: 0,
@@ -30,22 +30,27 @@ const freshA = () => {
 let A = freshA();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const fsize = (n) => (n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(1) + ' MB');
-const PERIODS = [
-  { k: 'YoY', name: 'Year over Year', d: 'So với cùng kỳ năm trước' },
-  { k: 'MoM', name: 'Month over Month', d: 'So với tháng trước' },
-  { k: 'QoQ', name: 'Quarter over Quarter', d: 'So với quý trước' },
-  { k: 'DoD', name: 'Day over Day', d: 'So với ngày trước' },
+// Kỳ so sánh: 3 nhóm dropdown (chọn nhiều). periods → measure time intelligence (script sinh DAX); versions → cần thêm dữ liệu ở bước Import Data
+const CMP_GROUPS = [
+  { id: 'ver', store: 'versions', title: 'Version', sub: 'So với kế hoạch / dự báo', items: [
+    { k: 'BUD', name: 'Budget', d: 'Ngân sách' }, { k: 'TGT', name: 'Target', d: 'Mục tiêu' }, { k: 'FCST', name: 'Forecast', d: 'Dự báo' },
+    { k: 'RFCST', name: 'Rolling Forecast', d: 'Dự báo cuốn chiếu' }, { k: 'OUT6', name: 'Outlook (6 tháng)', d: 'Triển vọng 6 tháng tới' }] },
+  { id: 'same', store: 'periods', title: 'Cùng kỳ', sub: 'Cùng giai đoạn của kỳ trước', items: [
+    { k: 'YoY', name: 'Năm trước', d: 'Cùng kỳ năm trước (YoY)' }, { k: 'QoQ', name: 'Quý trước', d: 'Cùng kỳ quý trước (QoQ)' }, { k: 'MoM', name: 'Tháng trước', d: 'Cùng kỳ tháng trước (MoM)' }] },
+  { id: 'prev', store: 'periods', title: 'So với liền trước', sub: 'Cả kỳ liền kề trước đó', items: [
+    { k: 'PY', name: 'Năm liền trước', d: 'Toàn bộ năm trước' }, { k: 'PQ', name: 'Quý liền trước', d: 'Toàn bộ quý trước' }, { k: 'PM', name: 'Tháng liền trước', d: 'Toàn bộ tháng trước' }] },
 ];
+const verWarn = () => (A.versions.length ? `⚠ Bạn chọn so sánh với <b>${A.versions.map((k) => CMP_GROUPS[0].items.find((i) => i.k === k).name).join(', ')}</b> — nhớ cung cấp thêm dữ liệu này ở bước <b>3 · Import Data</b> (thêm cột hoặc sheet Budget/Target/Forecast… vào file CSV/Excel). BIE không thể tự tạo số kế hoạch; thiếu dữ liệu thì phần so sánh Version sẽ không làm được.` : '');
 const REQ = '<span class="req" title="Bắt buộc">*</span>';
 
 // ---------- validation ----------
-const ok21 = () => !!(A.aud.department.trim() && A.aud.position.trim() && A.aud.level && A.aud.gender && A.aud.education && A.aud.tenureCompany.trim());
+const ok21 = () => !!(A.aud.department.trim() && A.aud.position.trim() && A.aud.level && A.aud.gender && A.aud.tenureCompany.trim());
 const tplId = () => (A.tplMode === 'upload' ? (A.pbix ? 'upload' : '') : A.tpl || '');
 const planKeyNow = () => JSON.stringify({ m: A.metrics, d: A.dimensions, t: tplId(), n: A.pbix?.name || '', l: A.lang, s: A.sheets, a: A.aud.level });
 const planStale = () => !!A.plan && A.planKey !== planKeyNow();
 const miss = [
   () => { const m = []; if (!A.context && !A.ctxText.trim()) m.push('Nhập ngữ cảnh công ty hoặc tải file'); if (!A.req.text.trim() && !A.req.file) m.push('Nhập yêu cầu phân tích hoặc tải file'); return m; },
-  () => { const m = []; if (!ok21()) m.push('Điền đủ phần 2.1 người xem trực tiếp (phòng ban, vị trí, level, giới tính, học vấn, thâm niên tại doanh nghiệp)'); else { if (!A.metrics.length) m.push('Chọn ít nhất 1 Key Metric'); else if (!A.dimensions.length) m.push('Chọn ít nhất 1 chiều phân tích'); } return m; },
+  () => { const m = []; if (!ok21()) m.push('Điền đủ phần 2.1 người xem trực tiếp (phòng ban, vị trí, level, giới tính, thâm niên tại doanh nghiệp)'); else { if (!A.metrics.length) m.push('Chọn ít nhất 1 Key Metric'); else if (!A.dimensions.length) m.push('Chọn ít nhất 1 chiều phân tích'); } return m; },
   () => { const m = []; if (!A.data) m.push('Tải file CSV / Excel'); else if (!A.sheets.length) m.push('Chọn ít nhất 1 bảng'); return m; },
   () => {
     const m = [];
@@ -221,7 +226,7 @@ function panel1() {
       <div class="row2">${inp('department', 'Phòng ban', 'VD: Kinh doanh', 1)}${inp('position', 'Vị trí công việc hiện tại', 'VD: Trưởng nhóm bán hàng', 1)}
         <div class="f"><label>Level ${REQ}</label><select data-k="level"><option value="">— chọn level —</option>${LEVELS.map((l) => `<option ${l === a.level ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
         <div class="f"><label>Giới tính ${REQ}</label><select data-k="gender"><option value="">— chọn —</option>${GENDERS.map((l) => `<option ${l === a.gender ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
-        <div class="f"><label>Học vấn ${REQ}</label><select data-k="education"><option value="">— chọn —</option>${EDUCATIONS.map((l) => `<option ${l === a.education ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+        <div class="f"><label>Học vấn <small>(không bắt buộc)</small></label><select data-k="education"><option value="">— không khai báo —</option>${EDUCATIONS.map((l) => `<option ${l === a.education ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
         ${inp('tenureCompany', 'Thâm niên tại doanh nghiệp hiện tại', 'VD: 3 năm 6 tháng', 1)}${inp('tenureCareer', 'Thâm niên kể từ khi đi làm', 'VD: 8 năm', 0)}</div>
       <div class="f" style="margin-top:6px"><label>Ghi chú về người đọc <small>(không bắt buộc — tải file .docx / .md / .pdf)</small></label><div id="dz-aud-direct"></div></div></div>
     <div class="sec" id="sec-indirect"><div class="sec-h"><span class="sec-n">2.2</span><b>Người xem gián tiếp (Indirect)</b><small style="color:var(--mut)">không bắt buộc · nhận kết quả hoặc bị ảnh hưởng, không trực tiếp dùng dashboard</small></div>
@@ -232,7 +237,10 @@ function panel1() {
     <div class="sec" id="sec-metrics"><div class="sec-h"><span class="sec-n">2.3</span><b>Key Metrics sẽ phân tích</b>${REQ}<span class="lock-note"></span></div>
       <div id="tags-metrics"></div><div id="sug-metrics" class="sug-box"></div></div>
     <div class="sec" id="sec-periods"><div class="sec-h"><span class="sec-n">2.4</span><b>Kỳ so sánh cần tính</b><small style="color:var(--mut)">chọn nhiều · không bắt buộc</small><span class="lock-note"></span></div>
-      <div class="pcards">${PERIODS.map((p) => `<button type="button" class="pcard ${A.periods.includes(p.k) ? 'on' : ''}" data-p="${p.k}" aria-pressed="${A.periods.includes(p.k)}"><span class="pc-chk"></span><b>${p.k}</b><span class="pc-n">${p.name}</span><small>${p.d}</small></button>`).join('')}</div></div>
+      <div class="cmp-grid">${CMP_GROUPS.map((g) => `<div class="f" style="margin:0"><label>${g.title} <small>— ${g.sub}</small></label>
+        <details class="dd" data-g="${g.id}"><summary><span class="dd-v" data-sum="${g.id}"></span></summary>
+          <div class="dd-menu">${g.items.map((i) => `<label class="dd-o"><input type="checkbox" data-st="${g.store}" data-pk="${i.k}" ${A[g.store].includes(i.k) ? 'checked' : ''}><span><b>${i.name}</b><small>${i.d}</small></span></label>`).join('')}</div></details></div>`).join('')}</div>
+      <div class="warn-box" id="ver-warn" ${A.versions.length ? '' : 'hidden'}>${verWarn()}</div></div>
     <div class="sec" id="sec-dims"><div class="sec-h"><span class="sec-n">2.5</span><b>Các chiều (Dimension) đi cùng chỉ số</b>${REQ}<span class="lock-note"></span></div>
       <div id="tags-dims"></div><div id="sug-dimensions" class="sug-box"></div></div>
     ${foot()}</div>`;
@@ -260,10 +268,13 @@ function panel1() {
     get: () => A.audFile.indirect, set: (v) => (A.audFile.indirect = v), meta: (c) => textMeta(c) + (c.people ? ` · ${c.people.length} người đọc được từ bảng` : ''),
     onChange: (res) => { if (res && res.blank) toast('File mẫu chưa được điền — chưa đọc được người nào'); if (res && res.people && res.people.length) { A.indirect = A.indirect.filter((p) => Object.values(p).some((x) => String(x || '').trim())).concat(res.people); drawInd(); toast(`Đã tạo ${res.people.length} thẻ người xem gián tiếp từ file`); } } });
   drawInd();
-  $('#panel').querySelectorAll('.pcard').forEach((b) => (b.onclick = () => {
-    const k = b.dataset.p; A.periods = A.periods.includes(k) ? A.periods.filter((x) => x !== k) : PERIODS.map((p) => p.k).filter((x) => x === k || A.periods.includes(x));
-    b.classList.toggle('on', A.periods.includes(k)); b.setAttribute('aria-pressed', String(A.periods.includes(k))); refresh();
+  const drawSum = () => CMP_GROUPS.forEach((g) => { const el = $(`[data-sum="${g.id}"]`); if (!el) return; const on = g.items.filter((i) => A[g.store].includes(i.k)); el.textContent = on.length ? on.map((i) => i.name).join(', ') : '— chưa chọn —'; el.classList.toggle('empty', !on.length); });
+  drawSum();
+  $('#panel').querySelectorAll('.dd input[data-pk]').forEach((c) => (c.onchange = () => {
+    const st = c.dataset.st, k = c.dataset.pk; A[st] = c.checked ? [...new Set([...A[st], k])] : A[st].filter((x) => x !== k);
+    drawSum(); const w = $('#ver-warn'); if (w) { w.innerHTML = verWarn(); w.hidden = !A.versions.length; } refresh();
   }));
+  document.onclick = (e) => { if (!e.target.closest('.dd')) document.querySelectorAll('.dd[open]').forEach((d) => d.removeAttribute('open')); };
   A.redraw = {
     metrics: tagList($('#tags-metrics'), A.metrics, refresh, 'Gõ chỉ số rồi Enter (VD: Doanh thu, Lợi nhuận gộp…) hoặc chọn gợi ý bên dưới'),
     dimensions: tagList($('#tags-dims'), A.dimensions, refresh, 'Gõ chiều rồi Enter (VD: Khu vực, Sản phẩm…) hoặc chọn gợi ý bên dưới'),
@@ -284,6 +295,7 @@ function drawData() {
 }
 function panel2() {
   $('#panel').innerHTML = `<div class="card wz-card"><div class="wz-title"><span class="fn-badge">3</span><div><h2>Import Data <small style="font-weight:500;color:var(--mut)">· Transformation · Modeling</small></h2><p class="sub" style="margin:0">Kéo thả hoặc chọn file CSV / Excel. Nếu có nhiều bảng, bạn chọn bảng sẽ dùng.</p></div></div>
+    ${A.versions.length ? `<div class="warn-box">${verWarn()}</div>` : ''}
     <div class="f"><label>File dữ liệu ${REQ} <small>— CSV hoặc Excel (.csv, .tsv, .xlsx, .xls)</small></label><div id="dz-data"></div></div><div id="data-view"></div>${foot()}</div>`;
   dz($('#dz-data'), {
     slot: 'data', exts: ['csv', 'tsv', 'xlsx', 'xls', 'xlsm'], title: 'Kéo thả file dữ liệu vào đây hoặc bấm để chọn', hint: '.csv · .tsv · .xlsx · .xls', minBusy: 1100, busyText: 'Đang tải và đọc dữ liệu…',
@@ -315,7 +327,7 @@ function drawSummary() {
   const h = $('#summary'); if (!h) return;
   const row = (k, v) => `<div class="sm-r"><span>${k}</span><b>${v}</b></div>`;
   h.innerHTML = row('Ngữ cảnh', esc(A.context?.name || A.ctxText.trim().slice(0, 60) || '—')) + row('Yêu cầu', esc((A.req.text.trim().slice(0, 60) || (A.req.file ? '[file] ' + A.req.file.name : '—')))) +
-    row('Người xem trực tiếp', esc([A.aud.department, A.aud.position, A.aud.level, A.aud.education].filter(Boolean).join(' · ') || '—')) + row('Người xem gián tiếp', A.indirect.filter(indFilled).length ? A.indirect.filter(indFilled).length + ' người/nhóm' : (A.audFile.indirect ? 'từ file' : 'không có')) + row('Key Metrics', A.metrics.length + (A.periods.length ? ' · ' + A.periods.join(', ') : '')) + row('Dimensions', A.dimensions.length) +
+    row('Người xem trực tiếp', esc([A.aud.department, A.aud.position, A.aud.level, A.aud.education].filter(Boolean).join(' · ') || '—')) + row('Người xem gián tiếp', A.indirect.filter(indFilled).length ? A.indirect.filter(indFilled).length + ' người/nhóm' : (A.audFile.indirect ? 'từ file' : 'không có')) + row('Key Metrics', A.metrics.length + (A.periods.length ? ' · ' + A.periods.join(', ') : '') + (A.versions.length ? ' · Version: ' + A.versions.join(', ') : '')) + row('Dimensions', A.dimensions.length) +
     row('Dữ liệu', esc(A.data?.name || '—') + (A.data ? ` (${A.sheets.length}/${A.data.profile.sheets.length} bảng)` : '')) + row('Template', esc(A.tplMode === 'upload' ? (A.pbix?.template ? A.pbix.template.name + ' (của bạn)' : '—') : ((A.tplList && (A.tplList.find((t) => t.id === A.tpl) || {}).name) || '—'))) + row('Bố cục dashboard', !A.plan ? 'chưa đề xuất' : planStale() ? 'không còn khớp' : (A.planApproved ? '✓ đã duyệt · ' : 'nháp · ') + planCounts(A.plan).pages + ' trang · ' + planCounts(A.plan).visuals + ' biểu đồ') + row('Ngôn ngữ dashboard', A.lang === 'vi' ? 'Tiếng Việt' : 'English') + row('Màu theme', A.colorMode === 'own' ? A.colors.map((c) => `<i class="sw" style="background:${c}"></i>`).join('') : 'Giữ màu của template');
 }
 async function drawTemplates() {
@@ -378,7 +390,7 @@ function panel3() {
 
 // ---------- chạy ----------
 const indFilled = (p) => Object.values(p).some((x) => String(x || '').trim());
-const buildForm = () => ({ requirement: A.req.text, requirementFileName: A.req.file?.name, contextFileName: A.context?.name, contextTyped: A.ctxText, template: A.tplMode === 'upload' ? '' : A.tpl, templateSource: A.tplMode === 'upload' ? 'upload' : 'sample', colorMode: A.colorMode, dashboardLanguage: A.lang, audience: A.aud, indirect: A.indirect.filter(indFilled), metrics: A.metrics, periods: A.periods, dimensions: A.dimensions, sheets: A.sheets, colors: A.colorMode === 'own' ? A.colors : [] });
+const buildForm = () => ({ requirement: A.req.text, requirementFileName: A.req.file?.name, contextFileName: A.context?.name, contextTyped: A.ctxText, template: A.tplMode === 'upload' ? '' : A.tpl, templateSource: A.tplMode === 'upload' ? 'upload' : 'sample', colorMode: A.colorMode, dashboardLanguage: A.lang, audience: A.aud, indirect: A.indirect.filter(indFilled), metrics: A.metrics, periods: A.periods, versions: A.versions, dimensions: A.dimensions, sheets: A.sheets, colors: A.colorMode === 'own' ? A.colors : [] });
 
 // Bảng cảnh báo khi thiếu thông tin: người dùng chọn "Vẫn chạy" hoặc "Quay lại bổ sung"
 function showMissing(groups, label) {
