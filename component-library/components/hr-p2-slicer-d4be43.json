@@ -1,0 +1,167 @@
+{
+  "id": "hr-p2-slicer-d4be43",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "slicer",
+  "size": {
+    "w": 240,
+    "h": 98
+  },
+  "title": null,
+  "roles": {
+    "Values": [
+      {
+        "kind": "hierarchy"
+      }
+    ]
+  },
+  "hash": "9becaee2",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+    "visual": {
+      "visualType": "slicer",
+      "query": {
+        "queryState": {
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]",
+                "active": true
+              }
+            ]
+          }
+        }
+      },
+      "expansionStates": [
+        {
+          "roles": [
+            "Values"
+          ],
+          "levels": [
+            {
+              "queryRefs": [
+                "@ref:Values[0]"
+              ],
+              "isCollapsed": true,
+              "isPinned": true
+            }
+          ],
+          "root": {}
+        }
+      ],
+      "objects": {
+        "data": [
+          {
+            "properties": {
+              "mode": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Dropdown'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "header": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "items": [
+          {
+            "properties": {
+              "textSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "20D"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "general": [
+          {
+            "properties": {
+              "orientation": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0D"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "border": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "radius": {
+                "expr": {
+                  "Literal": {
+                    "Value": "30D"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

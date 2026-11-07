@@ -1,0 +1,247 @@
+{
+  "id": "hr-p3-treemap-528242",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 3,
+  "pageName": "Department",
+  "type": "treemap",
+  "size": {
+    "w": 357,
+    "h": 503
+  },
+  "title": null,
+  "roles": {
+    "Group": [
+      {
+        "kind": "column"
+      }
+    ],
+    "Values": [
+      {
+        "kind": "measure"
+      }
+    ]
+  },
+  "hash": "034d4c72",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+    "visual": {
+      "visualType": "treemap",
+      "query": {
+        "queryState": {
+          "Group": {
+            "projections": [
+              {
+                "field": "@Group[0]",
+                "queryRef": "@ref:Group[0]",
+                "nativeQueryRef": "@name:Group[0]",
+                "active": true
+              }
+            ]
+          },
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]"
+              }
+            ]
+          }
+        }
+      },
+      "objects": {
+        "labels": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "labelDisplayUnits": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1000D"
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "12D"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "dataPoint": [
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "FillRule": {
+                        "Input": "@Values[0]",
+                        "FillRule": {
+                          "linearGradient3": {
+                            "min": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#ddd1c0'"
+                                }
+                              }
+                            },
+                            "mid": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#6B645B'"
+                                }
+                              }
+                            },
+                            "max": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#4A3F35'"
+                                }
+                              }
+                            },
+                            "nullColoringStrategy": {
+                              "strategy": {
+                                "Literal": {
+                                  "Value": "'asZero'"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 1
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "title": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 6,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "dropShadow": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 5,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "border": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "radius": {
+                "expr": {
+                  "Literal": {
+                    "Value": "10D"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

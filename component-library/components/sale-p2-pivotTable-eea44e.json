@@ -1,0 +1,253 @@
+{
+  "id": "sale-p2-pivotTable-eea44e",
+  "template": "sale",
+  "templateName": "Dashboard Sale",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "pivotTable",
+  "size": {
+    "w": 810,
+    "h": 393
+  },
+  "title": null,
+  "roles": {
+    "Rows": [
+      {
+        "kind": "column",
+        "displayName": "Sale Zone"
+      }
+    ],
+    "Values": [
+      {
+        "kind": "measure"
+      },
+      {
+        "kind": "measure",
+        "displayName": "Net Profit"
+      },
+      {
+        "kind": "measure"
+      },
+      {
+        "kind": "measure"
+      }
+    ]
+  },
+  "hash": "1adac8bc",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+    "visual": {
+      "visualType": "pivotTable",
+      "query": {
+        "queryState": {
+          "Rows": {
+            "projections": [
+              {
+                "field": "@Rows[0]",
+                "queryRef": "@ref:Rows[0]",
+                "nativeQueryRef": "@name:Rows[0]",
+                "active": true,
+                "displayName": "Sale Zone"
+              }
+            ]
+          },
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]"
+              },
+              {
+                "field": "@Values[1]",
+                "queryRef": "@ref:Values[1]",
+                "nativeQueryRef": "@name:Values[1]",
+                "displayName": "Net Profit"
+              },
+              {
+                "field": "@Values[2]",
+                "queryRef": "@ref:Values[2]",
+                "nativeQueryRef": "@name:Values[2]"
+              },
+              {
+                "field": "@Values[3]",
+                "queryRef": "@ref:Values[3]",
+                "nativeQueryRef": "@name:Values[3]"
+              }
+            ]
+          }
+        }
+      },
+      "objects": {
+        "general": [
+          {
+            "properties": {
+              "layout": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Tabular'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "grid": [
+          {
+            "properties": {
+              "rowPadding": {
+                "expr": {
+                  "Literal": {
+                    "Value": "7D"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "rowHeaders": [
+          {
+            "properties": {
+              "outlineStyle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "4D"
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "11D"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "columnHeaders": [
+          {
+            "properties": {
+              "outlineStyle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "5D"
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "11D"
+                  }
+                }
+              },
+              "columnAdjustment": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'growToFit'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "values": [
+          {
+            "properties": {
+              "outlineStyle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "4D"
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "12D"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "subTotals": [
+          {
+            "properties": {
+              "columnSubtotals": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "stylePreset": [
+          {
+            "properties": {
+              "name": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'None'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "title": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "border": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

@@ -1,0 +1,245 @@
+{
+  "id": "sale-p2-treemap-65c4cd",
+  "template": "sale",
+  "templateName": "Dashboard Sale",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "treemap",
+  "size": {
+    "w": 454,
+    "h": 297
+  },
+  "title": null,
+  "roles": {
+    "Group": [
+      {
+        "kind": "column"
+      }
+    ],
+    "Values": [
+      {
+        "kind": "measure"
+      }
+    ]
+  },
+  "hash": "59d951d8",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+    "visual": {
+      "visualType": "treemap",
+      "query": {
+        "queryState": {
+          "Group": {
+            "projections": [
+              {
+                "field": "@Group[0]",
+                "queryRef": "@ref:Group[0]",
+                "nativeQueryRef": "@name:Group[0]",
+                "active": true
+              }
+            ]
+          },
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]"
+              }
+            ]
+          }
+        }
+      },
+      "objects": {
+        "legend": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "dataPoint": [
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "FillRule": {
+                        "Input": "@Values[0]",
+                        "FillRule": {
+                          "linearGradient3": {
+                            "min": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#F5F1E4'"
+                                }
+                              }
+                            },
+                            "mid": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#e9d8af'"
+                                }
+                              }
+                            },
+                            "max": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#1C3557'"
+                                }
+                              }
+                            },
+                            "nullColoringStrategy": {
+                              "strategy": {
+                                "Literal": {
+                                  "Value": "'asZero'"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 1
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "labels": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "12D"
+                  }
+                }
+              },
+              "labelDisplayUnits": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1000000000D"
+                  }
+                }
+              },
+              "labelPrecision": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0L"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "title": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "border": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "padding": [
+          {
+            "properties": {
+              "bottom": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0D"
+                  }
+                }
+              },
+              "top": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0D"
+                  }
+                }
+              },
+              "left": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0D"
+                  }
+                }
+              },
+              "right": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0D"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

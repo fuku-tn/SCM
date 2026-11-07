@@ -1,0 +1,177 @@
+{
+  "id": "hr-p4-map-f9387e",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 4,
+  "pageName": "Geography",
+  "type": "map",
+  "size": {
+    "w": 486,
+    "h": 478
+  },
+  "title": null,
+  "roles": {
+    "Category": [
+      {
+        "kind": "column"
+      }
+    ],
+    "Size": [
+      {
+        "kind": "column",
+        "agg": 2,
+        "aggBase": "column"
+      }
+    ]
+  },
+  "hash": "c07c0ac1",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+    "visual": {
+      "visualType": "map",
+      "query": {
+        "queryState": {
+          "Category": {
+            "projections": [
+              {
+                "field": "@Category[0]",
+                "queryRef": "@ref:Category[0]",
+                "nativeQueryRef": "@name:Category[0]",
+                "active": true
+              }
+            ]
+          },
+          "Size": {
+            "projections": [
+              {
+                "field": "@Size[0]",
+                "queryRef": "@ref:Size[0]",
+                "nativeQueryRef": "@name:Size[0]"
+              }
+            ]
+          }
+        }
+      },
+      "objects": {
+        "dataPoint": [
+          {
+            "properties": {},
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 1
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": -0.5
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "mapStyles": [
+          {
+            "properties": {
+              "mapTheme": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'grayscale'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "categoryLabels": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "heatMap": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "bubbles": [
+          {
+            "properties": {
+              "bubbleSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "20L"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "title": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

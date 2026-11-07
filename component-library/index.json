@@ -1,0 +1,1392 @@
+{
+  "summary": {
+    "generatedAt": "2026-11-07T04:00:34.947Z",
+    "templates": [
+      {
+        "id": "hr",
+        "name": "Dashboard HR"
+      },
+      {
+        "id": "sale",
+        "name": "Dashboard Sale"
+      }
+    ],
+    "chartTypesInTemplates": {
+      "hr": {
+        "pivotTable": 4,
+        "card": 11,
+        "slicer": 2,
+        "advancedSlicerVisual": 3,
+        "textSlicer": 3,
+        "map": 2,
+        "cardVisual": 8,
+        "lineChart": 5,
+        "donutChart": 3,
+        "lineClusteredColumnComboChart": 2,
+        "treemap": 1,
+        "hundredPercentStackedBarChart": 1,
+        "clusteredBarChart": 1
+      },
+      "sale": {
+        "slicer": 2,
+        "cardVisual": 5,
+        "donutChart": 1,
+        "lineChart": 1,
+        "treemap": 1,
+        "shapeMap": 1,
+        "lineClusteredColumnComboChart": 1,
+        "pivotTable": 1
+      }
+    },
+    "total": 54,
+    "pass": 54,
+    "fail": 0
+  },
+  "components": [
+    {
+      "id": "hr-p2-pivotTable-783644",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "pivotTable",
+      "size": {
+        "w": 793,
+        "h": 705
+      },
+      "title": "Matrix-1",
+      "roles": {
+        "Rows": [
+          "column",
+          "column"
+        ],
+        "Values": [
+          "measure",
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-pivotTable-783644.json"
+    },
+    {
+      "id": "hr-p2-pivotTable-6db352",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "pivotTable",
+      "size": {
+        "w": 693,
+        "h": 565
+      },
+      "title": "Matrix_2",
+      "roles": {
+        "Rows": [
+          "column"
+        ],
+        "Values": [
+          "column:Count",
+          "measure",
+          "measure",
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-pivotTable-6db352.json"
+    },
+    {
+      "id": "hr-p2-card-163dc6",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "card",
+      "size": {
+        "w": 1005,
+        "h": 80
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-card-163dc6.json"
+    },
+    {
+      "id": "hr-p2-slicer-d4be43",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "slicer",
+      "size": {
+        "w": 240,
+        "h": 98
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "hierarchy"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-slicer-d4be43.json"
+    },
+    {
+      "id": "hr-p2-advancedSlicerVisual-6496ed",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "advancedSlicerVisual",
+      "size": {
+        "w": 348,
+        "h": 98
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "hierarchy"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-advancedSlicerVisual-6496ed.json"
+    },
+    {
+      "id": "hr-p2-textSlicer-4c4a49",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "textSlicer",
+      "size": {
+        "w": 558,
+        "h": 98
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "column"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-textSlicer-4c4a49.json"
+    },
+    {
+      "id": "hr-p2-map-e3408a",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "map",
+      "size": {
+        "w": 731,
+        "h": 505
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Size": [
+          "column:Count"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-map-e3408a.json"
+    },
+    {
+      "id": "hr-p2-cardVisual-96f917",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "cardVisual",
+      "size": {
+        "w": 358,
+        "h": 200
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-cardVisual-96f917.json"
+    },
+    {
+      "id": "hr-p2-cardVisual-b14a89",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "cardVisual",
+      "size": {
+        "w": 358,
+        "h": 200
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-cardVisual-b14a89.json"
+    },
+    {
+      "id": "hr-p2-cardVisual-46cbbb",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "cardVisual",
+      "size": {
+        "w": 358,
+        "h": 200
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-cardVisual-46cbbb.json"
+    },
+    {
+      "id": "hr-p2-cardVisual-8940fd",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "cardVisual",
+      "size": {
+        "w": 358,
+        "h": 198
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-cardVisual-8940fd.json"
+    },
+    {
+      "id": "hr-p2-lineChart-3afdd4",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "lineChart",
+      "size": {
+        "w": 320,
+        "h": 236
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "hierarchy"
+        ],
+        "Y": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [
+        "lineStyles[selector]",
+        "dataPoint[selector]",
+        "markers[selector]"
+      ],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-lineChart-3afdd4.json"
+    },
+    {
+      "id": "hr-p2-lineChart-7d038a",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "lineChart",
+      "size": {
+        "w": 320,
+        "h": 236
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "hierarchy"
+        ],
+        "Y": [
+          "measure"
+        ]
+      },
+      "duplicates": 2,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-lineChart-7d038a.json"
+    },
+    {
+      "id": "hr-p2-slicer-a70514",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "slicer",
+      "size": {
+        "w": 214,
+        "h": 184
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "column"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [
+        "general.filter (lựa chọn đã lưu)"
+      ],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-slicer-a70514.json"
+    },
+    {
+      "id": "hr-p2-lineChart-ff7871",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "lineChart",
+      "size": {
+        "w": 1430,
+        "h": 610
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Y": [
+          "measure"
+        ],
+        "Y2": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-lineChart-ff7871.json"
+    },
+    {
+      "id": "hr-p2-donutChart-4231c4",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "donutChart",
+      "size": {
+        "w": 595,
+        "h": 703
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Y": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-donutChart-4231c4.json"
+    },
+    {
+      "id": "hr-p2-lineClusteredColumnComboChart-0ee36e",
+      "template": "hr",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "lineClusteredColumnComboChart",
+      "size": {
+        "w": 1430,
+        "h": 585
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Y": [
+          "measure"
+        ],
+        "Y2": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p2-lineClusteredColumnComboChart-0ee36e.json"
+    },
+    {
+      "id": "hr-p3-cardVisual-16a5f3",
+      "template": "hr",
+      "page": 3,
+      "pageName": "Department",
+      "type": "cardVisual",
+      "size": {
+        "w": 250,
+        "h": 170
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p3-cardVisual-16a5f3.json"
+    },
+    {
+      "id": "hr-p3-cardVisual-e0f26e",
+      "template": "hr",
+      "page": 3,
+      "pageName": "Department",
+      "type": "cardVisual",
+      "size": {
+        "w": 250,
+        "h": 170
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p3-cardVisual-e0f26e.json"
+    },
+    {
+      "id": "hr-p3-cardVisual-fc981d",
+      "template": "hr",
+      "page": 3,
+      "pageName": "Department",
+      "type": "cardVisual",
+      "size": {
+        "w": 250,
+        "h": 170
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p3-cardVisual-fc981d.json"
+    },
+    {
+      "id": "hr-p3-cardVisual-d4fa71",
+      "template": "hr",
+      "page": 3,
+      "pageName": "Department",
+      "type": "cardVisual",
+      "size": {
+        "w": 250,
+        "h": 170
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p3-cardVisual-d4fa71.json"
+    },
+    {
+      "id": "hr-p3-treemap-528242",
+      "template": "hr",
+      "page": 3,
+      "pageName": "Department",
+      "type": "treemap",
+      "size": {
+        "w": 357,
+        "h": 503
+      },
+      "title": null,
+      "roles": {
+        "Group": [
+          "column"
+        ],
+        "Values": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p3-treemap-528242.json"
+    },
+    {
+      "id": "hr-p3-textSlicer-8b8253",
+      "template": "hr",
+      "page": 3,
+      "pageName": "Department",
+      "type": "textSlicer",
+      "size": {
+        "w": 241,
+        "h": 66
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "column"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p3-textSlicer-8b8253.json"
+    },
+    {
+      "id": "hr-p3-lineClusteredColumnComboChart-2ec6d6",
+      "template": "hr",
+      "page": 3,
+      "pageName": "Department",
+      "type": "lineClusteredColumnComboChart",
+      "size": {
+        "w": 745,
+        "h": 338
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Y": [
+          "measure"
+        ],
+        "Y2": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p3-lineClusteredColumnComboChart-2ec6d6.json"
+    },
+    {
+      "id": "hr-p3-donutChart-2b872f",
+      "template": "hr",
+      "page": 3,
+      "pageName": "Department",
+      "type": "donutChart",
+      "size": {
+        "w": 297,
+        "h": 337
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Y": [
+          "column:Count"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [
+        "dataPoint[selector]"
+      ],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p3-donutChart-2b872f.json"
+    },
+    {
+      "id": "hr-p3-advancedSlicerVisual-31aa14",
+      "template": "hr",
+      "page": 3,
+      "pageName": "Department",
+      "type": "advancedSlicerVisual",
+      "size": {
+        "w": 240,
+        "h": 480
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "column"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p3-advancedSlicerVisual-31aa14.json"
+    },
+    {
+      "id": "hr-p3-pivotTable-bbf3f1",
+      "template": "hr",
+      "page": 3,
+      "pageName": "Department",
+      "type": "pivotTable",
+      "size": {
+        "w": 810,
+        "h": 425
+      },
+      "title": null,
+      "roles": {
+        "Rows": [
+          "column",
+          "column"
+        ],
+        "Values": [
+          "column:Count",
+          "measure",
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p3-pivotTable-bbf3f1.json"
+    },
+    {
+      "id": "hr-p3-hundredPercentStackedBarChart-b2ac6d",
+      "template": "hr",
+      "page": 3,
+      "pageName": "Department",
+      "type": "hundredPercentStackedBarChart",
+      "size": {
+        "w": 607,
+        "h": 425
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Series": [
+          "column"
+        ],
+        "Y": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p3-hundredPercentStackedBarChart-b2ac6d.json"
+    },
+    {
+      "id": "hr-p4-textSlicer-a0d72f",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "textSlicer",
+      "size": {
+        "w": 383,
+        "h": 67
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "column"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-textSlicer-a0d72f.json"
+    },
+    {
+      "id": "hr-p4-advancedSlicerVisual-4917b4",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "advancedSlicerVisual",
+      "size": {
+        "w": 681,
+        "h": 70
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "column"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-advancedSlicerVisual-4917b4.json"
+    },
+    {
+      "id": "hr-p4-map-f9387e",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "map",
+      "size": {
+        "w": 486,
+        "h": 478
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Size": [
+          "column:Count"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-map-f9387e.json"
+    },
+    {
+      "id": "hr-p4-card-944cad",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "card",
+      "size": {
+        "w": 756,
+        "h": 80
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-card-944cad.json"
+    },
+    {
+      "id": "hr-p4-card-d8b950",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "card",
+      "size": {
+        "w": 260,
+        "h": 126
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-card-d8b950.json"
+    },
+    {
+      "id": "hr-p4-card-2c6190",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "card",
+      "size": {
+        "w": 218,
+        "h": 126
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-card-2c6190.json"
+    },
+    {
+      "id": "hr-p4-card-269a7a",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "card",
+      "size": {
+        "w": 218,
+        "h": 126
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-card-269a7a.json"
+    },
+    {
+      "id": "hr-p4-card-e8b786",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "card",
+      "size": {
+        "w": 56,
+        "h": 62
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "measure"
+        ]
+      },
+      "duplicates": 2,
+      "droppedProperties": [
+        "visualTooltip (trỏ tới trang của template)"
+      ],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-card-e8b786.json"
+    },
+    {
+      "id": "hr-p4-card-df6be0",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "card",
+      "size": {
+        "w": 78,
+        "h": 57
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "measure"
+        ]
+      },
+      "duplicates": 1,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-card-df6be0.json"
+    },
+    {
+      "id": "hr-p4-card-2ee99c",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "card",
+      "size": {
+        "w": 79,
+        "h": 58
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-card-2ee99c.json"
+    },
+    {
+      "id": "hr-p4-clusteredBarChart-1097e9",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "clusteredBarChart",
+      "size": {
+        "w": 658,
+        "h": 516
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Y": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-clusteredBarChart-1097e9.json"
+    },
+    {
+      "id": "hr-p4-pivotTable-75a1dc",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "pivotTable",
+      "size": {
+        "w": 848,
+        "h": 516
+      },
+      "title": null,
+      "roles": {
+        "Rows": [
+          "column"
+        ],
+        "Values": [
+          "measure",
+          "measure",
+          "measure",
+          "measure"
+        ],
+        "Extra": [
+          "column:Min",
+          "column:Max"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-pivotTable-75a1dc.json"
+    },
+    {
+      "id": "hr-p4-donutChart-dc8b0f",
+      "template": "hr",
+      "page": 4,
+      "pageName": "Geography",
+      "type": "donutChart",
+      "size": {
+        "w": 498,
+        "h": 370
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Y": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/hr-p4-donutChart-dc8b0f.json"
+    },
+    {
+      "id": "sale-p2-slicer-5317c4",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "slicer",
+      "size": {
+        "w": 133,
+        "h": 62
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "column"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-slicer-5317c4.json"
+    },
+    {
+      "id": "sale-p2-slicer-4750a9",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "slicer",
+      "size": {
+        "w": 144,
+        "h": 62
+      },
+      "title": null,
+      "roles": {
+        "Values": [
+          "column"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-slicer-4750a9.json"
+    },
+    {
+      "id": "sale-p2-cardVisual-56ba69",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "cardVisual",
+      "size": {
+        "w": 271,
+        "h": 177
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-cardVisual-56ba69.json"
+    },
+    {
+      "id": "sale-p2-cardVisual-78ef75",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "cardVisual",
+      "size": {
+        "w": 271,
+        "h": 177
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-cardVisual-78ef75.json"
+    },
+    {
+      "id": "sale-p2-cardVisual-cca477",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "cardVisual",
+      "size": {
+        "w": 271,
+        "h": 177
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-cardVisual-cca477.json"
+    },
+    {
+      "id": "sale-p2-cardVisual-f0246a",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "cardVisual",
+      "size": {
+        "w": 271,
+        "h": 177
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-cardVisual-f0246a.json"
+    },
+    {
+      "id": "sale-p2-cardVisual-d8a81b",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "cardVisual",
+      "size": {
+        "w": 271,
+        "h": 177
+      },
+      "title": null,
+      "roles": {
+        "Data": [
+          "measure"
+        ],
+        "Extra": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-cardVisual-d8a81b.json"
+    },
+    {
+      "id": "sale-p2-donutChart-78243b",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "donutChart",
+      "size": {
+        "w": 357,
+        "h": 333
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Y": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-donutChart-78243b.json"
+    },
+    {
+      "id": "sale-p2-lineChart-e9ae97",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "lineChart",
+      "size": {
+        "w": 740,
+        "h": 330
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Y": [
+          "measure"
+        ],
+        "Y2": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-lineChart-e9ae97.json"
+    },
+    {
+      "id": "sale-p2-treemap-65c4cd",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "treemap",
+      "size": {
+        "w": 454,
+        "h": 297
+      },
+      "title": null,
+      "roles": {
+        "Group": [
+          "column"
+        ],
+        "Values": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-treemap-65c4cd.json"
+    },
+    {
+      "id": "sale-p2-shapeMap-f9a724",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "shapeMap",
+      "size": {
+        "w": 328,
+        "h": 422
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Tooltips": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-shapeMap-f9a724.json"
+    },
+    {
+      "id": "sale-p2-lineClusteredColumnComboChart-46ae5c",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "lineClusteredColumnComboChart",
+      "size": {
+        "w": 835,
+        "h": 380
+      },
+      "title": null,
+      "roles": {
+        "Category": [
+          "column"
+        ],
+        "Y": [
+          "measure"
+        ],
+        "Y2": [
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-lineClusteredColumnComboChart-46ae5c.json"
+    },
+    {
+      "id": "sale-p2-pivotTable-eea44e",
+      "template": "sale",
+      "page": 2,
+      "pageName": "Overview",
+      "type": "pivotTable",
+      "size": {
+        "w": 810,
+        "h": 393
+      },
+      "title": null,
+      "roles": {
+        "Rows": [
+          "column"
+        ],
+        "Values": [
+          "measure",
+          "measure",
+          "measure",
+          "measure"
+        ]
+      },
+      "duplicates": 0,
+      "droppedProperties": [],
+      "status": "PASS",
+      "issues": [],
+      "file": "components/sale-p2-pivotTable-eea44e.json"
+    }
+  ]
+}

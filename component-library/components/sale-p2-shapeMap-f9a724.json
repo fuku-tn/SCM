@@ -1,0 +1,250 @@
+{
+  "id": "sale-p2-shapeMap-f9a724",
+  "template": "sale",
+  "templateName": "Dashboard Sale",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "shapeMap",
+  "size": {
+    "w": 328,
+    "h": 422
+  },
+  "title": null,
+  "roles": {
+    "Category": [
+      {
+        "kind": "column"
+      }
+    ],
+    "Tooltips": [
+      {
+        "kind": "measure"
+      }
+    ]
+  },
+  "hash": "db9e08f9",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+    "visual": {
+      "visualType": "shapeMap",
+      "query": {
+        "queryState": {
+          "Category": {
+            "projections": [
+              {
+                "field": "@Category[0]",
+                "queryRef": "@ref:Category[0]",
+                "nativeQueryRef": "@name:Category[0]"
+              }
+            ]
+          },
+          "Tooltips": {
+            "projections": [
+              {
+                "field": "@Tooltips[0]",
+                "queryRef": "@ref:Tooltips[0]",
+                "nativeQueryRef": "@name:Tooltips[0]"
+              }
+            ]
+          }
+        }
+      },
+      "objects": {
+        "shape": [
+          {
+            "properties": {
+              "map": {
+                "geoJson": {
+                  "type": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'packaged'"
+                      }
+                    }
+                  },
+                  "name": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'Provinces_VN_2025.geojson'"
+                      }
+                    }
+                  },
+                  "content": {
+                    "expr": {
+                      "ResourcePackageItem": {
+                        "PackageName": "RegisteredResources",
+                        "PackageType": 1,
+                        "ItemName": "Provinces_VN_20254986945595561203.geojson"
+                      }
+                    }
+                  }
+                }
+              },
+              "projectionEnum": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'orthographic'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "zoom": [
+          {
+            "properties": {
+              "manualZoom": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "dataPoint": [
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "FillRule": {
+                        "Input": "@Tooltips[0]",
+                        "FillRule": {
+                          "linearGradient3": {
+                            "min": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#e9d8af'"
+                                }
+                              }
+                            },
+                            "mid": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#2E4763'"
+                                }
+                              }
+                            },
+                            "max": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#1C3557'"
+                                }
+                              }
+                            },
+                            "nullColoringStrategy": {
+                              "strategy": {
+                                "Literal": {
+                                  "Value": "'asZero'"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 1
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "title": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "border": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "padding": [
+          {
+            "properties": {
+              "top": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0D"
+                  }
+                }
+              },
+              "right": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0D"
+                  }
+                }
+              },
+              "bottom": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0D"
+                  }
+                }
+              },
+              "left": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0D"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

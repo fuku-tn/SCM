@@ -1,0 +1,302 @@
+{
+  "id": "hr-p3-pivotTable-bbf3f1",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 3,
+  "pageName": "Department",
+  "type": "pivotTable",
+  "size": {
+    "w": 810,
+    "h": 425
+  },
+  "title": null,
+  "roles": {
+    "Rows": [
+      {
+        "kind": "column",
+        "displayName": "Department"
+      },
+      {
+        "kind": "column",
+        "displayName": "Job Function Description"
+      }
+    ],
+    "Values": [
+      {
+        "kind": "column",
+        "agg": 2,
+        "aggBase": "column",
+        "displayName": "Total Emp"
+      },
+      {
+        "kind": "measure"
+      },
+      {
+        "kind": "measure",
+        "displayName": "Cost Per Employee"
+      }
+    ]
+  },
+  "hash": "e7868540",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+    "visual": {
+      "visualType": "pivotTable",
+      "query": {
+        "queryState": {
+          "Rows": {
+            "projections": [
+              {
+                "field": "@Rows[0]",
+                "queryRef": "@ref:Rows[0]",
+                "nativeQueryRef": "@name:Rows[0]",
+                "active": true,
+                "displayName": "Department"
+              },
+              {
+                "field": "@Rows[1]",
+                "queryRef": "@ref:Rows[1]",
+                "nativeQueryRef": "@name:Rows[1]",
+                "active": true,
+                "displayName": "Job Function Description"
+              }
+            ]
+          },
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]",
+                "displayName": "Total Emp"
+              },
+              {
+                "field": "@Values[1]",
+                "queryRef": "@ref:Values[1]",
+                "nativeQueryRef": "@name:Values[1]"
+              },
+              {
+                "field": "@Values[2]",
+                "queryRef": "@ref:Values[2]",
+                "nativeQueryRef": "@name:Values[2]",
+                "displayName": "Cost Per Employee"
+              }
+            ]
+          }
+        }
+      },
+      "expansionStates": [
+        {
+          "roles": [
+            "Rows"
+          ],
+          "levels": [
+            {
+              "queryRefs": [
+                "@ref:Rows[0]"
+              ],
+              "isPinned": true
+            },
+            {
+              "queryRefs": [
+                "@ref:Rows[1]"
+              ],
+              "isCollapsed": true,
+              "isPinned": true
+            }
+          ],
+          "root": {}
+        }
+      ],
+      "objects": {
+        "grid": [
+          {
+            "properties": {
+              "outlineColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 8,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "rowHeaders": [
+          {
+            "properties": {
+              "outlineStyle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0D"
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "14D"
+                  }
+                }
+              },
+              "fontColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 2,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "values": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "14D"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "backColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "FillRule": {
+                        "Input": "@Values[2]",
+                        "FillRule": {
+                          "linearGradient2": {
+                            "min": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#eee8df'"
+                                }
+                              }
+                            },
+                            "max": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#D4C5B0'"
+                                }
+                              }
+                            },
+                            "nullColoringStrategy": {
+                              "strategy": {
+                                "Literal": {
+                                  "Value": "'asZero'"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 1
+                  }
+                }
+              ],
+              "metadata": "@ref:Values[2]"
+            }
+          }
+        ],
+        "columnHeaders": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "14D"
+                  }
+                }
+              },
+              "fontColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 2,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "general": [
+          {
+            "properties": {
+              "layout": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Tabular'"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "stylePreset": [
+          {
+            "properties": {
+              "name": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'None'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

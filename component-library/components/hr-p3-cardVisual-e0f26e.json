@@ -1,0 +1,413 @@
+{
+  "id": "hr-p3-cardVisual-e0f26e",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 3,
+  "pageName": "Department",
+  "type": "cardVisual",
+  "size": {
+    "w": 250,
+    "h": 170
+  },
+  "title": null,
+  "roles": {
+    "Data": [
+      {
+        "kind": "measure"
+      }
+    ],
+    "Extra": [
+      {
+        "kind": "measure",
+        "hint": "Total Training Cost YoY%",
+        "extra": true
+      }
+    ]
+  },
+  "hash": "d354e45f",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+    "visual": {
+      "visualType": "cardVisual",
+      "query": {
+        "queryState": {
+          "Data": {
+            "projections": [
+              {
+                "field": "@Data[0]",
+                "queryRef": "@ref:Data[0]",
+                "nativeQueryRef": "@name:Data[0]"
+              }
+            ]
+          }
+        },
+        "sortDefinition": {
+          "sort": [
+            {
+              "field": "@Data[0]",
+              "direction": "Descending"
+            }
+          ],
+          "isDefaultSort": true
+        }
+      },
+      "objects": {
+        "outline": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "divider": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "dividerColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 8,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "fillCustom": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "layout": [
+          {
+            "properties": {
+              "backgroundShow": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "value": [
+          {
+            "properties": {
+              "fontFamily": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'"
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "26D"
+                  }
+                }
+              },
+              "bold": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          },
+          {
+            "properties": {
+              "labelDisplayUnits": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1D"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]"
+            }
+          }
+        ],
+        "label": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          },
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "position": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'aboveValue'"
+                  }
+                }
+              },
+              "fontColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 2,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "14D"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]"
+            }
+          }
+        ],
+        "referenceLabel": [
+          {
+            "properties": {
+              "value": {
+                "expr": "@Extra[0]"
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 0
+                  }
+                }
+              ],
+              "metadata": "@ref:Data[0]",
+              "id": "field-2b5834fb-4c00-94a0-6ce0-25a89d737c4e",
+              "order": 0
+            }
+          },
+          {
+            "properties": {
+              "backgroundShow": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "referenceLabelTitle": [
+          {
+            "properties": {
+              "titleContentType": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'custom'"
+                  }
+                }
+              },
+              "titleText": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Vs Last Year: '"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]",
+              "id": "field-2b5834fb-4c00-94a0-6ce0-25a89d737c4e"
+            }
+          }
+        ],
+        "referenceLabelValue": [
+          {
+            "properties": {
+              "valueFontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "14D"
+                  }
+                }
+              },
+              "valuePrecision": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1L"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]",
+              "id": "field-2b5834fb-4c00-94a0-6ce0-25a89d737c4e"
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": 0.6
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "dropShadow": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": -0.25
+                      }
+                    }
+                  }
+                }
+              },
+              "preset": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Center'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "border": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": 0.2
+                      }
+                    }
+                  }
+                }
+              },
+              "radius": {
+                "expr": {
+                  "Literal": {
+                    "Value": "15D"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

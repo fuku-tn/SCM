@@ -1,0 +1,547 @@
+{
+  "id": "hr-p4-donutChart-dc8b0f",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 4,
+  "pageName": "Geography",
+  "type": "donutChart",
+  "size": {
+    "w": 498,
+    "h": 370
+  },
+  "title": null,
+  "roles": {
+    "Category": [
+      {
+        "kind": "column"
+      }
+    ],
+    "Y": [
+      {
+        "kind": "measure"
+      }
+    ]
+  },
+  "hash": "a672166d",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+    "visual": {
+      "visualType": "donutChart",
+      "query": {
+        "queryState": {
+          "Category": {
+            "projections": [
+              {
+                "field": "@Category[0]",
+                "queryRef": "@ref:Category[0]",
+                "nativeQueryRef": "@name:Category[0]",
+                "active": true
+              }
+            ]
+          },
+          "Y": {
+            "projections": [
+              {
+                "field": "@Y[0]",
+                "queryRef": "@ref:Y[0]",
+                "nativeQueryRef": "@name:Y[0]"
+              }
+            ]
+          }
+        },
+        "sortDefinition": {
+          "sort": [
+            {
+              "field": "@Y[0]",
+              "direction": "Descending"
+            }
+          ],
+          "isDefaultSort": true
+        }
+      },
+      "objects": {
+        "dataPoint": [
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": -0.25
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": -0.5
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "scopeId": {
+                    "Comparison": {
+                      "ComparisonKind": 0,
+                      "Left": "@Category[0]",
+                      "Right": {
+                        "Literal": {
+                          "Value": "'Massachusetts'"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": -0.25
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "scopeId": {
+                    "Comparison": {
+                      "ComparisonKind": 0,
+                      "Left": "@Category[0]",
+                      "Right": {
+                        "Literal": {
+                          "Value": "'Texas'"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": 0.2
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "scopeId": {
+                    "Comparison": {
+                      "ComparisonKind": 0,
+                      "Left": "@Category[0]",
+                      "Right": {
+                        "Literal": {
+                          "Value": "'Connecticut'"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": 0.4
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "scopeId": {
+                    "Comparison": {
+                      "ComparisonKind": 0,
+                      "Left": "@Category[0]",
+                      "Right": {
+                        "Literal": {
+                          "Value": "'Arizona'"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": 0.6
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "scopeId": {
+                    "Comparison": {
+                      "ComparisonKind": 0,
+                      "Left": "@Category[0]",
+                      "Right": {
+                        "Literal": {
+                          "Value": "'Tennessee'"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 0,
+                        "Percent": -0.5
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "scopeId": {
+                    "Comparison": {
+                      "ComparisonKind": 0,
+                      "Left": "@Category[0]",
+                      "Right": {
+                        "Literal": {
+                          "Value": "'Kentucky'"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 0,
+                        "Percent": -0.3
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "scopeId": {
+                    "Comparison": {
+                      "ComparisonKind": 0,
+                      "Left": "@Category[0]",
+                      "Right": {
+                        "Literal": {
+                          "Value": "'Colorado'"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 0,
+                        "Percent": -0.2
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "scopeId": {
+                    "Comparison": {
+                      "ComparisonKind": 0,
+                      "Left": "@Category[0]",
+                      "Right": {
+                        "Literal": {
+                          "Value": "'Washington'"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 0,
+                        "Percent": -0.1
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "scopeId": {
+                    "Comparison": {
+                      "ComparisonKind": 0,
+                      "Left": "@Category[0]",
+                      "Right": {
+                        "Literal": {
+                          "Value": "'Idaho'"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 7,
+                        "Percent": 0.2
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "scopeId": {
+                    "Comparison": {
+                      "ComparisonKind": 0,
+                      "Left": "@Category[0]",
+                      "Right": {
+                        "Literal": {
+                          "Value": "'Pennsylvania'"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "labels": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "12D"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": -0.25
+                      }
+                    }
+                  }
+                }
+              },
+              "labelDisplayUnits": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1000D"
+                  }
+                }
+              },
+              "labelStyle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Category, percent of total'"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 2,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 1
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "legend": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "slices": [
+          {
+            "properties": {
+              "innerRadiusRatio": {
+                "expr": {
+                  "Literal": {
+                    "Value": "70L"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "title": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

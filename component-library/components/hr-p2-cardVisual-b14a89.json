@@ -1,0 +1,345 @@
+{
+  "id": "hr-p2-cardVisual-b14a89",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "cardVisual",
+  "size": {
+    "w": 358,
+    "h": 200
+  },
+  "title": null,
+  "roles": {
+    "Data": [
+      {
+        "kind": "measure"
+      }
+    ],
+    "Extra": [
+      {
+        "kind": "measure",
+        "hint": "Total Training Cost MoM %",
+        "extra": true
+      }
+    ]
+  },
+  "hash": "9a55c6a3",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+    "visual": {
+      "visualType": "cardVisual",
+      "query": {
+        "queryState": {
+          "Data": {
+            "projections": [
+              {
+                "field": "@Data[0]",
+                "queryRef": "@ref:Data[0]",
+                "nativeQueryRef": "@name:Data[0]"
+              }
+            ]
+          }
+        },
+        "sortDefinition": {
+          "sort": [
+            {
+              "field": "@Data[0]",
+              "direction": "Descending"
+            }
+          ],
+          "isDefaultSort": true
+        }
+      },
+      "objects": {
+        "layout": [
+          {
+            "properties": {
+              "autoGrid": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "orientation": {
+                "expr": {
+                  "Literal": {
+                    "Value": "2D"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "backgroundShow": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "fillCustom": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "divider": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "dividerColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 1,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "outline": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "accentBar": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "position": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Bottom'"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "value": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "50D"
+                  }
+                }
+              },
+              "fontFamily": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'"
+                  }
+                }
+              },
+              "bold": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "label": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "25D"
+                  }
+                }
+              },
+              "position": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'aboveValue'"
+                  }
+                }
+              },
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "referenceLabel": [
+          {
+            "properties": {
+              "value": {
+                "expr": "@Extra[0]"
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 0
+                  }
+                }
+              ],
+              "metadata": "@ref:Data[0]",
+              "id": "field-9ae780a3-9756-b2f9-2d87-8ba96b96dffa",
+              "order": 0
+            }
+          },
+          {
+            "properties": {
+              "backgroundShow": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "referenceLabelTitle": [
+          {
+            "properties": {
+              "titleContentType": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'custom'"
+                  }
+                }
+              },
+              "titleText": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Vs Last Month: '"
+                  }
+                }
+              },
+              "titleFontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "20D"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]",
+              "id": "field-9ae780a3-9756-b2f9-2d87-8ba96b96dffa"
+            }
+          }
+        ],
+        "referenceLabelValue": [
+          {
+            "properties": {
+              "valueFontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "24D"
+                  }
+                }
+              },
+              "valuePrecision": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1L"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]",
+              "id": "field-9ae780a3-9756-b2f9-2d87-8ba96b96dffa"
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

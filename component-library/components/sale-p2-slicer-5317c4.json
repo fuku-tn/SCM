@@ -1,0 +1,112 @@
+{
+  "id": "sale-p2-slicer-5317c4",
+  "template": "sale",
+  "templateName": "Dashboard Sale",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "slicer",
+  "size": {
+    "w": 133,
+    "h": 62
+  },
+  "title": null,
+  "roles": {
+    "Values": [
+      {
+        "kind": "column"
+      }
+    ]
+  },
+  "hash": "e5e3b63a",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+    "visual": {
+      "visualType": "slicer",
+      "query": {
+        "queryState": {
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]",
+                "active": true
+              }
+            ]
+          }
+        },
+        "sortDefinition": {
+          "sort": [
+            {
+              "field": "@Values[0]",
+              "direction": "Ascending"
+            }
+          ],
+          "isDefaultSort": true
+        }
+      },
+      "objects": {
+        "data": [
+          {
+            "properties": {
+              "mode": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Dropdown'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "general": [
+          {
+            "properties": {}
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "border": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 0,
+                        "Percent": -0.3
+                      }
+                    }
+                  }
+                }
+              },
+              "radius": {
+                "expr": {
+                  "Literal": {
+                    "Value": "5D"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

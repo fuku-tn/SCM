@@ -1,0 +1,490 @@
+{
+  "id": "hr-p4-pivotTable-75a1dc",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 4,
+  "pageName": "Geography",
+  "type": "pivotTable",
+  "size": {
+    "w": 848,
+    "h": 516
+  },
+  "title": null,
+  "roles": {
+    "Rows": [
+      {
+        "kind": "column"
+      }
+    ],
+    "Values": [
+      {
+        "kind": "measure",
+        "displayName": "Total Cost"
+      },
+      {
+        "kind": "measure",
+        "displayName": "Cost Per Employee"
+      },
+      {
+        "kind": "measure",
+        "displayName": "Cost per Training"
+      },
+      {
+        "kind": "measure",
+        "displayName": "Completion Rate %"
+      }
+    ],
+    "Extra": [
+      {
+        "kind": "column",
+        "agg": 3,
+        "aggBase": "column",
+        "hint": "",
+        "extra": true
+      },
+      {
+        "kind": "column",
+        "agg": 4,
+        "aggBase": "column",
+        "hint": "",
+        "extra": true
+      }
+    ]
+  },
+  "hash": "ab8989dc",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+    "visual": {
+      "visualType": "pivotTable",
+      "query": {
+        "queryState": {
+          "Rows": {
+            "projections": [
+              {
+                "field": "@Rows[0]",
+                "queryRef": "@ref:Rows[0]",
+                "nativeQueryRef": "@name:Rows[0]",
+                "active": true
+              }
+            ]
+          },
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]",
+                "displayName": "Total Cost"
+              },
+              {
+                "field": "@Values[1]",
+                "queryRef": "@ref:Values[1]",
+                "nativeQueryRef": "@name:Values[1]",
+                "displayName": "Cost Per Employee"
+              },
+              {
+                "field": "@Values[2]",
+                "queryRef": "@ref:Values[2]",
+                "nativeQueryRef": "@name:Values[2]",
+                "displayName": "Cost per Training"
+              },
+              {
+                "field": "@Values[3]",
+                "queryRef": "@ref:Values[3]",
+                "nativeQueryRef": "@name:Values[3]",
+                "displayName": "Completion Rate %"
+              }
+            ]
+          }
+        }
+      },
+      "objects": {
+        "general": [
+          {
+            "properties": {
+              "layout": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Tabular'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "values": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "14D"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "icon": {
+                "kind": "Icon",
+                "layout": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'Before'"
+                    }
+                  }
+                },
+                "verticalAlignment": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'Top'"
+                    }
+                  }
+                },
+                "value": {
+                  "expr": {
+                    "Conditional": {
+                      "Cases": [
+                        {
+                          "Condition": {
+                            "Comparison": {
+                              "ComparisonKind": 2,
+                              "Left": "@Values[3]",
+                              "Right": {
+                                "RangePercent": {
+                                  "Min": {
+                                    "ScopedEval": {
+                                      "Expression": "@Extra[0]",
+                                      "Scope": []
+                                    }
+                                  },
+                                  "Max": {
+                                    "ScopedEval": {
+                                      "Expression": "@Extra[1]",
+                                      "Scope": []
+                                    }
+                                  },
+                                  "Percent": 0.75
+                                }
+                              }
+                            }
+                          },
+                          "Value": {
+                            "Literal": {
+                              "Value": "'ColoredArrowUp'"
+                            }
+                          }
+                        },
+                        {
+                          "Condition": {
+                            "And": {
+                              "Left": {
+                                "Comparison": {
+                                  "ComparisonKind": 2,
+                                  "Left": "@Values[3]",
+                                  "Right": {
+                                    "RangePercent": {
+                                      "Min": {
+                                        "ScopedEval": {
+                                          "Expression": "@Extra[0]",
+                                          "Scope": []
+                                        }
+                                      },
+                                      "Max": {
+                                        "ScopedEval": {
+                                          "Expression": "@Extra[1]",
+                                          "Scope": []
+                                        }
+                                      },
+                                      "Percent": 0.5
+                                    }
+                                  }
+                                }
+                              },
+                              "Right": {
+                                "Comparison": {
+                                  "ComparisonKind": 3,
+                                  "Left": "@Values[3]",
+                                  "Right": {
+                                    "RangePercent": {
+                                      "Min": {
+                                        "ScopedEval": {
+                                          "Expression": "@Extra[0]",
+                                          "Scope": []
+                                        }
+                                      },
+                                      "Max": {
+                                        "ScopedEval": {
+                                          "Expression": "@Extra[1]",
+                                          "Scope": []
+                                        }
+                                      },
+                                      "Percent": 0.75
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "Value": {
+                            "Literal": {
+                              "Value": "'ColoredArrowUpRight'"
+                            }
+                          }
+                        },
+                        {
+                          "Condition": {
+                            "And": {
+                              "Left": {
+                                "Comparison": {
+                                  "ComparisonKind": 2,
+                                  "Left": "@Values[3]",
+                                  "Right": {
+                                    "RangePercent": {
+                                      "Min": {
+                                        "ScopedEval": {
+                                          "Expression": "@Extra[0]",
+                                          "Scope": []
+                                        }
+                                      },
+                                      "Max": {
+                                        "ScopedEval": {
+                                          "Expression": "@Extra[1]",
+                                          "Scope": []
+                                        }
+                                      },
+                                      "Percent": 0.25
+                                    }
+                                  }
+                                }
+                              },
+                              "Right": {
+                                "Comparison": {
+                                  "ComparisonKind": 3,
+                                  "Left": "@Values[3]",
+                                  "Right": {
+                                    "RangePercent": {
+                                      "Min": {
+                                        "ScopedEval": {
+                                          "Expression": "@Extra[0]",
+                                          "Scope": []
+                                        }
+                                      },
+                                      "Max": {
+                                        "ScopedEval": {
+                                          "Expression": "@Extra[1]",
+                                          "Scope": []
+                                        }
+                                      },
+                                      "Percent": 0.5
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "Value": {
+                            "Literal": {
+                              "Value": "'ColoredArrowDownRight'"
+                            }
+                          }
+                        },
+                        {
+                          "Condition": {
+                            "Comparison": {
+                              "ComparisonKind": 3,
+                              "Left": "@Values[3]",
+                              "Right": {
+                                "RangePercent": {
+                                  "Min": {
+                                    "ScopedEval": {
+                                      "Expression": "@Extra[0]",
+                                      "Scope": []
+                                    }
+                                  },
+                                  "Max": {
+                                    "ScopedEval": {
+                                      "Expression": "@Extra[1]",
+                                      "Scope": []
+                                    }
+                                  },
+                                  "Percent": 0.25
+                                }
+                              }
+                            }
+                          },
+                          "Value": {
+                            "Literal": {
+                              "Value": "'ColoredArrowDown'"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 1
+                  }
+                }
+              ],
+              "metadata": "@ref:Values[3]"
+            }
+          }
+        ],
+        "columnHeaders": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "14D"
+                  }
+                }
+              },
+              "fontColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 2,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "bold": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "columnAdjustment": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'growToFit'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "rowHeaders": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "14D"
+                  }
+                }
+              },
+              "fontColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 2,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "bold": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "subTotals": [
+          {
+            "properties": {
+              "columnSubtotals": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "rowSubtotals": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "stylePreset": [
+          {
+            "properties": {
+              "name": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'None'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "border": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 0,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "radius": {
+                "expr": {
+                  "Literal": {
+                    "Value": "10D"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

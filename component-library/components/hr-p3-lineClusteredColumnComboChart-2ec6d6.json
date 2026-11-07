@@ -1,0 +1,476 @@
+{
+  "id": "hr-p3-lineClusteredColumnComboChart-2ec6d6",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 3,
+  "pageName": "Department",
+  "type": "lineClusteredColumnComboChart",
+  "size": {
+    "w": 745,
+    "h": 338
+  },
+  "title": null,
+  "roles": {
+    "Category": [
+      {
+        "kind": "column"
+      }
+    ],
+    "Y": [
+      {
+        "kind": "measure"
+      }
+    ],
+    "Y2": [
+      {
+        "kind": "measure"
+      }
+    ]
+  },
+  "hash": "e0ade059",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+    "visual": {
+      "visualType": "lineClusteredColumnComboChart",
+      "query": {
+        "queryState": {
+          "Category": {
+            "projections": [
+              {
+                "field": "@Category[0]",
+                "queryRef": "@ref:Category[0]",
+                "nativeQueryRef": "@name:Category[0]",
+                "active": true
+              }
+            ]
+          },
+          "Y": {
+            "projections": [
+              {
+                "field": "@Y[0]",
+                "queryRef": "@ref:Y[0]",
+                "nativeQueryRef": "@name:Y[0]"
+              }
+            ]
+          },
+          "Y2": {
+            "projections": [
+              {
+                "field": "@Y2[0]",
+                "queryRef": "@ref:Y2[0]",
+                "nativeQueryRef": "@name:Y2[0]"
+              }
+            ]
+          }
+        },
+        "sortDefinition": {
+          "sort": [
+            {
+              "field": "@Y[0]",
+              "direction": "Descending"
+            }
+          ],
+          "isDefaultSort": true
+        }
+      },
+      "objects": {
+        "categoryAxis": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "12D"
+                  }
+                }
+              },
+              "showAxisTitle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "labelColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 2,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "innerPadding": {
+                "expr": {
+                  "Literal": {
+                    "Value": "40L"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "valueAxis": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "showAxisTitle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "secShow": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "secFontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "8D"
+                  }
+                }
+              },
+              "secLabelColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 6,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "dataPoint": [
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 2,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Y[0]"
+            }
+          },
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Y2[0]"
+            }
+          }
+        ],
+        "lineStyles": [
+          {
+            "properties": {
+              "lineChartType": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'smooth'"
+                  }
+                }
+              },
+              "interpolationSmooth": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'cardinal'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "labels": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "enableBackground": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "12D"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 0,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "labelDisplayUnits": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1D"
+                  }
+                }
+              },
+              "labelPosition": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'InsideEnd'"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Y[0]"
+            }
+          },
+          {
+            "properties": {
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 2,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "12D"
+                  }
+                }
+              },
+              "enableBackground": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "backgroundColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "backgroundTransparency": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0D"
+                  }
+                }
+              },
+              "labelPrecision": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1L"
+                  }
+                }
+              },
+              "labelDisplayUnits": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1000D"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Y2[0]"
+            }
+          }
+        ],
+        "legend": [
+          {
+            "properties": {
+              "showTitle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "position": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'TopRight'"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "title": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 6,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "dropShadow": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": -0.5
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "border": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 6,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "radius": {
+                "expr": {
+                  "Literal": {
+                    "Value": "10D"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

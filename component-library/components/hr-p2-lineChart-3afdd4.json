@@ -1,0 +1,239 @@
+{
+  "id": "hr-p2-lineChart-3afdd4",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "lineChart",
+  "size": {
+    "w": 320,
+    "h": 236
+  },
+  "title": null,
+  "roles": {
+    "Category": [
+      {
+        "kind": "hierarchy"
+      }
+    ],
+    "Y": [
+      {
+        "kind": "measure"
+      }
+    ]
+  },
+  "hash": "95e47377",
+  "notes": {
+    "droppedProperties": [
+      "lineStyles[selector]",
+      "dataPoint[selector]",
+      "markers[selector]"
+    ],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 3
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+    "visual": {
+      "visualType": "lineChart",
+      "query": {
+        "queryState": {
+          "Category": {
+            "projections": [
+              {
+                "field": "@Category[0]",
+                "queryRef": "@ref:Category[0]",
+                "nativeQueryRef": "@name:Category[0]",
+                "active": true
+              }
+            ]
+          },
+          "Y": {
+            "projections": [
+              {
+                "field": "@Y[0]",
+                "queryRef": "@ref:Y[0]",
+                "nativeQueryRef": "@name:Y[0]"
+              }
+            ]
+          }
+        },
+        "sortDefinition": {
+          "sort": [
+            {
+              "field": "@Category[0]",
+              "direction": "Ascending"
+            }
+          ],
+          "isDefaultSort": true
+        }
+      },
+      "objects": {
+        "valueAxis": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "showAxisTitle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "categoryAxis": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "showAxisTitle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "end": {
+                "expr": {
+                  "Literal": {
+                    "Value": "31D"
+                  }
+                }
+              },
+              "start": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1D"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "labels": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "lineStyles": [
+          {
+            "properties": {
+              "areaShow": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "areaMatchStrokeColor": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "lineChartType": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'smooth'"
+                  }
+                }
+              },
+              "interpolationSmooth": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'cardinal'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "dataPoint": [
+          {
+            "properties": {
+              "fill": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 4,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Y[0]"
+            }
+          },
+          {
+            "properties": {
+              "transparency": {
+                "expr": {
+                  "Literal": {
+                    "Value": "80D"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "title": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

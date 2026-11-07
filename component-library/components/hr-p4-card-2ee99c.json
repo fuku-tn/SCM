@@ -1,0 +1,162 @@
+{
+  "id": "hr-p4-card-2ee99c",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 4,
+  "pageName": "Geography",
+  "type": "card",
+  "size": {
+    "w": 79,
+    "h": 58
+  },
+  "title": null,
+  "roles": {
+    "Values": [
+      {
+        "kind": "measure"
+      }
+    ],
+    "Extra": [
+      {
+        "kind": "measure",
+        "hint": "Total Training Cost YoY%",
+        "extra": true
+      }
+    ]
+  },
+  "hash": "93dff9d9",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+    "visual": {
+      "visualType": "card",
+      "query": {
+        "queryState": {
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]"
+              }
+            ]
+          }
+        },
+        "sortDefinition": {
+          "sort": [
+            {
+              "field": "@Values[0]",
+              "direction": "Descending"
+            }
+          ],
+          "isDefaultSort": true
+        }
+      },
+      "objects": {
+        "categoryLabels": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "labels": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "20D"
+                  }
+                }
+              },
+              "fontFamily": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Conditional": {
+                        "Cases": [
+                          {
+                            "Condition": {
+                              "Comparison": {
+                                "ComparisonKind": 2,
+                                "Left": "@Extra[0]",
+                                "Right": {
+                                  "Literal": {
+                                    "Value": "0D"
+                                  }
+                                }
+                              }
+                            },
+                            "Value": {
+                              "Literal": {
+                                "Value": "'#025906'"
+                              }
+                            }
+                          },
+                          {
+                            "Condition": {
+                              "Comparison": {
+                                "ComparisonKind": 3,
+                                "Left": "@Extra[0]",
+                                "Right": {
+                                  "Literal": {
+                                    "Value": "0D"
+                                  }
+                                }
+                              }
+                            },
+                            "Value": {
+                              "Literal": {
+                                "Value": "'#A10000'"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

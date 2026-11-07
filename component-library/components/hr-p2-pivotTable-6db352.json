@@ -1,0 +1,343 @@
+{
+  "id": "hr-p2-pivotTable-6db352",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "pivotTable",
+  "size": {
+    "w": 693,
+    "h": 565
+  },
+  "title": "Matrix_2",
+  "roles": {
+    "Rows": [
+      {
+        "kind": "column"
+      }
+    ],
+    "Values": [
+      {
+        "kind": "column",
+        "agg": 2,
+        "aggBase": "column",
+        "displayName": "Emp"
+      },
+      {
+        "kind": "measure",
+        "displayName": "Cost / Employee"
+      },
+      {
+        "kind": "measure",
+        "displayName": "Trainings"
+      },
+      {
+        "kind": "measure",
+        "displayName": "Cost / Training"
+      }
+    ]
+  },
+  "hash": "c409ddf8",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+    "visual": {
+      "visualType": "pivotTable",
+      "query": {
+        "queryState": {
+          "Rows": {
+            "projections": [
+              {
+                "field": "@Rows[0]",
+                "queryRef": "@ref:Rows[0]",
+                "nativeQueryRef": "@name:Rows[0]",
+                "active": true
+              }
+            ]
+          },
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]",
+                "displayName": "Emp"
+              },
+              {
+                "field": "@Values[1]",
+                "queryRef": "@ref:Values[1]",
+                "nativeQueryRef": "@name:Values[1]",
+                "displayName": "Cost / Employee"
+              },
+              {
+                "field": "@Values[2]",
+                "queryRef": "@ref:Values[2]",
+                "nativeQueryRef": "@name:Values[2]",
+                "displayName": "Trainings"
+              },
+              {
+                "field": "@Values[3]",
+                "queryRef": "@ref:Values[3]",
+                "nativeQueryRef": "@name:Values[3]",
+                "displayName": "Cost / Training"
+              }
+            ]
+          }
+        }
+      },
+      "objects": {
+        "values": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "15D"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "backColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "FillRule": {
+                        "Input": "@Values[1]",
+                        "FillRule": {
+                          "linearGradient2": {
+                            "min": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#E8E2D8'"
+                                }
+                              }
+                            },
+                            "max": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#D4C5B0'"
+                                }
+                              }
+                            },
+                            "nullColoringStrategy": {
+                              "strategy": {
+                                "Literal": {
+                                  "Value": "'asZero'"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 1
+                  }
+                }
+              ],
+              "metadata": "@ref:Values[1]"
+            }
+          }
+        ],
+        "columnHeaders": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "15D"
+                  }
+                }
+              },
+              "columnAdjustment": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'growToFit'"
+                  }
+                }
+              },
+              "bold": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "fontColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 1,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "rowHeaders": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "15D"
+                  }
+                }
+              },
+              "bold": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "fontColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 1,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "subTotals": [
+          {
+            "properties": {
+              "rowSubtotals": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "columnSubtotals": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "perRowLevel": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "general": [
+          {
+            "properties": {
+              "layout": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Tabular'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "grid": [
+          {
+            "properties": {
+              "outlineStyle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "4D"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "columnWidth": [
+          {
+            "properties": {
+              "value": {
+                "expr": {
+                  "Literal": {
+                    "Value": "158.49999946689002D"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Rows[0]"
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "stylePreset": [
+          {
+            "properties": {
+              "name": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'None'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "title": [
+          {
+            "properties": {
+              "text": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Matrix_2'"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

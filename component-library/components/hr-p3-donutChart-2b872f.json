@@ -1,0 +1,253 @@
+{
+  "id": "hr-p3-donutChart-2b872f",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 3,
+  "pageName": "Department",
+  "type": "donutChart",
+  "size": {
+    "w": 297,
+    "h": 337
+  },
+  "title": null,
+  "roles": {
+    "Category": [
+      {
+        "kind": "column"
+      }
+    ],
+    "Y": [
+      {
+        "kind": "column",
+        "agg": 2,
+        "aggBase": "column"
+      }
+    ]
+  },
+  "hash": "e963496a",
+  "notes": {
+    "droppedProperties": [
+      "dataPoint[selector]"
+    ],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 3
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+    "visual": {
+      "visualType": "donutChart",
+      "query": {
+        "queryState": {
+          "Category": {
+            "projections": [
+              {
+                "field": "@Category[0]",
+                "queryRef": "@ref:Category[0]",
+                "nativeQueryRef": "@name:Category[0]",
+                "active": true
+              }
+            ]
+          },
+          "Y": {
+            "projections": [
+              {
+                "field": "@Y[0]",
+                "queryRef": "@ref:Y[0]",
+                "nativeQueryRef": "@name:Y[0]"
+              }
+            ]
+          }
+        },
+        "sortDefinition": {
+          "sort": [
+            {
+              "field": "@Y[0]",
+              "direction": "Descending"
+            }
+          ],
+          "isDefaultSort": true
+        }
+      },
+      "objects": {
+        "legend": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "labels": [
+          {
+            "properties": {
+              "labelStyle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Category, percent of total'"
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "12D"
+                  }
+                }
+              },
+              "percentageLabelPrecision": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0L"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 2,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 1
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "slices": [
+          {
+            "properties": {
+              "innerRadiusRatio": {
+                "expr": {
+                  "Literal": {
+                    "Value": "70L"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "title": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 6,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "dropShadow": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": -0.25
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "border": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 6,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "radius": {
+                "expr": {
+                  "Literal": {
+                    "Value": "10D"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

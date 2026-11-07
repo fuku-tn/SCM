@@ -1,0 +1,140 @@
+{
+  "id": "hr-p4-card-d8b950",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 4,
+  "pageName": "Geography",
+  "type": "card",
+  "size": {
+    "w": 260,
+    "h": 126
+  },
+  "title": null,
+  "roles": {
+    "Values": [
+      {
+        "kind": "measure"
+      }
+    ]
+  },
+  "hash": "bdc2aa9a",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+    "visual": {
+      "visualType": "card",
+      "query": {
+        "queryState": {
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]"
+              }
+            ]
+          }
+        },
+        "sortDefinition": {
+          "sort": [
+            {
+              "field": "@Values[0]",
+              "direction": "Descending"
+            }
+          ],
+          "isDefaultSort": true
+        }
+      },
+      "objects": {
+        "labels": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "36D"
+                  }
+                }
+              },
+              "fontFamily": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'''Segoe UI'', wf_segoe-ui_normal, helvetica, arial, sans-serif'"
+                  }
+                }
+              },
+              "labelDisplayUnits": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1000000D"
+                  }
+                }
+              },
+              "labelPrecision": {
+                "expr": {
+                  "Literal": {
+                    "Value": "2L"
+                  }
+                }
+              },
+              "bold": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "categoryLabels": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "16D"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 1,
+                        "Percent": 0.2
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

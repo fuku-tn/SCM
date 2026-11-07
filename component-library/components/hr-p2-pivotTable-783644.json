@@ -1,0 +1,399 @@
+{
+  "id": "hr-p2-pivotTable-783644",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "pivotTable",
+  "size": {
+    "w": 793,
+    "h": 705
+  },
+  "title": "Matrix-1",
+  "roles": {
+    "Rows": [
+      {
+        "kind": "column"
+      },
+      {
+        "kind": "column"
+      }
+    ],
+    "Values": [
+      {
+        "kind": "measure",
+        "displayName": "Emp Trained"
+      },
+      {
+        "kind": "measure",
+        "displayName": "Total Cost"
+      }
+    ]
+  },
+  "hash": "6975de53",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+    "visual": {
+      "visualType": "pivotTable",
+      "query": {
+        "queryState": {
+          "Rows": {
+            "projections": [
+              {
+                "field": "@Rows[0]",
+                "queryRef": "@ref:Rows[0]",
+                "nativeQueryRef": "@name:Rows[0]",
+                "active": true
+              },
+              {
+                "field": "@Rows[1]",
+                "queryRef": "@ref:Rows[1]",
+                "nativeQueryRef": "@name:Rows[1]",
+                "active": true
+              }
+            ]
+          },
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]",
+                "displayName": "Emp Trained"
+              },
+              {
+                "field": "@Values[1]",
+                "queryRef": "@ref:Values[1]",
+                "nativeQueryRef": "@name:Values[1]",
+                "displayName": "Total Cost",
+                "format": "\\$#,0;(\\$#,0);\\$#,0"
+              }
+            ]
+          }
+        },
+        "sortDefinition": {
+          "sort": [
+            {
+              "field": "@Values[1]",
+              "direction": "Descending"
+            }
+          ]
+        }
+      },
+      "expansionStates": [
+        {
+          "roles": [
+            "Rows"
+          ],
+          "levels": [
+            {
+              "queryRefs": [
+                "@ref:Rows[0]"
+              ],
+              "isPinned": true
+            },
+            {
+              "queryRefs": [
+                "@ref:Rows[1]"
+              ],
+              "isCollapsed": true,
+              "isPinned": true
+            }
+          ],
+          "root": {}
+        }
+      ],
+      "objects": {
+        "values": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "15D"
+                  }
+                }
+              },
+              "bandedRowHeaders": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "backColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "FillRule": {
+                        "Input": "@Values[1]",
+                        "FillRule": {
+                          "linearGradient3": {
+                            "min": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#F5F3EF'"
+                                }
+                              }
+                            },
+                            "mid": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#A39C93'"
+                                }
+                              }
+                            },
+                            "max": {
+                              "color": {
+                                "Literal": {
+                                  "Value": "'#6B645B'"
+                                }
+                              }
+                            },
+                            "nullColoringStrategy": {
+                              "strategy": {
+                                "Literal": {
+                                  "Value": "'asZero'"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 1
+                  }
+                }
+              ],
+              "metadata": "@ref:Values[1]"
+            }
+          }
+        ],
+        "columnHeaders": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "15D"
+                  }
+                }
+              },
+              "columnAdjustment": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'growToFit'"
+                  }
+                }
+              },
+              "fontColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 1,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "bold": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "wordWrap": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "rowHeaders": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "15D"
+                  }
+                }
+              },
+              "bold": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "showExpandCollapseButtons": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "wordWrap": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "subTotals": [
+          {
+            "properties": {
+              "rowSubtotals": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "columnSubtotals": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "perRowLevel": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "levelSubtotalEnabled": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Rows[1]"
+            }
+          }
+        ],
+        "general": [
+          {
+            "properties": {
+              "layout": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Tabular'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "grid": [
+          {
+            "properties": {
+              "outlineStyle": {
+                "expr": {
+                  "Literal": {
+                    "Value": "4D"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "columnWidth": [
+          {
+            "properties": {
+              "value": {
+                "expr": {
+                  "Literal": {
+                    "Value": "209.00000766066086D"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Rows[0]"
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "stylePreset": [
+          {
+            "properties": {
+              "name": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'None'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "title": [
+          {
+            "properties": {
+              "text": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Matrix-1'"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

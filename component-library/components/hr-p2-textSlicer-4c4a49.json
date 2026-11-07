@@ -1,0 +1,247 @@
+{
+  "id": "hr-p2-textSlicer-4c4a49",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "textSlicer",
+  "size": {
+    "w": 558,
+    "h": 98
+  },
+  "title": null,
+  "roles": {
+    "Values": [
+      {
+        "kind": "column"
+      }
+    ]
+  },
+  "hash": "591f5a73",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+    "visual": {
+      "visualType": "textSlicer",
+      "query": {
+        "queryState": {
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]"
+              }
+            ]
+          }
+        }
+      },
+      "objects": {
+        "inputText": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "20D"
+                  }
+                }
+              },
+              "fontColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 1,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "filterOperator": [
+          {
+            "properties": {
+              "backShow": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "backColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "iconSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "20D"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "inputTextBox": [
+          {
+            "properties": {
+              "backShow": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "borderShow": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "accentBarShow": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "placeholderFontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "20D"
+                  }
+                }
+              },
+              "placeholder": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Search Division'"
+                  }
+                }
+              },
+              "placeholderItalic": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "applyButton": [
+          {
+            "properties": {
+              "iconColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 1,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "iconSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "30D"
+                  }
+                }
+              },
+              "paddingTop": {
+                "expr": {
+                  "Literal": {
+                    "Value": "15L"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "visualContainerObjects": {
+        "background": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "title": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "border": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "radius": {
+                "expr": {
+                  "Literal": {
+                    "Value": "30D"
+                  }
+                }
+              },
+              "color": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 9,
+                        "Percent": -0.25
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

@@ -1,0 +1,268 @@
+{
+  "id": "sale-p2-cardVisual-78ef75",
+  "template": "sale",
+  "templateName": "Dashboard Sale",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "cardVisual",
+  "size": {
+    "w": 271,
+    "h": 177
+  },
+  "title": null,
+  "roles": {
+    "Data": [
+      {
+        "kind": "measure"
+      }
+    ],
+    "Extra": [
+      {
+        "kind": "measure",
+        "hint": "Gross Profit YoY %",
+        "extra": true
+      }
+    ]
+  },
+  "hash": "e285768e",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+    "visual": {
+      "visualType": "cardVisual",
+      "query": {
+        "queryState": {
+          "Data": {
+            "projections": [
+              {
+                "field": "@Data[0]",
+                "queryRef": "@ref:Data[0]",
+                "nativeQueryRef": "@name:Data[0]"
+              }
+            ]
+          }
+        },
+        "sortDefinition": {
+          "sort": [
+            {
+              "field": "@Data[0]",
+              "direction": "Descending"
+            }
+          ],
+          "isDefaultSort": true
+        }
+      },
+      "objects": {
+        "outline": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "divider": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "fillCustom": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "padding": [
+          {
+            "properties": {
+              "paddingIndividual": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "paddingUniform": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0L"
+                  }
+                }
+              },
+              "bottomMargin": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0L"
+                  }
+                }
+              },
+              "topMargin": {
+                "expr": {
+                  "Literal": {
+                    "Value": "16L"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "value": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "30D"
+                  }
+                }
+              },
+              "labelDisplayUnits": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1000000000D"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]"
+            }
+          }
+        ],
+        "label": [
+          {
+            "properties": {
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "15D"
+                  }
+                }
+              },
+              "fontColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 1,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]"
+            }
+          }
+        ],
+        "referenceLabel": [
+          {
+            "properties": {
+              "value": {
+                "expr": "@Extra[0]"
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 0
+                  }
+                }
+              ],
+              "metadata": "@ref:Data[0]",
+              "id": "field-ec548cb0-c520-69c9-c7f6-ed83bf1ca1fa",
+              "order": 0
+            }
+          }
+        ],
+        "referenceLabelTitle": [
+          {
+            "properties": {
+              "titleContentType": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'custom'"
+                  }
+                }
+              },
+              "titleFontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "12D"
+                  }
+                }
+              },
+              "titleText": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Last Year: '"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]",
+              "id": "field-ec548cb0-c520-69c9-c7f6-ed83bf1ca1fa"
+            }
+          }
+        ],
+        "referenceLabelValue": [
+          {
+            "properties": {
+              "valueFontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "14D"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]",
+              "id": "field-ec548cb0-c520-69c9-c7f6-ed83bf1ca1fa"
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

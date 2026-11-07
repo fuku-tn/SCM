@@ -1,0 +1,78 @@
+{
+  "id": "hr-p2-slicer-a70514",
+  "template": "hr",
+  "templateName": "Dashboard HR",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "slicer",
+  "size": {
+    "w": 214,
+    "h": 184
+  },
+  "title": null,
+  "roles": {
+    "Values": [
+      {
+        "kind": "column"
+      }
+    ]
+  },
+  "hash": "a3c57002",
+  "notes": {
+    "droppedProperties": [
+      "general.filter (lựa chọn đã lưu)"
+    ],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+    "visual": {
+      "visualType": "slicer",
+      "query": {
+        "queryState": {
+          "Values": {
+            "projections": [
+              {
+                "field": "@Values[0]",
+                "queryRef": "@ref:Values[0]",
+                "nativeQueryRef": "@name:Values[0]",
+                "active": true
+              }
+            ]
+          }
+        }
+      },
+      "objects": {
+        "data": [
+          {
+            "properties": {
+              "numericStart": {
+                "expr": {
+                  "Literal": {
+                    "Value": "201D"
+                  }
+                }
+              },
+              "mode": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Single'"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "general": [
+          {
+            "properties": {}
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}

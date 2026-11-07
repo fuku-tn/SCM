@@ -1,0 +1,317 @@
+{
+  "id": "sale-p2-cardVisual-56ba69",
+  "template": "sale",
+  "templateName": "Dashboard Sale",
+  "page": 2,
+  "pageName": "Overview",
+  "type": "cardVisual",
+  "size": {
+    "w": 271,
+    "h": 177
+  },
+  "title": null,
+  "roles": {
+    "Data": [
+      {
+        "kind": "measure"
+      }
+    ],
+    "Extra": [
+      {
+        "kind": "measure",
+        "hint": "Net Revenue YoY %",
+        "extra": true
+      }
+    ]
+  },
+  "hash": "cd751454",
+  "notes": {
+    "droppedProperties": [],
+    "collapsedHierarchyLevels": 0,
+    "foreignRefs": 0
+  },
+  "visual": {
+    "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+    "visual": {
+      "visualType": "cardVisual",
+      "query": {
+        "queryState": {
+          "Data": {
+            "projections": [
+              {
+                "field": "@Data[0]",
+                "queryRef": "@ref:Data[0]",
+                "nativeQueryRef": "@name:Data[0]"
+              }
+            ]
+          }
+        },
+        "sortDefinition": {
+          "sort": [
+            {
+              "field": "@Data[0]",
+              "direction": "Descending"
+            }
+          ],
+          "isDefaultSort": true
+        }
+      },
+      "objects": {
+        "outline": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "divider": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          }
+        ],
+        "fillCustom": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "value": [
+          {
+            "properties": {
+              "labelDisplayUnits": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1000000000D"
+                  }
+                }
+              },
+              "labelPrecision": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0L"
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "30D"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]"
+            }
+          }
+        ],
+        "label": [
+          {
+            "properties": {
+              "fontColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 1,
+                        "Percent": 0
+                      }
+                    }
+                  }
+                }
+              },
+              "fontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "15D"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]"
+            }
+          }
+        ],
+        "referenceLabel": [
+          {
+            "properties": {
+              "value": {
+                "expr": "@Extra[0]"
+              }
+            },
+            "selector": {
+              "data": [
+                {
+                  "dataViewWildcard": {
+                    "matchingOption": 0
+                  }
+                }
+              ],
+              "metadata": "@ref:Data[0]",
+              "id": "field-45de9c1e-2d18-5de8-4747-7b17009e14a2",
+              "order": 0
+            }
+          }
+        ],
+        "referenceLabelTitle": [
+          {
+            "properties": {
+              "titleContentType": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'custom'"
+                  }
+                }
+              },
+              "titleText": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'Last Year: '"
+                  }
+                }
+              },
+              "titleFontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "12D"
+                  }
+                }
+              },
+              "titleFontColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "ThemeDataColor": {
+                        "ColorId": 0,
+                        "Percent": -0.6
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]",
+              "id": "field-45de9c1e-2d18-5de8-4747-7b17009e14a2"
+            }
+          }
+        ],
+        "referenceLabelValue": [
+          {
+            "properties": {
+              "valueFontSize": {
+                "expr": {
+                  "Literal": {
+                    "Value": "14D"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]",
+              "id": "field-45de9c1e-2d18-5de8-4747-7b17009e14a2"
+            }
+          }
+        ],
+        "padding": [
+          {
+            "properties": {
+              "paddingIndividual": {
+                "expr": {
+                  "Literal": {
+                    "Value": "true"
+                  }
+                }
+              },
+              "paddingUniform": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0L"
+                  }
+                }
+              },
+              "bottomMargin": {
+                "expr": {
+                  "Literal": {
+                    "Value": "0L"
+                  }
+                }
+              },
+              "topMargin": {
+                "expr": {
+                  "Literal": {
+                    "Value": "16L"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "id": "default"
+            }
+          },
+          {
+            "properties": {
+              "topMargin": {
+                "expr": {
+                  "Literal": {
+                    "Value": "16L"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]"
+            }
+          }
+        ],
+        "accentBar": [
+          {
+            "properties": {
+              "show": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              }
+            },
+            "selector": {
+              "metadata": "@ref:Data[0]"
+            }
+          }
+        ]
+      },
+      "drillFilterOtherVisuals": true
+    }
+  },
+  "issues": [],
+  "status": "PASS"
+}
