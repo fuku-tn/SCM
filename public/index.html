@@ -1,15 +1,54 @@
 <!doctype html>
-<html lang="vi" data-theme="light">
+<html lang="vi" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BIE · Business Intelligence Engine</title>
 <link rel="icon" href="/assets/logo.png">
 <link rel="stylesheet" href="/styles.css">
-<script>try{const q=new URLSearchParams(location.search).get('theme');const t=q||localStorage.getItem('bie-theme');if(t)document.documentElement.dataset.theme=t;else if(matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.dataset.theme='dark'}catch(e){}</script>
+<link rel="stylesheet" href="/skin.css">
+<script>try{const q=new URLSearchParams(location.search).get('theme');const t=q||localStorage.getItem('bie-theme');document.documentElement.dataset.theme=t==='light'?'light':'dark'}catch(e){}</script>
 <script>try{if(localStorage.getItem('bie-side')==='1')document.documentElement.classList.add('side-collapsed')}catch(e){}</script>
+<script>try{if(!sessionStorage.getItem('bie-in')&&!/[?&]skiplogin=1/.test(location.search))document.documentElement.classList.add('locked')}catch(e){}</script>
 </head>
 <body>
+<!-- Trang đăng nhập: chưa có mật khẩu — nút "Get started" vào thẳng ứng dụng -->
+<div id="login" role="dialog" aria-label="Welcome to BIE">
+  <div class="lgx-frame">
+    <svg class="lgx-sky" viewBox="0 0 1080 720" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050912"/><stop offset=".55" stop-color="#0a1426"/><stop offset="1" stop-color="#17202f"/></linearGradient>
+        <radialGradient id="mw" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#9fb4d8" stop-opacity=".22"/><stop offset="1" stop-color="#9fb4d8" stop-opacity="0"/></radialGradient>
+        <radialGradient id="glow" cx=".5" cy="1" r=".8"><stop offset="0" stop-color="#E3B866" stop-opacity=".30"/><stop offset="1" stop-color="#E3B866" stop-opacity="0"/></radialGradient>
+        <radialGradient id="sg"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+        <filter id="sb"><feGaussianBlur stdDeviation="14"/></filter>
+      </defs>
+      <rect width="1080" height="720" fill="url(#skyg)"/>
+      <g filter="url(#sb)" transform="rotate(-24 540 360)"><ellipse cx="540" cy="360" rx="620" ry="70" fill="url(#mw)"/><ellipse cx="420" cy="350" rx="340" ry="34" fill="url(#mw)"/></g>
+      <rect y="360" width="1080" height="360" fill="url(#glow)"/>
+      <g id="stars"></g>
+    </svg>
+    <div class="lgx-meteors" id="meteors" aria-hidden="true"></div>
+    <div class="lgx-panel">
+      <div class="lgx-left">
+        <h1>Let’s Get Started</h1>
+        <p>Turn a CSV or Excel file into a Power BI dashboard in four guided stages — Business Context, Key Metrics, Data and Dashboard.</p>
+      </div>
+      <div class="lgx-right">
+        <div class="lgx-form">
+          <h2>Get started</h2>
+          <label class="lgx-f"><span class="sr">Your name</span><input id="lg-name" type="text" placeholder="Your name (optional)" autocomplete="name"></label>
+          <label class="lgx-f"><span class="sr">Your email</span><input id="lg-mail" type="text" placeholder="Your email (optional)" autocomplete="email"></label>
+          <button id="lg-go" class="lgx-btn" type="button">Get started</button>
+          <p class="lgx-note">No password needed yet — this button takes you straight in. Your name is only kept in this browser to greet you.</p>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <div class="shell">
   <aside class="side">
     <div class="side-top">
@@ -17,16 +56,17 @@
       <button class="collapse-btn" id="collapse" type="button" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
     </div>
     <nav id="nav">
-      <a href="#home" data-v="home" title="Home"><i>⌂</i><span class="lbl">Home</span></a>
-      <a href="#analysis" data-v="analysis" title="Analysis"><i>◉</i><span class="lbl">Analysis</span></a>
-      <a href="#run" data-v="run" title="Results"><i>▶</i><span class="lbl">Results</span></a>
-      <a href="#skills" data-v="skills" title="Stages &amp; SKILLs"><i>✦</i><span class="lbl">Stages &amp; SKILLs</span></a>
-      <a href="#memory" data-v="memory" title="Memory"><i>❏</i><span class="lbl">Memory</span></a>
-      <a href="#history" data-v="history" title="History"><i>◷</i><span class="lbl">History</span></a>
+      <a href="#home" data-v="home" title="Home"><i><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg></i><span class="lbl">Home</span></a>
+      <a href="#analysis" data-v="analysis" title="Analysis"><i><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></i><span class="lbl">Analysis</span></a>
+      <a href="#run" data-v="run" title="Results"><i><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></i><span class="lbl">Results</span></a>
+      <a href="#skills" data-v="skills" title="Stages &amp; SKILLs"><i><svg viewBox="0 0 24 24"><path d="M12 3l2.3 5.7L20 11l-5.7 2.3L12 19l-2.3-5.7L4 11l5.7-2.3z"/></svg></i><span class="lbl">Stages &amp; SKILLs</span></a>
+      <a href="#memory" data-v="memory" title="Memory"><i><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg></i><span class="lbl">Memory</span></a>
+      <a href="#history" data-v="history" title="History"><i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></i><span class="lbl">History</span></a>
     </nav>
     <div class="side-card">
-      <b>One click.<br><em>Four stages.</em></b>
-      <p>Upload CSV / Excel, pick a model, and let BIE run each SKILL.</p>
+      <p class="sc-q">Different data.<br>Same clear story.</p>
+      <svg class="sc-m" viewBox="0 0 120 40" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" aria-hidden="true"><path d="M2 38 L26 14 L38 26 L58 6 L82 30 L96 18 L118 38 Z"/><path d="M58 6 L52 16 L58 14 L64 18 Z" opacity=".6"/></svg>
+      <span class="sc-d"><i></i><i></i></span>
     </div>
   </aside>
   <main class="main">
@@ -41,6 +81,7 @@
   </main>
 </div>
 <div id="toast" class="toast"></div>
+<script src="/login.js"></script>
 <script src="/home.js"></script>
 <script src="/analysis.js"></script>
 <script src="/plan.js"></script>

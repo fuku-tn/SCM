@@ -41,9 +41,9 @@ async function vHome(id) {
   const N = nodes.length;
   view.innerHTML = `
   <div class="card homebar">
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <img src="/assets/logo.png" class="hb-img" alt="Starttrain Education">
-      <div><b style="font-size:20px;letter-spacing:-.01em">Starttrain</b><div class="sub" style="margin:0;font-size:13px">The next analyst</div></div></div>
+    <div class="home-hero"><small>Business Intelligence Engine</small>
+      <h2>${(() => { let n = ''; try { n = localStorage.getItem('bie-user') || ''; } catch {} return n ? `Welcome back, <em>${esc(n.split(' ')[0])}</em>` : 'Turn raw data into a <em>story</em>'; })()}</h2>
+      <p>Four stages — Business Context, Key Metrics, Data and Dashboard — take a CSV or Excel file all the way to a Power BI project.</p></div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <div class="hb-run"><b id="hb-title">Chưa có lần chạy nào</b><span id="hb-sub">Tải file dữ liệu để bắt đầu.</span></div>
       ${runs.length ? `<select id="runsel" style="width:auto;max-width:280px">${runs.map((x) => `<option value="${x.id}" ${x.id === id ? 'selected' : ''}>${new Date(x.createdAt).toLocaleString('vi-VN')} · ${esc(x.file)}</option>`).join('')}</select>` : ''}
