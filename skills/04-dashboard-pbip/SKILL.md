@@ -46,6 +46,9 @@ Kết quả: `result.md` (thiết kế & bảng gắn dữ liệu) + `dashboard-
 - Chiều có nhiều giá trị (xem `distinct`): đặt `topN` (script tự sinh DAX xếp hạng) hoặc chọn chiều/biểu đồ khác; không dùng donut/pie với chiều > 5 giá trị.
 - Chi tiết cú pháp: `references/dashboard-spec-schema.md` mục "Mở rộng".
 
+## So sánh Version
+Nếu prompt có mục **SO SÁNH VERSION**: dùng đúng các measure kind `version` (script sinh, trong `measures.json`) khi cần so sánh Actual với Budget/Target/Forecast…; số Version so với thực tế theo thời gian (Calendar). Nếu mục đó nói KHÔNG có dữ liệu Version → không tạo biểu đồ/thẻ so sánh Version và ghi cảnh báo trong result.md.
+
 ## Quy tắc
 - **KPI tổng quan: mỗi trang chỉ 4–6 thẻ (tối đa 6, không hơn).** Thẻ KPI = `card` / `cardVisual` / `kpi`. Nhiều hơn 6 thì cấu trúc trình bày bị vỡ. Chọn 4–6 chỉ số quan trọng nhất theo mục tiêu G; thẻ KPI dư của template → `drop`. Template chỉ có dưới 4 thẻ thì gắn hết. Script tự cắt phần vượt 6 (theo thứ tự đọc) và cảnh báo.
 - Dùng **đúng `key`** trong bảng template (vd. `2.56ba69`), **đúng tên** measure (từng ký tự, theo `measures.json`) và `{table, column}` (theo `model-spec.json`; bảng `Calendar` có `Date, Year, Quarter, Month, MonthNo, YearQuarter, YearMonth, Day`).

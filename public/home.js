@@ -32,6 +32,8 @@ function showError(r, i) {
   bg.querySelector('.modal').focus?.();
 }
 
+const fmtDT = (t) => { const d = new Date(t); if (isNaN(d)) return ''; const p = (n) => String(n).padStart(2, '0'); return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+
 async function vHome(id) {
   stopPoll();
   $('#title').textContent = 'Trang chủ · Workflow';
@@ -44,13 +46,16 @@ async function vHome(id) {
     <div class="home-hero"><small>Business Intelligence Engine</small>
       <h2>${(() => { let n = ''; try { n = localStorage.getItem('bie-user') || ''; } catch {} return n ? `Welcome back, <em>${esc(n.split(' ')[0])}</em>` : 'Turn raw data into a <em>story</em>'; })()}</h2>
       <p>Four stages — Business Context, Key Metrics, Data and Dashboard — take a CSV or Excel file all the way to a Power BI project.</p></div>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <div class="hb-run"><b id="hb-title">Chưa có lần chạy nào</b><span id="hb-sub">Tải file dữ liệu để bắt đầu.</span></div>
-      ${runs.length ? `<select id="runsel" style="width:auto;max-width:280px">${runs.map((x) => `<option value="${x.id}" ${x.id === id ? 'selected' : ''}>${new Date(x.createdAt).toLocaleString('vi-VN')} · ${esc(x.file)}</option>`).join('')}</select>` : ''}
-      <span id="hb-pill"></span><a class="btn acc sm" href="#analysis" style="text-decoration:none">＋ Analysis mới</a></div>
+    <div class="hb-strip">
+      <div class="hb-cur"><span class="hb-lbl">Lần chạy hiện tại</span><b id="hb-title">Chưa có lần chạy nào</b><span id="hb-sub">Tải file dữ liệu để bắt đầu.</span></div>
+      <div class="hb-ctl">
+        <span id="hb-pill"></span>
+        ${runs.length ? `<label class="hb-sel"><span>Chuyển lần chạy</span><select id="runsel" aria-label="Chuyển lần chạy">${runs.map((x) => `<option value="${x.id}" ${x.id === id ? 'selected' : ''}>${fmtDT(x.createdAt)} · ${esc(x.file || 'chưa có file')}${{ done: ' · ✓', error: ' · ✗', running: ' · …' }[x.status] || ''}</option>`).join('')}</select></label>` : ''}
+        <a class="btn acc sm" href="#analysis" style="text-decoration:none">＋ Analysis mới</a></div>
+    </div>
   </div>
   <div class="grid4" id="hstats"></div>
-  <div class="card flowcard"><div class="flow" id="flow"><svg id="edges" aria-hidden="true"></svg>
+  <div class="card flowcard"><div class="flow" id="flow"><svg id="edges" aria-hidden="true"></svg><button type="button" class="vchip" id="vchip" hidden></button>
     <div class="nodes" id="nodes">${nodes.map((n, i) => `
       <div class="fnode pending ${i % 2 ? 'low' : ''}" data-i="${i}" ${i > 0 && i < N - 1 ? 'tabindex="0" role="button"' : ''}>
         <div class="fn-h"><span class="fn-badge">${i === 0 ? '⇩' : i === N - 1 ? '⎘' : i}</span><b>${esc(n.name)}</b><span class="fn-ico"></span></div>
@@ -67,6 +72,7 @@ async function vHome(id) {
     return r?.stages?.[i - 1]?.status || 'pending';
   });
   const drawEdges = () => {
+    svg.setAttribute('width', 0); svg.setAttribute('height', 0);   // đo lại nội dung thật (không để svg cũ làm tăng scrollWidth)
     const fr = flow.getBoundingClientRect(); svg.setAttribute('width', flow.scrollWidth); svg.setAttribute('height', flow.scrollHeight);
     let h = '<defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
     for (let i = 0; i < N - 1; i++) {
@@ -75,9 +81,24 @@ async function vHome(id) {
       const dx = (x2 - x1) * 0.5, d = `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
       h += `<g class="edge idle" data-e="${i}"><path class="base" d="${d}"/><path class="glow" d="${d}" filter="url(#gl)"/>
         ${[0, 0.5, 1].map((o) => `<circle class="dot" r="4.5" filter="url(#gl)"><animateMotion dur="1.5s" begin="${o * 1.5}s" repeatCount="indefinite" path="${d}"/></circle>`).join('')}
+        <circle class="amb" r="3.2" filter="url(#gl)"><animateMotion dur="${2.4 + (i % 3) * 0.4}s" begin="${i * 0.6}s" repeatCount="indefinite" path="${d}"/></circle>
         <circle class="pt" cx="${x1}" cy="${y1}" r="4"/><circle class="pt" cx="${x2}" cy="${y2}" r="4"/>
         <text class="lbl" x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 - 10}" text-anchor="middle"></text></g>`;
     }
+    // Vòng kiểm tra Version: Data (ETL) → quay lại Key Metrics (chỉ khi người dùng chọn so sánh Version)
+    const vs = run?.form?.versions || [], vc = run?.versionCheck || null, chip = $('#vchip');
+    flow.classList.toggle('has-loop', vs.length > 0);
+    if (vs.length && nodeEls[2] && nodeEls[3]) {
+      const a = nodeEls[3].getBoundingClientRect(), b = nodeEls[2].getBoundingClientRect();
+      const xa = a.left + a.width / 2 - fr.left + flow.scrollLeft, ya = a.bottom - fr.top + flow.scrollTop, xb = b.left + b.width / 2 - fr.left + flow.scrollLeft, yb = b.bottom - fr.top + flow.scrollTop;
+      const dip = 64, d = `M${xa},${ya} C${xa},${ya + dip} ${xb},${ya + dip} ${xb},${yb + 2}`;
+      const st = vc?.status === 'needs_data' ? 'wait' : ['ok', 'applied'].includes(vc?.status) ? 'done' : ['skipped', 'partial'].includes(vc?.status) ? 'skip' : (lastStates[3] === 'done' ? 'ready' : 'idle');
+      h += `<g class="vloop ${st}"><path class="base" d="${d}"/><path class="glow" d="${d}" filter="url(#gl)"/>${[0, 0.5].map((o) => `<circle class="dot" r="4.5" filter="url(#gl)"><animateMotion dur="1.8s" begin="${o * 1.8}s" repeatCount="indefinite" path="${d}"/></circle>`).join('')}<path class="arrow" d="M${xb - 6},${yb + 12} L${xb},${yb + 2} L${xb + 6},${yb + 12}"/></g>`;
+      const my = ya * 0.875 + yb * 0.125 + dip * 0.75;
+      chip.hidden = false; chip.className = 'vchip ' + st; chip.style.left = (xa + xb) / 2 + 'px'; chip.style.top = my + 'px';
+      chip.innerHTML = { wait: '⚠ Version check — cần bổ sung dữ liệu', done: '✓ Version check — đã có dữ liệu', skip: '⚠ Version check — chạy không có dữ liệu', ready: '⟲ Version check', idle: '⟲ Version check' }[st];
+      chip.title = 'Kiểm tra dữ liệu Version (' + vs.join(', ') + ') sau Data (ETL), quay lại Key Metrics';
+    } else if (chip) chip.hidden = true;
     svg.innerHTML = h; applyEdges();
   };
   const applyEdges = () => {
@@ -115,9 +136,11 @@ async function vHome(id) {
       prev[i] = s;
     });
     applyEdges();
+    if (r && r.status === 'waiting' && r.versionCheck?.status === 'needs_data' && window.openVersionModal) window.openVersionModal(r, { auto: true, refresh: () => window.__homeRefresh && window.__homeRefresh() });
+    const chip = $('#vchip'); if (chip) chip.onclick = () => window.openVersionModal && window.openVersionModal(run, { refresh: () => window.__homeRefresh && window.__homeRefresh() });
     const t = r?.totals; setMeter(t);
-    $('#hb-title').textContent = r ? (r.form?.requirement?.slice(0, 90) || r.file) : 'Chưa có lần chạy nào';
-    $('#hb-sub').textContent = r ? `Run ${r.id} · ${r.file}` : 'Tải file dữ liệu để bắt đầu.';
+    $('#hb-title').textContent = r ? (String(r.form?.requirement || '').replace(/^\[file\]\s*/, '').trim() || r.file || 'Lần chạy không tên') : 'Chưa có lần chạy nào';
+    $('#hb-sub').textContent = r ? [r.file, fmtDT(r.startedAt || r.createdAt), `${(r.stages || []).filter((x) => x.status === 'done').length}/${(r.stages || []).length || 4} chặng xong`].filter(Boolean).join(' · ') : 'Tải file dữ liệu để bắt đầu.';
     $('#hb-pill').innerHTML = r ? statusPill(r.running ? 'running' : r.status) : '';
     const pct = t?.contextWindow ? Math.min(100, (t.maxContext / t.contextWindow) * 100) : 0;
     $('#hstats').innerHTML = `
@@ -136,5 +159,7 @@ async function vHome(id) {
   drawEdges();
   if (!id) { update(null); return; }
   let r = await fetchRun(); requestAnimationFrame(drawEdges);
-  if (r.running) poll = setInterval(async () => { try { const x = await fetchRun(); if (!x.running) stopPoll(); } catch { stopPoll(); } }, 1000);
+  const startPoll = () => { stopPoll(); poll = setInterval(async () => { try { const x = await fetchRun(); if (!x.running) stopPoll(); } catch { stopPoll(); } }, 1000); };
+  window.__homeRefresh = async () => { const x = await fetchRun(); if (x.running) startPoll(); requestAnimationFrame(drawEdges); return x; };
+  if (r.running) startPoll();
 }

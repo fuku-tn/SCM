@@ -28,11 +28,11 @@ $('#theme').onclick = () => {
 
 // ---- Meter (token + context window) ----
 function setMeter(t) {
-  if (!t || !t.total) { $('#m-tok').textContent = '0'; $('#m-fill').style.width = '0'; $('#m-ctx').textContent = 'Context —'; return; }
+  if (!t || !t.total) { $('#m-tok').textContent = '0'; $('#m-fill').style.width = '0'; $('#m-ctx').textContent = 'Ctx —'; $('#meter').title = 'Token của lần chạy đang xem'; return; }
   $('#m-tok').textContent = fmt(t.total);
   const pct = t.contextWindow ? Math.min(100, (t.maxContext / t.contextWindow) * 100) : 0;
   $('#m-fill').style.width = pct + '%';
-  $('#m-ctx').textContent = `Context ${fmt(t.maxContext)} / ${fmt(t.contextWindow)} (${pct.toFixed(1)}%)`;
+  $('#m-ctx').textContent = `Ctx ${pct.toFixed(0)}%`; $('#meter').title = `Context ${fmt(t.maxContext)} / ${fmt(t.contextWindow)} (${pct.toFixed(1)}%) · tổng ${fmt(t.total)} token`;
 }
 
 // ---- tiny markdown ----
@@ -78,7 +78,7 @@ function tagInput(host, key, suggestions) {
 }
 
 const modelOptions = (sel) => META.models.map((m) => `<option value="${m.id}" ${m.id === sel ? 'selected' : ''}>${esc(m.label)}</option>`).join('');
-const statusPill = (s) => ({ done: '<span class="pill ok">Hoàn thành</span>', running: '<span class="pill run"><span class="spin"></span> Đang chạy</span>', error: '<span class="pill err">Lỗi</span>', pending: '<span class="pill mut">Chờ</span>', partial: '<span class="pill mut">Dừng giữa chừng</span>', draft: '<span class="pill mut">Nháp</span>' }[s] || '');
+const statusPill = (s) => ({ done: '<span class="pill ok">Hoàn thành</span>', running: '<span class="pill run"><span class="spin"></span> Đang chạy</span>', error: '<span class="pill err">Lỗi</span>', pending: '<span class="pill mut">Chờ</span>', partial: '<span class="pill mut">Dừng giữa chừng</span>', waiting: '<span class="pill warn">⚠ Chờ dữ liệu Version</span>', draft: '<span class="pill mut">Nháp</span>' }[s] || '');
 
 // ================= VIEW: RUN =================
 const openState = {};

@@ -43,6 +43,7 @@ skills/<NN-chặng>/
 - `lib/eda.js` — EDA tất định → "PHÁT HIỆN TỪ DỮ LIỆU" (mã F#) chèn vào prompt; chặng 1/2 phải trích F# làm bằng chứng, không nêu số liệu ngoài F# và dữ liệu
 - `lib/plan.js` — đề xuất/kiểm tra **bố cục dashboard** (trang, ô biểu đồ, Top N, nhân bản trang template) để người dùng duyệt trước chặng 4; bản duyệt ở `00-input/dashboard-plan.json` là hợp đồng của chặng 4
 - `lib/samples.js` — file mẫu `.docx` (Business Context, người xem Direct/Indirect) + đọc lại file người dùng điền
+- `lib/versions.js` — cổng Version (Budget/Target/Forecast…): nhận diện dữ liệu, file mẫu, đọc file tải lên, sinh measure Version bằng script; server dừng flow sau Data (ETL) khi thiếu dữ liệu (`run.status = 'waiting'`, `run.versionCheck`)
 - `lib/audience.js` — hồ sơ người xem tính bằng code (số KPI/trang, số trang, mức chi tiết); tuân thủ mục "Hồ sơ người xem" trong prompt
 - `lib/evaluator.js` + `skills/<chặng>/assets/evaluator.md` — tiêu chí nghiệm thu (AC) mà Evaluator độc lập dùng để chấm; sinh kết quả sao cho đạt các AC này
 - `knowledge-base/rulesets/` — ruleset chuyên môn nạp theo `knowledge:` trong SKILL

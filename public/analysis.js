@@ -426,7 +426,7 @@ async function runStages(which) {
     if (planStale()) { await fetch(`/api/runs/${id}/plan`, { method: 'DELETE' }).catch(() => {}); A.plan = null; A.planApproved = false; }   // bố cục cũ không còn khớp → không dùng
     else if (A.plan && !A.planApproved) await fetch(`/api/runs/${id}/plan`, { method: 'DELETE' }).catch(() => {});                          // bản nháp chưa duyệt → chặng 4 tự thiết kế
     await jsend(`/api/runs/${id}/start`, 'POST', { form: buildForm(), models: A.models, gate: A.gate, only: which === 'all' ? null : [which] });
-    A.started = true;
+    A.started = true; if (window.refreshActivity) window.refreshActivity();
     if (which === 'all') { Object.values(A.timers).forEach(clearTimeout); A = freshA(); }   // chạy tất cả → phiên mới sau đó
     location.hash = '#home/' + id;                                                          // chạy 1 chặng → giữ phiên để chạy tiếp chặng sau
   } catch (e) { toast(e.message); btns.forEach((b) => (b.disabled = false)); }

@@ -130,8 +130,8 @@ app.get('/api/runs/:id/pbix/wireframe.svg', (req, res) => {
   try { const t = TPL.resolveForRun(runDir(req.params.id), { templateSource: 'upload' }); if (!t) return res.sendStatus(404); res.type('image/svg+xml').send(TPL.wireframeSvg(t)); } catch { res.sendStatus(500); }
 });
 // File mẫu Word để người dùng tải về điền (Business Context, người xem Direct / Indirect)
-app.get('/api/samples/:k', (req, res) => {
-  const s = require('./lib/samples.js').SAMPLES[req.params.k]; if (!s) return res.sendStatus(404);
+app.get('/api/samples/:k', (req, res, next) => {
+  const s = require('./lib/samples.js').SAMPLES[req.params.k]; if (!s) return next();   // vd. /api/samples/version-data ở route riêng
   res.set({ 'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'Content-Disposition': `attachment; filename="${s.file}"` }).send(s.build());
 });
 app.get('/api/meta', (req, res) => res.json({ stages: STAGES, models: MODELS, mock: MOCK, port: PORT }));
@@ -604,6 +604,14 @@ function buildPrompt(run, stageIdx, preOut, feedback) {
   if (stageIdx !== 2) { const eda = ensureEda(run); if (eda) parts.push(eda); }
   for (let i = 0; i < stageIdx; i++) { const t = rd(path.join(runDir(run.id), STAGES[i].id, 'result.md')); parts.push('# OUTPUT CHẶNG ' + (i + 1) + ': ' + STAGES[i].name + '\n' + (t || '(chặng này chưa được chạy — không có kết quả; hãy làm với thông tin hiện có và ghi rõ những gì còn thiếu)')); }
   const ho = handoffText(run, stageIdx); if (ho) parts.push('# FILE BÀN GIAO TỪ CÁC CHẶNG TRƯỚC' + ho);
+  if (stageIdx === 3 && f.versions && f.versions.length) {
+    const vc = run.versionCheck || {}; const mj = readJsonSafe(path.join(runDir(run.id), '02-key-metrics', 'measures.json')) || {};
+    const vm = (mj.measures || []).filter((m) => m.kind === 'version');
+    parts.push('# SO SÁNH VERSION (Budget/Target/Forecast…)\nNgười dùng chọn: ' + f.versions.map((k) => (VER.byKey(k) || { name: k }).name).join(', ') + '. Trạng thái dữ liệu Version: **' + (vc.status || 'chưa kiểm tra') + '**.\n' +
+      (vc.status === 'skipped' || (!vm.length && vc.status !== 'ok') ? '- KHÔNG có dữ liệu Version → KHÔNG tạo biểu đồ/thẻ so sánh Version; ghi rõ trong result.md ("Cảnh báo") rằng so sánh Version không thực hiện được vì thiếu dữ liệu.\n'
+        : '- Đã có measure Version (script sinh, nằm trong measures.json, nhóm "Version", kind "version"): ' + vm.map((m) => m.name).join('; ') + '.\n- Dùng đúng các measure này khi cần so sánh với Version (vd. thẻ KPI `reference`, biểu đồ cột Actual vs Version). Số Version so với thực tế THEO THỜI GIAN (Calendar), không theo chiều khác.\n') +
+      (vc.status === 'partial' ? '- Một số Version còn thiếu dữ liệu: ' + (vc.missing || []).map((k) => (VER.byKey(k) || { name: k }).name).join(', ') + ' → không so sánh với các Version này.\n' : ''));
+  }
   if (preOut) parts.push('# KẾT QUẢ SCRIPT TIỀN XỬ LÝ (scripts/pre.js — do server chạy trước lượt này)\n' + preOut);
   if (feedback) {
     const prev = rd(path.join(runDir(run.id), st.id, 'result.md'));
@@ -759,10 +767,40 @@ async function attemptStage(run, i, feedback, attempt) {
   return s.status === 'done';
 }
 
+// ---------- Cổng Version: sau Data (ETL), trước Dashboard ----------
+// Người dùng chọn so sánh Version (Budget/Target/Forecast…) ở Key Metrics → kiểm tra dữ liệu có Version chưa.
+// Thiếu → DỪNG (run.status = 'waiting') chờ người dùng bổ sung (file mẫu) hoặc xác nhận chạy tiếp không có dữ liệu.
+const VER = require('./lib/versions.js');
+const VER_DIR = (id) => path.join(runDir(id), '00-input', 'version');
+function versionGate(run, blocking) {
+  const sel = (run.form && run.form.versions) || [];
+  if (!sel.length) return 'go';
+  const vc = run.versionCheck = run.versionCheck || {};
+  const checks = readJsonSafe(path.join(runDir(run.id), '03-data-etl', 'data-checks.json'));
+  const det = VER.detect(checks, sel);
+  const upMeta = readJsonSafe(path.join(VER_DIR(run.id), 'versions.json'));
+  const hasUp = !!upMeta && fs.existsSync(path.join(VER_DIR(run.id), 'Versions.csv'));
+  const covered = new Set([...Object.keys(det.found), ...(hasUp ? sel.filter((k) => !(upMeta.stillMissing || []).includes(k)) : [])]);
+  vc.versions = sel; vc.found = Object.fromEntries(Object.entries(det.found).map(([k, h]) => [k, h.map((x) => x.table + '.' + x.column)]));
+  vc.missing = sel.filter((k) => !covered.has(k)); vc.checkedAt = Date.now();
+  const apply = () => { const r = VER.applyToRun(runDir(run.id), { useUpload: hasUp, found: det.found }); vc.measures = r.measures; };
+  if (vc.decision === 'skip') { vc.status = 'skipped'; if (hasUp || Object.keys(det.found).length) apply(); return 'go'; }
+  if (vc.decision === 'with-data') { apply(); vc.status = vc.missing.length ? 'partial' : 'applied'; return 'go'; }
+  if (!vc.missing.length) { apply(); vc.status = hasUp ? 'applied' : 'ok'; return 'go'; }
+  if (!blocking) { apply(); vc.status = 'partial'; return 'go'; }   // chạy riêng chặng Dashboard: không chặn, chỉ dùng phần đã có
+  vc.status = 'needs_data'; vc.askedAt = Date.now(); return 'wait';
+}
+
 async function runPipeline(run, from, only) {
   running.add(run.id); run.status = 'running'; saveRun(run);
+  if (from <= 2 && run.versionCheck) { run.versionCheck.decision = null; run.versionCheck.status = null; }   // chạy lại từ đầu → hỏi lại
   let ok = true;
   for (let i = from; i < STAGES.length; i++) {
+    if (i === 3) {
+      let g = 'go'; try { g = versionGate(run, !only); } catch (e) { console.error('Cổng Version lỗi (bỏ qua):', e.message); }
+      if (g === 'wait') { run.status = 'waiting'; saveRun(run); running.delete(run.id); return; }
+      saveRun(run);
+    }
     if (!(await execStage(run, i))) { ok = false; break; }
     if (only) break;
   }
@@ -825,6 +863,73 @@ app.post('/api/runs/:id/stages/:n/rerun', (req, res) => {
   for (let k = 0; k < i; k++) if (run.stages[k].status !== 'done') return res.status(400).json({ error: 'Các chặng trước chưa hoàn thành' });
   runPipeline(run, i, !!req.body.only);
   res.json({ ok: true });
+});
+// Hoạt động gần đây (chuông thông báo + trạng thái sidebar): flow nào đang chạy / lỗi / đã xong
+app.get('/api/activity', (req, res) => {
+  const ids = fs.readdirSync(OUTPUT).filter((d) => fs.existsSync(path.join(OUTPUT, d, 'run.json'))).sort().reverse();
+  const items = []; let runningN = 0;
+  for (const id of ids.slice(0, 20)) {
+    const r = loadRun(id); if (!r || !r.stages || !r.stages.length) continue;   // bỏ phiên nháp chưa chạy
+    const st = r.stages, cur = st.findIndex((s) => s.status === 'running'), err = st.findIndex((s) => s.status === 'error'), done = st.filter((s) => s.status === 'done').length;
+    const isRun = running.has(id) || cur >= 0;
+    const waiting = !isRun && r.status === 'waiting';
+    const status = isRun ? 'running' : waiting ? 'waiting' : err >= 0 ? 'error' : done === st.length ? 'done' : done > 0 ? 'partial' : 'idle';
+    if (status === 'idle') continue;
+    if (isRun) runningN++;
+    const at = Math.max(0, ...st.map((s) => Math.max(s.endedAt || 0, s.startedAt || 0))) || Date.parse(r.createdAt) || 0;
+    const si = isRun ? Math.max(cur, 0) : err >= 0 ? err : -1;
+    items.push({
+      id, status, file: r.file || '', title: (r.form && r.form.requirement) || '', at, done, total: st.length,
+      stage: si >= 0 ? { n: si + 1, name: st[si].name, phase: st[si].phase || '', attempt: st[si].attempt || 0 } : null,
+      error: err >= 0 && !isRun ? String(st[err].error || '').slice(0, 160) : '',
+      doneStages: st.map((s, i) => (s.status === 'done' ? i + 1 : 0)).filter(Boolean),
+      waitingFor: waiting ? ((r.versionCheck && r.versionCheck.missing) || []).map((k) => (VER.byKey(k) || { name: k }).name) : undefined,
+    });
+  }
+  res.json({ items, running: runningN, total: ids.length, mock: MOCK, now: Date.now() });
+});
+// ---------- API: dữ liệu Version (file mẫu, tải lên, tiếp tục) ----------
+app.get('/api/samples/version-data', (req, res) => {
+  const run = req.query.run && safeId(String(req.query.run)) ? loadRun(String(req.query.run)) : null; const f = (run && run.form) || {};
+  let start = null;
+  const checks = run && readJsonSafe(path.join(runDir(run.id), '03-data-etl', 'data-checks.json'));
+  for (const t of (checks && checks.tables) || []) for (const c of t.columns || []) if (!start && /date/.test(c.type) && c.min) start = c.min;
+  const vc = (run && run.versionCheck) || {};
+  const buf = VER.sampleBuffer({ metrics: f.metrics || [], versions: (vc.missing && vc.missing.length ? vc.missing : f.versions) || [], start });
+  res.set({ 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Content-Disposition': 'attachment; filename="Version-data-mau.xlsx"' }).send(buf);
+});
+app.get('/api/runs/:id/version', (req, res) => {
+  const run = safeId(req.params.id) && loadRun(req.params.id); if (!run) return res.sendStatus(404);
+  res.json({ status: run.status, versionCheck: run.versionCheck || null, versions: (run.form && run.form.versions) || [], names: Object.fromEntries(VER.VERSIONS.map((v) => [v.k, v.name])) });
+});
+app.post('/api/runs/:id/version/upload', upload.single('file'), (req, res) => {
+  const run = safeId(req.params.id) && loadRun(req.params.id); if (!run) return res.sendStatus(404);
+  if (!req.file) return res.status(400).json({ error: 'Chưa có file' });
+  const name = Buffer.from(req.file.originalname, 'latin1').toString('utf8'), ext = path.extname(name).slice(1).toLowerCase();
+  if (!['xlsx', 'xls', 'xlsm', 'csv'].includes(ext)) return res.status(400).json({ error: 'Chỉ nhận file .xlsx, .xls hoặc .csv (hãy dùng file mẫu)' });
+  try {
+    const parsed = VER.parseWorkbook(readForProfile(req.file.buffer, name), (run.form && run.form.versions) || []);
+    if (!parsed.ok) return res.status(400).json({ error: parsed.errors.join(' ') });
+    const dir = VER_DIR(run.id); fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, name), req.file.buffer); fs.writeFileSync(path.join(dir, 'Versions.csv'), parsed.csv, 'utf8');
+    const { csv, ...meta } = parsed; fs.writeFileSync(path.join(dir, 'versions.json'), JSON.stringify({ ...meta, file: name }, null, 2), 'utf8');
+    const vc = run.versionCheck = run.versionCheck || {};
+    const det = VER.detect(readJsonSafe(path.join(runDir(run.id), '03-data-etl', 'data-checks.json')), (run.form && run.form.versions) || []);
+    const sel = (run.form && run.form.versions) || [];
+    vc.upload = { name, rows: meta.rows, versions: meta.versions, metrics: meta.metrics, dims: meta.dims, dateMin: meta.dateMin, dateMax: meta.dateMax, warnings: meta.warnings, stillMissing: meta.stillMissing };
+    vc.missing = sel.filter((k) => !det.found[k] && meta.stillMissing.includes(k)); saveRun(run);
+    res.json({ ok: true, ...vc.upload, missing: vc.missing, names: Object.fromEntries(VER.VERSIONS.map((v) => [v.k, v.name])) });
+  } catch (e) { res.status(400).json({ error: 'Không đọc được file: ' + e.message }); }
+});
+app.post('/api/runs/:id/version/continue', (req, res) => {
+  const run = safeId(req.params.id) && loadRun(req.params.id); if (!run) return res.sendStatus(404);
+  if (running.has(run.id)) return res.status(409).json({ error: 'Phiên này đang chạy' });
+  if (run.status !== 'waiting') return res.status(400).json({ error: 'Phiên này không ở trạng thái chờ dữ liệu Version' });
+  const mode = req.body && req.body.mode;
+  if (!['with-data', 'skip'].includes(mode)) return res.status(400).json({ error: 'mode phải là with-data hoặc skip' });
+  if (mode === 'with-data' && !fs.existsSync(path.join(VER_DIR(run.id), 'Versions.csv'))) return res.status(400).json({ error: 'Chưa tải dữ liệu Version lên' });
+  run.versionCheck = run.versionCheck || {}; run.versionCheck.decision = mode; saveRun(run);
+  runPipeline(run, 3, false); res.json({ ok: true });
 });
 app.get('/api/runs', (req, res) => {
   const ids = fs.readdirSync(OUTPUT).filter((d) => fs.existsSync(path.join(OUTPUT, d, 'run.json')));

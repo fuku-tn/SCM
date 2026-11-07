@@ -53,6 +53,16 @@ Trước khi chạy chặng 4, bấm **Đề xuất bố cục**: AI (có quy t�
 - Bản đã duyệt lưu ở `00-input/dashboard-plan.json` và được đưa vào prompt chặng 4 như **hợp đồng** (số trang, ô, loại, Top N, tiêu đề); Evaluator có tiêu chí kiểm tra tuân thủ. Đổi chỉ số/chiều/template/ngôn ngữ sau khi duyệt → bố cục báo "không còn khớp".
 - Template của riêng bạn: file `.pbix` phải lưu ở **PBIR** (Options → Preview features → *Store reports using enhanced metadata format (PBIR)*); file hỏng/sai định dạng bị từ chối kèm hướng dẫn.
 
+### Cổng Version (Budget / Target / Forecast…)
+
+Nếu ở Key Metrics bạn chọn so sánh với **Version**, flow có một nhánh kiểm tra riêng:
+`Data (ETL) → [Version check] → quay lại Key Metrics → Dashboard → Output` (đường nối vàng quay ngược trên workflow).
+- Sau Data (ETL), BIE tìm dữ liệu Version trong dữ liệu đã làm sạch (cột như `Revenue Budget`, `Forecast`…). **Đủ** → chạy tiếp.
+- **Thiếu** → flow **tạm dừng** (trạng thái "Chờ dữ liệu Version", chuông thông báo báo ngay) và hiện cửa sổ: tải **file mẫu .xlsx** (đã điền sẵn tên chỉ số + Version bạn chọn) → điền → tải lên. File được kiểm tra (thiếu cột, chưa điền số, Version còn thiếu…).
+- Có dữ liệu → script sinh measure Version (`<Chỉ số> <Version>`, `… vs <Version>`, `… vs <Version> %`; DAX do script viết, bảng `Versions` nối Calendar) rồi chạy tiếp Dashboard + Output.
+- Không có dữ liệu → bấm "Tiếp tục không có dữ liệu": hiện cảnh báo **số liệu so sánh Version sẽ không có / không chính xác**; chặng Dashboard được dặn không tạo so sánh Version và kết quả có cảnh báo.
+- Số Version được so với thực tế **theo thời gian** (Calendar), chưa theo chiều khác (vùng, sản phẩm…).
+
 ### Lần đầu mở PBIP: bấm Refresh
 
 Project PBIP **không lưu sẵn dữ liệu đã nạp**, nên lần đầu mở báo cáo sẽ **trống số liệu** — bấm **Home → Refresh (Làm mới)** một lần là có số. Nếu Refresh báo không thấy file (đã chuyển project sang máy/thư mục khác), chạy trong thư mục project:
