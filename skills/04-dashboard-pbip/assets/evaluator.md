@@ -1,0 +1,13 @@
+# Evaluator — Chặng 4 · Dashboard (PBIP)
+
+Một lượt model ĐỘC LẬP (chỉ đọc) chấm `result.md`, `dashboard-spec.json`, `pbip-validation.md` và log post.js. `[C]` = critical.
+
+<!-- AC-BEGIN -->
+- AC1 [C] Bản dựng PBIP hợp lệ: `pbip-validation.md`/post.log báo 0 vấn đề cấu trúc; project có thư mục dữ liệu `data/` kèm file CSV.
+- AC2 [C] Mỗi trang có 4–6 thẻ KPI tổng quan (không vượt 6).
+- AC3 [C] Mọi measure và cột dùng trong dashboard-spec tồn tại trong measures.json/model-spec (đúng từng ký tự); không bịa measure/cột.
+- AC4 [C] Dashboard bám Business Goal: các mục tiêu G#/câu hỏi Q# chính có ít nhất một trang/biểu đồ trả lời; nếu người dùng chọn template thì giữ giao diện template (không tự đổi bố cục/màu ngoài lựa chọn).
+- AC5 Phù hợp hồ sơ người xem (số trang, số KPI, mức chi tiết); các cảnh báo "Người xem:" nếu có được giải thích hoặc chấp nhận hợp lý.
+- AC6 Chọn biểu đồ đúng câu hỏi (viz-craft/IBCS): tiêu đề nêu thông điệp, sắp xếp hợp lý, không pie quá 5 lát, không trộn đơn vị trên một thẻ.
+- AC7 result.md nêu rõ cách mở (bấm Refresh lần đầu, DataFolder/SetDataFolder.ps1), cảnh báo và giả định.
+<!-- AC-END -->

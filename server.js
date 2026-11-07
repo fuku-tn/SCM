@@ -5,7 +5,7 @@ const XLSX = require('xlsx');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 
 const PORT = process.env.PORT || 6688;
 const ROOT = __dirname;
@@ -105,6 +105,8 @@ app.put('/api/docs/:k', (req, res) => {
 const AdmZip = require('adm-zip');
 process.env.BIE_ROOT = ROOT;
 const TPL = require('./lib/pbix-template.js');
+const AUD = require('./lib/audience.js');
+const KB_DIR = path.join(ROOT, 'knowledge-base', 'rulesets');
 const TEXT_EXT = /\.(md|txt|json|csv|py|m|pq|dax|yml|yaml|sql|js|ts|tmdl|xml|sh|ps1|html|css|tsv)$/i;
 function parseFront(c) {
   const m = c.match(/^---\r?\n([\s\S]*?)\r?\n---/); const o = {};
@@ -361,7 +363,41 @@ function templateFiles(run) {
   return list;
 }
 
-function buildPrompt(run, stageIdx, preOut) {
+// Ruleset tri thức: SKILL khai báo `knowledge: a, b` → nạp knowledge-base/rulesets/<tên>.md vào prompt
+function knowledgeText(stageId) {
+  const names = String(skillMeta(stageId).knowledge || '').split(',').map((x) => x.trim()).filter(Boolean);
+  let out = '';
+  for (const n of names) { const p = path.join(KB_DIR, n.replace(/[^\w-]/g, '') + '.md'); if (fs.existsSync(p)) out += '\n\n## Ruleset: ' + n + '\n' + rd(p); }
+  return out ? '# TRI THỨC CHUYÊN MÔN (knowledge-base/rulesets — hãy tuân thủ)' + out : '';
+}
+
+// EDA tất định (lib/eda.js): dùng dữ liệu sạch của chặng 3 nếu có, ngược lại làm sạch "nháp" bằng pre.js của chặng 3.
+// Kết quả lưu ở 00-input/eda/{eda.json,eda.md}; cache theo (file nguồn + nguồn sạch) để không chạy lại mỗi chặng.
+function ensureEda(run) {
+  try {
+    const rd0 = runDir(run.id), outDir = path.join(rd0, '00-input', 'eda'), s3 = path.join(rd0, '03-data-etl');
+    const dataDir = path.join(rd0, '00-input', 'data');
+    const src = fs.existsSync(dataDir) ? fs.readdirSync(dataDir).map((n) => { const st = fs.statSync(path.join(dataDir, n)); return n + ':' + st.size + ':' + st.mtimeMs; }).join('|') : '';
+    const s3ok = fs.existsSync(path.join(s3, 'data-checks.json')) && fs.existsSync(path.join(s3, 'clean'));
+    const key = JSON.stringify({ src, s3ok, s3: s3ok ? fs.statSync(path.join(s3, 'data-checks.json')).mtimeMs : 0, sheets: (run.form && run.form.sheets) || [] });
+    const keyFile = path.join(outDir, '.key');
+    if (fs.existsSync(path.join(outDir, 'eda.md')) && fs.existsSync(keyFile) && rd(keyFile) === key) return rd(path.join(outDir, 'eda.md'));
+    if (!src) return '';
+    let cleanDir, checks;
+    if (s3ok) { cleanDir = path.join(s3, 'clean'); checks = path.join(s3, 'data-checks.json'); }
+    else {
+      const scratch = path.join(outDir, '_scratch'); fs.mkdirSync(scratch, { recursive: true });
+      const r = spawnSync(process.execPath, [path.join(SKILLS, '03-data-etl', 'scripts', 'pre.js'), rd0, scratch], { encoding: 'utf8', timeout: 120000, env: { ...process.env, BIE_ROOT: ROOT }, windowsHide: true });
+      if (r.status !== 0) return '';
+      cleanDir = path.join(scratch, 'clean'); checks = path.join(scratch, 'data-checks.json');
+    }
+    require('./lib/eda.js').run(cleanDir, checks, outDir);
+    fs.writeFileSync(keyFile, key, 'utf8');
+    return rd(path.join(outDir, 'eda.md'));
+  } catch (e) { console.error('EDA lỗi (bỏ qua):', e.message); return ''; }
+}
+
+function buildPrompt(run, stageIdx, preOut, feedback) {
   const st = STAGES[stageIdx], meta = skillMeta(st.id);
   const f = run.form, a = f.audience || {}, inDir = path.join(runDir(run.id), '00-input');
   const profile = JSON.parse(rd(path.join(inDir, 'profile.json')) || '{"filename":"","sheets":[]}');
@@ -374,6 +410,7 @@ function buildPrompt(run, stageIdx, preOut) {
   parts.push('# QUY ĐỊNH (CLAUDE.md)\n' + rd(DOCS.claude));
   parts.push('# BỘ NHỚ (MEMORY.md)\n' + rd(DOCS.memory));
   parts.push('# SKILL CỦA CHẶNG HIỆN TẠI: ' + st.name + '\n' + rd(path.join(SKILLS, st.id, 'SKILL.md')) + resourceText(st.id));
+  { const kt = knowledgeText(st.id); if (kt) parts.push(kt); }
   parts.push('# THÔNG TIN NGƯỜI DÙNG NHẬP\n' + [
     '## Ngữ cảnh doanh nghiệp' + (f.contextFileName ? ` (kèm file ${f.contextFileName})` : '') + '\n' + (ctxText || '(trống)'),
     '## Yêu cầu phân tích' + (f.requirementFileName ? ` (kèm file ${f.requirementFileName})` : '') + '\n' + ([f.requirementTyped, reqText].filter(Boolean).join('\n\n') || '(trống)'),
@@ -381,6 +418,7 @@ function buildPrompt(run, stageIdx, preOut) {
       '- Phòng ban: ' + (a.department || '?'), '- Vị trí công việc hiện tại: ' + (a.position || '?'), '- Level: ' + (a.level || '?'),
       '- Thâm niên tại doanh nghiệp hiện tại: ' + (a.tenureCompany || '?'), '- Thâm niên từ khi đi làm: ' + (a.tenureCareer || '(không khai báo)'),
     ].join('\n'),
+    '## Hồ sơ người xem (tính bằng code từ level + thâm niên — tuân thủ)\n' + AUD.profileMarkdown(a),
     '## Chỉ số cần phân tích (Key Metrics, để tính DAX)\n' + ((f.metrics || []).map((x) => '- ' + x).join('\n') || '(trống)'),
     '## Kỳ so sánh cần tính (time intelligence; viết DAX cho từng chỉ số)\n' + ((f.periods || []).map((x) => '- ' + x + ' (' + (PERIOD_DESC[x] || x) + ')').join('\n') || '(không yêu cầu)'),
     '## Các chiều (Dimension) cần phân tích\n' + ((f.dimensions || []).map((x) => '- ' + x).join('\n') || '(trống)'),
@@ -405,9 +443,14 @@ function buildPrompt(run, stageIdx, preOut) {
     const slim = { filename: profile.filename, sheets: picked };
     parts.push(`# PROFILE DỮ LIỆU GỐC (file: ${profile.filename}; các bảng/sheet được chọn: ${picked.map((s) => s.name).join(', ') || '—'}; "sample" chỉ là 20 dòng ĐẦU, không đại diện cho toàn bộ dữ liệu)\n\`\`\`json\n` + JSON.stringify(slim, null, 1) + '\n```');
   }
+  if (stageIdx !== 2) { const eda = ensureEda(run); if (eda) parts.push(eda); }
   for (let i = 0; i < stageIdx; i++) { const t = rd(path.join(runDir(run.id), STAGES[i].id, 'result.md')); parts.push('# OUTPUT CHẶNG ' + (i + 1) + ': ' + STAGES[i].name + '\n' + (t || '(chặng này chưa được chạy — không có kết quả; hãy làm với thông tin hiện có và ghi rõ những gì còn thiếu)')); }
   const ho = handoffText(run, stageIdx); if (ho) parts.push('# FILE BÀN GIAO TỪ CÁC CHẶNG TRƯỚC' + ho);
   if (preOut) parts.push('# KẾT QUẢ SCRIPT TIỀN XỬ LÝ (scripts/pre.js — do server chạy trước lượt này)\n' + preOut);
+  if (feedback) {
+    const prev = rd(path.join(runDir(run.id), st.id, 'result.md'));
+    parts.push('# PHẢN HỒI CỦA EVALUATOR VỀ LẦN CHẠY TRƯỚC (BẮT BUỘC SỬA)\n' + feedback + (prev ? '\n\n## Kết quả lần trước (giữ phần đã đúng, chỉ sửa chỗ bị nêu)\n' + (prev.length > 14000 ? prev.slice(0, 14000) + '\n…(cắt bớt)' : prev) : ''));
+  }
   parts.push('# QUY ƯỚC XUẤT FILE\nKết quả chính của bạn là Markdown (sẽ lưu thành result.md). Nếu SKILL yêu cầu thêm file (JSON, DAX...), xuất MỖI file bằng đúng khối sau (không bọc thêm ```):\n<<<FILE: ten-file.json>>>\n...nội dung file...\n<<<END FILE>>>\nServer sẽ tách các khối này ra thành file riêng trong thư mục của chặng.');
   parts.push('# YÊU CẦU\nThực hiện đúng SKILL của chặng "' + st.name + '" và trả về nội dung Markdown kết quả của chặng này (kèm các khối FILE nếu SKILL yêu cầu).');
   return parts.join('\n\n---\n\n');
@@ -445,11 +488,80 @@ function extractFileBlocks(text, dir) {
 
 // ---------- Run orchestration ----------
 const running = new Set();
+const EV = require('./lib/evaluator.js');
+const MAX_RETRY = 2; // số lần chạy lại tối đa khi cổng kiểm chứng bật (tổng tối đa 3 lần)
+const modelName = (m) => (/^[\w.\-\[\]]{1,60}$/.test(String(m || '')) ? String(m) : 'sonnet');
+let mockFailLeft = +process.env.BIE_MOCK_FAIL || 0; // chỉ để thử: N lần chấm đầu tiên (ở chế độ MOCK) sẽ trượt AC1
+const MOCK_VERDICT = (ac) => {
+  const fail = mockFailLeft > 0 && ac.length; if (fail) mockFailLeft--;
+  return JSON.stringify({ score: fail ? 40 : 90, criteria: ac.map((c, k) => ({ id: c.id, pass: !(fail && k === 0), note: '(MOCK)' })), feedback: fail ? '1. (MOCK) sửa AC1' : '' });
+};
+const EVAL_EXTRA = [[], ['metrics-spec.json'], [], ['dashboard-spec.json', 'pbip-validation.md']];
+
+// Một lượt chấm độc lập (model riêng, chỉ đọc). Trả { verdict: PASS|FAIL|ERROR|SKIP, score, criteria, feedback, failedCritical }
+async function evaluateStage(run, i, attempt) {
+  const st = STAGES[i], dir = path.join(runDir(run.id), st.id);
+  const ac = EV.loadAC(SKILLS, st.id);
+  if (!ac.length) return { verdict: 'SKIP', score: null, criteria: [], feedback: '', failedCritical: [], note: 'Chặng này chưa có assets/evaluator.md' };
+  const handoffFiles = String(skillMeta(st.id).handoff || '').split(',').map((x) => x.trim()).filter(Boolean);
+  const evidence = EV.gatherEvidence(runDir(run.id), i, STAGES.map((x) => x.id), { handoffFiles, extraFiles: EVAL_EXTRA[i] || [], audienceMd: AUD.profileMarkdown((run.form || {}).audience) });
+  const prompt = EV.buildEvalPrompt({ stageName: st.name, stageIdx: i, ac, evidence, attempt });
+  wr(path.join(dir, 'evaluator-prompt.md'), prompt);
+  let r;
+  try { r = await callClaude(prompt, modelName(run.gate && run.gate.model), MOCK_VERDICT(ac)); }
+  catch (e) { return { verdict: 'ERROR', score: null, criteria: [], feedback: '', failedCritical: [], error: 'Không chạy được evaluator: ' + e.message }; }
+  run.extra = run.extra || []; run.extra.push({ label: `Evaluator chặng ${i + 1} (lần ${attempt})`, model: r.model, usage: r.usage, cost: r.cost, ms: r.ms, at: new Date().toISOString() });
+  const v = EV.parseVerdict(r.text, ac); v.model = r.model;
+  if (v.verdict === 'ERROR') v.error = v.parseError;
+  return v;
+}
+
+// Chạy một chặng; nếu bật cổng kiểm chứng: chấm độc lập, trượt (critical) thì chạy lại kèm phản hồi (tối đa MAX_RETRY lần).
+// Lỗi script cũng được chạy lại. Hết lượt mà vẫn trượt → chặng báo lỗi (kết quả vẫn nằm trên đĩa để xem).
 async function execStage(run, i) {
+  const gate = !!(run.gate && run.gate.enabled);
+  const st = STAGES[i], s = run.stages[i], dir = path.join(runDir(run.id), st.id);
+  s.attempts = []; s.evaluation = null; s.phase = null;
+  let feedback = '';
+  for (let attempt = 1; attempt <= (gate ? MAX_RETRY + 1 : 1); attempt++) {
+    s.attempt = attempt;
+    const ok = await attemptStage(run, i, feedback, attempt);
+    if (!gate) return ok;
+    const last = attempt === MAX_RETRY + 1;
+    if (!ok) {
+      s.attempts.push({ attempt, verdict: 'SCRIPT_ERROR', error: s.error });
+      if (last) return false;
+      run.extra = run.extra || []; if (s.usage) { run.extra.push({ label: `Chặng ${i + 1} lần ${attempt} (lỗi script)`, model: s.usedModel, usage: s.usage, cost: s.cost, ms: s.ms, at: new Date().toISOString() }); s.usage = null; }
+      feedback = `Lần chạy trước thất bại:${s.error}\nHãy sửa đầu ra để các bước tự động chạy được (đúng khối FILE, JSON hợp lệ, đúng tên bảng/cột).`;
+      continue;
+    }
+    s.status = 'running'; s.phase = 'evaluating'; saveRun(run);
+    const ev = await evaluateStage(run, i, attempt);
+    s.attempts.push({ attempt, verdict: ev.verdict, score: ev.score, failed: ev.failedCritical || [] });
+    s.evaluation = { ...ev, attempt, history: s.attempts }; s.phase = null;
+    try { wr(path.join(dir, 'evaluation.json'), JSON.stringify(s.evaluation, null, 2)); wr(path.join(dir, 'evaluation.md'), EV.toMarkdown(s.evaluation, st.name)); } catch {}
+    s.files = listFiles(dir).map((f) => f.path).sort((a, b) => (a === 'result.md' ? -1 : b === 'result.md' ? 1 : a.localeCompare(b))).slice(0, 400);
+    if (ev.verdict !== 'FAIL') { s.status = 'done'; s.endedAt = Date.now(); saveRun(run); return true; } // PASS / SKIP / ERROR (evaluator lỗi → không chặn)
+    if (last) {
+      s.status = 'error'; s.endedAt = Date.now();
+      s.error = `Cổng kiểm chứng: chặng không đạt sau ${attempt} lần chạy — AC critical trượt: ${(ev.failedCritical || []).join(', ')}`;
+      s.errorDetail = { stderr: EV.toMarkdown(s.evaluation, st.name), command: 'evaluator (xem evaluation.md trong thư mục chặng)', model: s.model, at: new Date().toISOString() };
+      try { wr(path.join(dir, 'error.json'), JSON.stringify({ message: s.error, ...s.errorDetail }, null, 2)); } catch {}
+      saveRun(run); return false;
+    }
+    feedback = ev.feedback || 'Evaluator báo trượt nhưng không nêu chi tiết; hãy rà lại các AC critical.';
+    // chuẩn bị cho lần sau: lượt đã bị loại vẫn tính vào tổng token
+    run.extra = run.extra || []; if (s.usage) run.extra.push({ label: `Chặng ${i + 1} lần ${attempt} (bị loại)`, model: s.usedModel, usage: s.usage, cost: s.cost, ms: s.ms, at: new Date().toISOString() });
+    s.usage = null;
+  }
+  return false;
+}
+
+async function attemptStage(run, i, feedback, attempt) {
   const st = STAGES[i], s = run.stages[i];
   const dir = path.join(runDir(run.id), st.id);
   fs.mkdirSync(dir, { recursive: true });
-  s.status = 'running'; s.startedAt = Date.now(); s.error = null; s.errorDetail = null; s.scripts = []; saveRun(run);
+  s.status = 'running'; s.startedAt = s.startedAt && attempt > 1 ? s.startedAt : Date.now(); s.error = null; s.errorDetail = null; s.scripts = []; saveRun(run);
   try {
     // 1) pre.js (tiền xử lý xác định, không tốn token)
     let preOut = '';
@@ -462,7 +574,7 @@ async function execStage(run, i) {
     }
     // 2) gọi model
     const meta = skillMeta(st.id);
-    const prompt = buildPrompt(run, i, preOut);
+    const prompt = buildPrompt(run, i, preOut, feedback);
     s.promptTokensEst = estTokens(prompt);
     wr(path.join(dir, 'prompt.md'), prompt);
     const opts = meta.tools ? { tools: meta.tools, addDirs: [path.join(runDir(run.id), '00-input'), TEMPLATES_DIR].filter((d) => fs.existsSync(d)) } : {};
@@ -523,7 +635,8 @@ app.post('/api/runs/:id/start', (req, res) => {
   const run = loadRun(req.params.id);
   if (!run) return res.sendStatus(404);
   if (running.has(run.id)) return res.status(409).json({ error: 'Phiên này đang chạy một chặng — hãy đợi chặng đó xong rồi chạy tiếp.' });
-  const { form, models, only } = req.body;
+  const { form, models, only, gate } = req.body;
+  if (gate !== undefined) run.gate = gate && gate.enabled ? { enabled: true, model: modelName(gate.model) } : { enabled: false };
   const f = form || {};
   run.form = { ...f, requirementTyped: (f.requirement || '').trim(), requirement: (f.requirement || '').trim() || (f.requirementFileName ? '[file] ' + f.requirementFileName : '') };
   if (f.template && !TPL.loadTemplate(String(f.template))) return res.status(400).json({ error: 'Template "' + f.template + '" không tồn tại trong thư mục templates/' });
@@ -549,6 +662,7 @@ app.post('/api/runs/:id/stages/:n/rerun', (req, res) => {
   if (!run || !run.stages[i]) return res.sendStatus(404);
   if (running.has(run.id)) return res.status(409).json({ error: 'Phiên này đang chạy một chặng — hãy đợi chặng đó xong rồi chạy tiếp.' });
   if (req.body.model) run.stages[i].model = req.body.model;
+  if (req.body.gate !== undefined) run.gate = req.body.gate && req.body.gate.enabled ? { enabled: true, model: modelName(req.body.gate.model) } : { enabled: false };
   for (let k = 0; k < i; k++) if (run.stages[k].status !== 'done') return res.status(400).json({ error: 'Các chặng trước chưa hoàn thành' });
   runPipeline(run, i, !!req.body.only);
   res.json({ ok: true });

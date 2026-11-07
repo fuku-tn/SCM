@@ -3,6 +3,7 @@ name: key-metrics
 title: Key Metrics
 description: Phân lập chỉ số Numerical/Categorical, tính SUM-MAX-MIN-AVG-MEDIAN-RANGE / COUNT-DISTINCTCOUNT, Performance, so sánh LY-LQ-LM-LD với Delta và %Delta, rồi ghép quan hệ Measure–Dimension (1-1, N-1, 1-N, N-N) để vẽ Dashboard.
 handoff: measures.json
+knowledge: kpi-selection, dax-craft
 ---
 
 # SKILL: Key Metrics (Chặng 2)
@@ -36,6 +37,7 @@ Output chặng 1 (Business Goal) · danh sách Key Metrics, kỳ so sánh (YoY/M
 6. **Delta và % Delta** cho từng kỳ so sánh (script tự sinh cho mọi measure trong `timeApplyTo`).
 7. **Ghép Measure–Dimension** theo 4 quan hệ `1-1`, `N-1`, `1-N`, `N-N` (xem `references/measure-dimension-matrix.md`). Mỗi ghép ghi: mục đích, nhóm biểu đồ (tổng quan / xu hướng / so sánh / tỷ trọng / phân phối / phân tầng) và loại biểu đồ gợi ý.
 8. **Phụ lục (h) — dùng để vẽ Dashboard về sau**: tổng hợp các ghép ở bước 7 thành bảng đưa thẳng cho chặng Dashboard.
+8b. **Kiểm chứng giả thuyết**: với mỗi `H#` của chặng 1 chọn chỉ số × chiều (đã có trong các ghép ở bước 7) để kiểm chứng; ghi vào mục "8b" của result.md cùng `F#` nền. Ưu tiên chỉ số có F# chứng minh có biến động đáng chú ý (ngoại lệ, xu hướng, tập trung) thay vì chỉ số "cho đủ". Không chọn hai chỉ số quan hệ định nghĩa (Doanh thu, Chi phí, Lợi nhuận) cho cùng một mục đích kiểm chứng.
 9. **Xuất `metrics-spec.json`** đúng `references/metrics-spec-schema.md`.
 
 ## Quy tắc

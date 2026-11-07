@@ -2,6 +2,7 @@
 name: dashboard-pbip
 title: Dashboard (PBIP)
 description: Dựng project Power BI (PBIP) có giao diện GIỐNG template Power BI mà người dùng chọn (nền, hình, logo, nút chuyển trang, màu, định dạng biểu đồ) và gắn dữ liệu của họ vào các biểu đồ; áp tiêu chuẩn trực quan IBCS và bộ biểu đồ chuẩn.
+knowledge: viz-craft, kpi-selection
 ---
 
 # SKILL: Dashboard (PBIP) (Chặng 4)

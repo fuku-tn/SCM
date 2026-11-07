@@ -40,6 +40,11 @@ skills/<NN-chặng>/
 - `skills/<chặng>/` — SKILL của từng chặng
 - `templates/` — template Power BI (`.pbix`, định dạng PBIR); người dùng chọn 1 ở bước Dashboard, đầu ra giữ giao diện của template và gắn lại dữ liệu của người dùng
 - `lib/pbix-template.js` — đọc template, sinh manifest cho prompt, áp template khi dựng PBIP
+- `lib/eda.js` — EDA tất định → "PHÁT HIỆN TỪ DỮ LIỆU" (mã F#) chèn vào prompt; chặng 1/2 phải trích F# làm bằng chứng, không nêu số liệu ngoài F# và dữ liệu
+- `lib/audience.js` — hồ sơ người xem tính bằng code (số KPI/trang, số trang, mức chi tiết); tuân thủ mục "Hồ sơ người xem" trong prompt
+- `lib/evaluator.js` + `skills/<chặng>/assets/evaluator.md` — tiêu chí nghiệm thu (AC) mà Evaluator độc lập dùng để chấm; sinh kết quả sao cho đạt các AC này
+- `knowledge-base/rulesets/` — ruleset chuyên môn nạp theo `knowledge:` trong SKILL
+- `tests/` — test tự động (`npm test`)
 - `documents/` — tài liệu yêu cầu của người dùng (Analysis - layout, SKILL - Custom, IBCS - Standard)
 - `output/<run-id>/<NN-chặng>/` — kết quả riêng biệt của từng chặng (chặng 4 có thêm `pbip/<Tên>/`)
 - `MEMORY.md` — bộ nhớ tích lũy qua các lần chạy

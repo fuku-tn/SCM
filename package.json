@@ -4,7 +4,8 @@
   "description": "BIE - Business Intelligence Engine: chạy các chặng SKILL từ file CSV/Excel",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test tests/*.test.js"
   },
   "dependencies": {
     "adm-zip": "^0.6.1",

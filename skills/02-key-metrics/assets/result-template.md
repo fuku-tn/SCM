@@ -44,6 +44,13 @@
 | overview | 1-1 | (tổng) | Doanh thu (SUM) + Delta | KPI tổng quan | card |
 | trend | 1-N | Tháng | … | Xu hướng | lineChart |
 
+## 8b. Kiểm chứng giả thuyết (H# từ chặng 1) bằng chỉ số × chiều
+| Giả thuyết (H#) | Phát hiện nền (F#) | Chỉ số (measure) | Chiều | Cách đọc kết quả | Ghép # (mục 7) |
+|---|---|---|---|---|---|
+| H1 | F12 | Doanh thu (SUM) | Khu vực | Nếu khu vực X giảm nhiều hơn các khu vực khác → giả thuyết đứng vững | 1 |
+
+> Mỗi H# ở chặng 1 phải có ít nhất một dòng ở đây (hoặc ghi lý do không kiểm chứng được). Mỗi KPI/measure nêu trong "Bản đồ chỉ số" cần gắn G# và, nếu có, F#.
+
 ## 9. Giả định và những việc không thực hiện được
 - …
 

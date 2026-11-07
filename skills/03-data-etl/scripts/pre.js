@@ -422,7 +422,13 @@ function refreshStats(t) {
   let wb;
   if (ext === '.csv' || ext === '.tsv') {
     const txt = fs.readFileSync(file, 'utf8').replace(/^\ufeff/, '');
-    wb = XLSX.read(txt, { type: 'string', cellDates: true, FS: ext === '.tsv' ? '\t' : undefined });
+    // Đọc CSV ở dạng chuỗi thô (raw) để parseNumber/parseDate của script quyết định kiểu:
+    // tránh SheetJS tự đoán sai "1.234,56" → 1.23456 hoặc "01/02/2025" theo kiểu Mỹ + lệch múi giờ.
+    const first = txt.split(/\r?\n/, 1)[0] || '';
+    const cnt = (ch) => (first.match(new RegExp('\\' + ch, 'g')) || []).length;
+    let FS = ext === '.tsv' ? '\t' : ',';
+    if (ext === '.csv') { const sc = cnt(';'), cc = cnt(','), tc = cnt('\t'); if (tc > cc && tc > sc) FS = '\t'; else if (sc > cc) FS = ';'; }
+    wb = XLSX.read(txt, { type: 'string', raw: true, FS });
   } else wb = XLSX.read(fs.readFileSync(file), { type: 'buffer', cellDates: true, cellFormula: true, cellStyles: true });
   let names = wb.SheetNames.slice();
   if (wanted) { const w = names.filter((n) => wanted.includes(n)); if (w.length) names = w; }

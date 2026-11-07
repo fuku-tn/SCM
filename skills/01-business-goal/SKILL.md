@@ -2,6 +2,7 @@
 name: business-goal
 title: Business Goal
 description: Tiếp nhận thông tin doanh nghiệp, yêu cầu phân tích và người xem dashboard; ghi ra file .md có cấu trúc logic (bối cảnh → mục tiêu → câu hỏi → quyết định → tiêu chí thành công) để các chặng sau dùng lại.
+knowledge: kpi-selection
 ---
 
 # SKILL: Business Goal (Chặng 1)
@@ -33,6 +34,13 @@ Kết quả của chặng này là `result.md` (script tự lưu thêm bản `bu
 5. **Đối chiếu yêu cầu với dữ liệu**: chỉ nói được điều dữ liệu cho phép; thiếu thì ghi vào mục Giả định / Rủi ro, không tự bịa.
 6. **Viết `result.md`** đúng khung `assets/business-goal-template.md`.
 
+## Dựa trên bằng chứng (EDA)
+Prompt có mục **PHÁT HIỆN TỪ DỮ LIỆU** do code tính sẵn (mã `F1, F2…`: ngoại lệ, xu hướng, tập trung, tương quan, chất lượng dữ liệu).
+- **Vấn đề / cơ hội `P#`** chỉ được nêu khi có ít nhất một `F#` làm bằng chứng (ghi mã trong cột "Bằng chứng"). Vấn đề lấy từ ngữ cảnh người dùng nhưng chưa có F# → gắn `[Chưa có bằng chứng từ dữ liệu]`.
+- **Mục tiêu `G#`** phải chỉ ra giải quyết `P#` nào; **Giả thuyết `H#`** (mục 4b) xuất phát từ `F#` và nêu cách kiểm chứng (chỉ số × chiều). Viết giả thuyết như phỏng đoán, không như kết luận.
+- **Chỉ trích con số có trong `F#` hoặc bảng dữ liệu**; tuyệt đối không thêm số khác. Nếu F# nói dữ liệu thiếu/lệch (chất lượng, tháng thiếu) → đưa vào mục 6 làm giới hạn của câu hỏi liên quan (`[Thiếu dữ liệu]`).
+- Tương quan ≠ nhân quả; không kết luận nguyên nhân từ một F# duy nhất.
+
 ## Quy tắc "ghi một cách logic"
 - Mỗi mục tiêu phải **đo được** (có chỉ số ứng viên + hướng tốt/xấu) và **có người ra quyết định**.
 - Mỗi câu hỏi phải **trả lời được bằng dữ liệu đang có**; nếu không → đánh dấu `[Thiếu dữ liệu]`.
@@ -49,6 +57,7 @@ Kết quả của chặng này là `result.md` (script tự lưu thêm bản `bu
 ## Tự kiểm tra trước khi trả lời
 - [ ] Đủ 8 mục, đúng tên heading
 - [ ] Mỗi G có Q, mỗi Q có D (hoặc ghi rõ lý do)
+- [ ] Mỗi P có mã F# làm bằng chứng; mỗi H có F# và cách kiểm chứng; mã F# trích dẫn có thật trong danh sách phát hiện
 - [ ] Không có con số/tên riêng nào ngoài đầu vào mà chưa gắn nhãn Giả định
 - [ ] Văn phong phù hợp level + thâm niên của người xem
 - [ ] Có chỉ rõ chỉ số/dimension/kỳ so sánh người dùng đã chọn nằm ở mục tiêu nào

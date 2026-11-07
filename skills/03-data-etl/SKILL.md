@@ -3,6 +3,7 @@ name: data-etl
 title: Data (ETL)
 description: Làm sạch dữ liệu theo 9 quy tắc dữ liệu dạng bảng (Transformation) và kiểm tra mô hình nhiều bảng — quan hệ, Primary Key / Foreign Key — quay lại Transformation nếu khóa có vấn đề (Modeling).
 handoff: model-spec.json
+knowledge: model-craft
 ---
 
 # SKILL: Import Data — Transformation & Modeling (Chặng 3)

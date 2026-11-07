@@ -18,6 +18,7 @@ const freshA = () => {
     data: null, sheets: [], pv: 0,
     colors: [], themeFile: null, tpl: null, tplList: null, colorMode: 'template',
     models: models && models.length === 4 ? models : ['sonnet', 'sonnet', 'sonnet', 'sonnet'],
+    gate: (() => { try { const g = JSON.parse(localStorage.getItem('bie-gate') || 'null'); if (g && typeof g === 'object') return { enabled: !!g.enabled, model: g.model || 'sonnet' }; } catch {} return { enabled: false, model: 'sonnet' }; })(),
     timers: {},
   };
 };
@@ -159,7 +160,9 @@ function foot() {
         <label class="rb-m">Model <select data-m="${i}">${modelOptions(A.models[i])}</select></label>
         <details class="rb-all"><summary>Model cho cả 4 chặng</summary>
           <div class="models">${META.stages.map((s, k) => `<div class="f" style="margin:0"><label>${k + 1}. ${esc(s.name)}</label><select data-m="${k}">${modelOptions(A.models[k])}</select></div>`).join('')}</div>
-          <div class="f" style="margin:10px 0 0;max-width:320px"><label>Áp dụng một model cho cả 4 chặng</label><select id="allm"><option value="">— chọn để áp dụng —</option>${modelOptions('')}</select></div></details></div>
+          <div class="f" style="margin:10px 0 0;max-width:320px"><label>Áp dụng một model cho cả 4 chặng</label><select id="allm"><option value="">— chọn để áp dụng —</option>${modelOptions('')}</select></div></details>
+        <div class="rb-gate"><label class="rb-chk" title="Sau mỗi chặng, một model độc lập chấm theo tiêu chí nghiệm thu (AC). Trượt tiêu chí critical thì chặng tự chạy lại tối đa 2 lần kèm phản hồi. Tốn thêm token."><input type="checkbox" id="gate-on" ${A.gate.enabled ? 'checked' : ''}> Kiểm chứng độc lập &amp; tự sửa (Evaluator)</label>
+          <label class="rb-m" id="gate-m" ${A.gate.enabled ? '' : 'hidden'}>Model đánh giá <select id="gate-model">${modelOptions(A.gate.model)}</select></label></div></div>
       <div class="rb-r"><button class="btn" id="run-one" type="button">▶ Chạy chặng ${i + 1}</button><button class="btn acc" id="run-all" type="button">▶ Chạy tất cả 4 chặng</button></div></div>
     <div class="wz-foot"><button class="btn ghost" id="wz-back" ${i === 0 ? 'disabled' : ''}>← Quay lại</button><div class="wz-hint" id="wz-hint"></div>
     ${i === 3 ? '' : '<button class="btn ghost" id="wz-next">Tiếp tục →</button>'}</div>`;
@@ -171,6 +174,9 @@ function bindFoot() {
   $('#run-all').onclick = () => runStages('all');
   const save = () => { try { localStorage.setItem('bie-models', JSON.stringify(A.models)); } catch {} };
   $('#runbar').querySelectorAll('select[data-m]').forEach((s) => (s.onchange = () => { A.models[+s.dataset.m] = s.value; save(); $('#runbar').querySelectorAll(`select[data-m="${s.dataset.m}"]`).forEach((o) => (o.value = s.value)); }));
+  const saveGate = () => { try { localStorage.setItem('bie-gate', JSON.stringify(A.gate)); } catch {} };
+  $('#gate-on').onchange = (e) => { A.gate.enabled = e.target.checked; $('#gate-m').hidden = !A.gate.enabled; saveGate(); };
+  $('#gate-model').onchange = (e) => { A.gate.model = e.target.value; saveGate(); };
   $('#allm').onchange = (e) => { if (!e.target.value) return; A.models = A.models.map(() => e.target.value); save(); $('#runbar').querySelectorAll('select[data-m]').forEach((s) => (s.value = e.target.value)); };
 }
 
@@ -337,7 +343,7 @@ async function runStages(which) {
   const btns = [$('#run-one'), $('#run-all')].filter(Boolean); btns.forEach((b) => (b.disabled = true));
   try {
     const id = await ensureRun();
-    await jsend(`/api/runs/${id}/start`, 'POST', { form: buildForm(), models: A.models, only: which === 'all' ? null : [which] });
+    await jsend(`/api/runs/${id}/start`, 'POST', { form: buildForm(), models: A.models, gate: A.gate, only: which === 'all' ? null : [which] });
     A.started = true;
     if (which === 'all') { Object.values(A.timers).forEach(clearTimeout); A = freshA(); }   // chạy tất cả → phiên mới sau đó
     location.hash = '#home/' + id;                                                          // chạy 1 chặng → giữ phiên để chạy tiếp chặng sau

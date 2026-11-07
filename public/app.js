@@ -121,20 +121,35 @@ function fileChips(r, s, open) {
   const zips = [`<a class="zip" href="/api/runs/${r.id}/stages/${s.id}/result.md?download=1">⬇ result.md</a>`];
   if (proj) zips.push(`<a class="zip" href="/api/runs/${r.id}/zip/${s.id}?dir=${encodeURIComponent('pbip/' + proj[1])}">⬇ Tải project PBIP (.zip)</a>`);
   if (nested.length) zips.push(`<a class="zip" href="/api/runs/${r.id}/zip/${s.id}">⬇ Cả thư mục chặng (.zip)</a>`);
-  return `<div class="files">${top.map(chip).join('')}${zips.join('')}</div>` +
+  const refreshNote = proj ? `<p class="sub" style="margin:6px 0 0">💡 Lần đầu mở file <b>.pbip</b>: báo cáo sẽ trống số liệu — bấm <b>Home → Refresh (Làm mới)</b> một lần để nạp dữ liệu. Chuyển project sang máy khác: chạy <code>SetDataFolder.ps1</code> trong thư mục project.</p>` : '';
+  return `<div class="files">${top.map(chip).join('')}${zips.join('')}</div>${refreshNote}` +
     (nested.length ? `<details class="nested"><summary>${nested.length} file trong thư mục con</summary><div class="files">${nested.slice(0, 80).map(chip).join('')}${nested.length > 80 ? `<span class="sub">…và ${nested.length - 80} file nữa (có trong file zip)</span>` : ''}</div></details>` : '');
+}
+function verdictPill(s) {
+  const e = s.evaluation; if (!e) return '';
+  const cls = e.verdict === 'PASS' ? 'pass' : e.verdict === 'FAIL' ? 'fail' : 'warn';
+  const label = e.verdict === 'PASS' ? `✓ Evaluator đạt ${e.score ?? ''}/100` : e.verdict === 'FAIL' ? `✗ Evaluator trượt ${e.score ?? ''}/100` : e.verdict === 'ERROR' ? '⚠ Evaluator lỗi' : '— Chưa có AC';
+  return `<span class="verdict ${cls}" title="Lần chạy ${e.attempt}">${label}${(s.attempts || []).length > 1 ? ` · ${(s.attempts || []).length} lần` : ''}</span>`;
+}
+function evalBox(r, s) {
+  const e = s.evaluation; if (!e) return '';
+  const rows = (e.criteria || []).map((c) => `<tr><td>${esc(c.id)}</td><td>${c.critical ? 'critical' : 'minor'}</td><td>${c.pass ? '✅' : '❌'}</td><td>${esc(c.text)}<div class="sub" style="margin:2px 0 0">${esc(c.note || '')}</div></td></tr>`).join('');
+  const hist = (s.attempts || []).length > 1 ? `<div class="sub" style="margin:6px 0 0">Lịch sử: ${(s.attempts || []).map((a) => `lần ${a.attempt}: ${esc(a.verdict)}${a.score != null ? ' (' + a.score + ')' : ''}`).join(' → ')}</div>` : '';
+  return `<details class="evalbox"><summary><b>Đánh giá độc lập</b> ${verdictPill(s)}</summary>${e.error ? `<div class="err-box">${esc(e.error)}</div>` : ''}${rows ? `<table><tr><th>AC</th><th>Mức</th><th>Đạt</th><th>Tiêu chí / ghi chú</th></tr>${rows}</table>` : ''}${e.feedback ? `<div class="fb"><b>Cần sửa:</b>\n${esc(e.feedback)}</div>` : ''}${hist}
+    <div class="files" style="margin-top:8px"><a class="zip" href="/api/runs/${r.id}/stages/${s.id}/evaluation.md?download=1">⬇ evaluation.md</a></div></details>`;
 }
 function stageCard(r, s, i) {
   const u = s.usage; const ctx = u ? u.input + u.cacheRead + u.cacheCreate + u.output : 0;
   const open = openState[r.id + s.id] ?? (s.status === 'done' && i === r.stages.length - 1);
   return `<div class="card stg" data-sid="${s.id}">
     <div class="stg-h"><div class="l"><div class="step" style="padding:0;background:none"><div class="n">${i + 1}</div></div><div><b style="font-size:16px">${esc(s.name)}</b><div class="sub" style="margin:0">output/${esc(r.id)}/${esc(s.id)}/</div></div></div>
-      <div style="display:flex;gap:8px;align-items:center">${statusPill(s.status)}
+      <div style="display:flex;gap:8px;align-items:center">${verdictPill(s)}${statusPill(s.status)}
         <select data-model="${i}" style="width:auto;padding:5px 28px 5px 10px;font-size:12px" ${r.running ? 'disabled' : ''}>${modelOptions(s.model)}</select>
         <button class="btn ghost sm" data-rerun="${i}" ${r.running ? 'disabled' : ''}>↻ Chạy lại chặng này</button></div></div>
     ${s.status === 'done' ? `<div class="meta"><span>Model <b>${esc(s.usedModel || s.model)}</b></span><span>Input <b>${fmt(u.input)}</b></span><span>Output <b>${fmt(u.output)}</b></span><span>Cache <b>${fmt(u.cacheRead + u.cacheCreate)}</b></span><span>Context <b>${fmt(ctx)} / ${fmt(s.contextWindow)}</b> (${((ctx / s.contextWindow) * 100).toFixed(1)}%)</span><span>Thời gian <b>${dur(s.ms)}</b></span><span>$<b>${(s.cost || 0).toFixed(4)}</b></span></div>` : ''}
-    ${s.status === 'running' ? `<div class="meta"><span class="spin"></span><span>Prompt ước tính ~<b>${fmt(s.promptTokensEst)}</b> token — đang chờ model...</span></div>` : ''}
+    ${s.status === 'running' ? `<div class="meta"><span class="spin"></span><span>${s.phase === 'evaluating' ? `Evaluator độc lập đang chấm (lần ${s.attempt || 1})...` : `${(s.attempt || 1) > 1 ? `Chạy lại lần ${s.attempt} theo phản hồi của Evaluator — ` : ''}Prompt ước tính ~<b>${fmt(s.promptTokensEst)}</b> token — đang chờ model...`}</span></div>` : ''}
     ${s.error ? `<div class="err-box">${esc(s.error)}</div>` : ''}
+    ${s.evaluation && s.status !== 'running' ? evalBox(r, s) : ''}
     ${s.status === 'done' ? `${(s.scripts || []).length ? `<div class="meta" style="margin:0 0 8px">${s.scripts.map((x) => `<span class="pill ${x.code === 0 ? 'ok' : 'err'}">scripts/${esc(x.name)} ${x.code === 0 ? '✓' : '✗'}</span>`).join(' ')}</div>` : ''}${fileChips(r, s, open)}
       <div class="md" data-view="${s.id}" ${open ? '' : 'hidden'}></div>
       <button class="btn ghost sm" data-toggle="${s.id}" style="margin-top:8px">${open ? 'Thu gọn' : 'Xem kết quả'}</button>` : ''}
