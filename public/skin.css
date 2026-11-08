@@ -329,3 +329,6 @@ input[type=text],textarea,select{border:1px solid var(--line)}
 :root:not([data-theme=dark]) .fsub.running{border-color:#D49A2A;background:rgba(212,154,42,.12)}
 :root:not([data-theme=dark]) .fsub.running .fs-x,:root:not([data-theme=dark]) .fsub.waiting .fs-c{color:#8A6A26}
 :root:not([data-theme=dark]) .fsub.done .fs-c{color:#15805A}
+
+.sc-root{font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default}
+.side-collapsed .sc-root{display:none}

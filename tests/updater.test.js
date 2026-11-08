@@ -51,3 +51,16 @@ test('update.ps1: kéo bản mới về repo thật (đường dẫn có khoản
   assert.match(r.stdout, /Sua loi B|Them tinh nang A|->/);
   const s = cp.spawnSync(process.execPath, ['-e', `require(${JSON.stringify(path.join(ROOT, 'lib/updater.js'))}).status(${JSON.stringify(user)}).then(s=>console.log(s.behind))`], { encoding: 'utf8' }); assert.strictEqual(s.stdout.trim(), '0');
 });
+
+test('update.ps1: MEMORY.md (app tự ghi) bị sửa cục bộ KHÔNG chặn cập nhật và được giữ nguyên', { skip: process.platform !== 'win32' }, () => {
+  const run = () => cp.spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(ROOT, 'update.ps1'), '-RepoDir', user, '-NoStart'], { encoding: 'utf8', timeout: 120000 });
+  fs.writeFileSync(path.join(dev, 'MEMORY.md'), 'log tac gia v1\n'); G(dev, 'add', '.'); G(dev, 'commit', '-m', 'memory v1'); G(dev, 'push', 'origin', 'HEAD:main');
+  let r = run(); assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  fs.writeFileSync(path.join(user, 'MEMORY.md'), 'log tac gia v1\nlog nguoi dung tu ghi\n');   // app của người dùng ghi thêm sau một lần chạy
+  fs.writeFileSync(path.join(dev, 'MEMORY.md'), 'log tac gia v2\n'); G(dev, 'add', '.'); G(dev, 'commit', '-m', 'memory v2'); push('them tinh nang C');
+  const s = cp.spawnSync(process.execPath, ['-e', `require(${JSON.stringify(path.join(ROOT, 'lib/updater.js'))}).status(${JSON.stringify(user)}).then(s=>console.log(JSON.stringify(s.dirty)))`], { encoding: 'utf8' });
+  assert.strictEqual(s.stdout.trim(), '[]', 'MEMORY.md không bị tính là dirty');
+  r = run(); assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.strictEqual(G(user, 'rev-parse', 'HEAD'), G(dev, 'rev-parse', 'HEAD'), 'đã cập nhật');
+  assert.match(fs.readFileSync(path.join(user, 'MEMORY.md'), 'utf8'), /nguoi dung tu ghi/, 'nhật ký của người dùng được giữ');
+});

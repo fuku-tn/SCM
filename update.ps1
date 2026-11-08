@@ -21,6 +21,7 @@ Say ('  Thu muc: ' + $RepoDir) DarkGray
 Say ''
 
 $ok = $true
+$memBak = $null   # MEMORY.md do app tu ghi (nhat ky cac lan chay) - giu lai cua nguoi dung, khong coi la 'sua file'
 try {
   if ($ServerPid -gt 0) {
     Say '[1/4] Dung server dang chay...' Cyan
@@ -34,8 +35,10 @@ try {
   if ($token) { $b64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("x-access-token:$token")); $auth = @('-c', "http.extraheader=AUTHORIZATION: basic $b64") }
 
   Say '[2/4] Kiem tra thay doi cuc bo...' Cyan
-  $dirty = (git status --porcelain -uno) -join "`n"
+  $dirty = (@(git status --porcelain -uno | Where-Object { $_ -notmatch 'MEMORY.md$' })) -join "`n"
   if ($dirty.Trim()) { throw ("Ban dang sua file trong thu muc BIE, khong the cap nhat tu dong:`n$dirty`nHay hoan tac/luu cac thay doi nay (git stash) roi cap nhat lai.") }
+  $memPath = Join-Path $RepoDir 'MEMORY.md'
+  if (Test-Path -LiteralPath $memPath) { $memBak = [IO.File]::ReadAllText($memPath); & git checkout -- MEMORY.md 2>$null }
   $branch = (git rev-parse --abbrev-ref HEAD).Trim()
   $before = (git rev-parse HEAD).Trim()
   $pkgBefore = if (Test-Path package.json) { (Get-FileHash package.json).Hash } else { '' }
@@ -67,6 +70,9 @@ catch {
   Say ''
   Say ('  LOI: ' + $_.Exception.Message) Red
   Say '  Giu nguyen phien ban hien tai.' Yellow
+}
+finally {
+  if ($null -ne $memBak) { [IO.File]::WriteAllText((Join-Path $RepoDir 'MEMORY.md'), $memBak, (New-Object Text.UTF8Encoding($false))) }
 }
 
 Say ''

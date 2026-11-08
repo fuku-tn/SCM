@@ -66,6 +66,7 @@
     $('#sc-dot').className = 'sc-dot ' + (online ? (data.running ? 'run' : 'ok') : 'off');
     $('#sc-state').textContent = online ? (data.running ? `${data.running} flow đang chạy` : 'Server online') : 'Server offline';
     $('#sc-mode').textContent = online ? (data.mock ? 'MOCK' : 'Live') : '';
+    { const r = data.root || '', name = r.split(/[\\/]/).filter(Boolean).pop() || '', el = $('#sc-root'); if (el) { el.textContent = online && name ? '📁 ' + name + (data.port ? ' · :' + data.port : '') : ''; el.title = online ? 'BIE đang chạy từ thư mục:\n' + r : ''; } }
     $('#sc-runs').textContent = online ? data.total : '–'; $('#sc-act').textContent = online ? data.running : '–';
   }
   function drawPanel() {

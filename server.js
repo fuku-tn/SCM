@@ -32,6 +32,7 @@ const MODELS = [
   { id: 'claude-haiku-5-5', label: 'Haiku 5.5' },
 ];
 const MOCK = process.env.BIE_MOCK === '1';
+let LISTEN_PORT = Number(PORT);   // cổng thật sự đang nghe (có thể khác PORT nếu cổng bận)
 
 const app = express();
 app.use(express.json({ limit: '5mb' }));
@@ -134,7 +135,7 @@ app.get('/api/samples/:k', (req, res, next) => {
   const s = require('./lib/samples.js').SAMPLES[req.params.k]; if (!s) return next();   // vd. /api/samples/version-data ở route riêng
   res.set({ 'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'Content-Disposition': `attachment; filename="${s.file}"` }).send(s.build());
 });
-app.get('/api/meta', (req, res) => res.json({ stages: STAGES, models: MODELS, mock: MOCK, port: PORT, steps: STEP_LABELS.map((l) => l.map(([id, label]) => ({ id, label }))) }));
+app.get('/api/meta', (req, res) => res.json({ stages: STAGES, models: MODELS, mock: MOCK, port: LISTEN_PORT, root: ROOT, steps: STEP_LABELS.map((l) => l.map(([id, label]) => ({ id, label }))) }));
 
 app.get('/api/docs/:k', (req, res) => {
   if (!DOCS[req.params.k]) return res.sendStatus(404);
@@ -922,7 +923,7 @@ app.get('/api/activity', (req, res) => {
       waitingFor: waiting ? ((r.versionCheck && r.versionCheck.missing) || []).map((k) => (VER.byKey(k) || { name: k }).name) : undefined,
     });
   }
-  res.json({ items, running: runningN, total: ids.length, mock: MOCK, now: Date.now() });
+  res.json({ items, running: runningN, total: ids.length, mock: MOCK, now: Date.now(), root: ROOT, port: LISTEN_PORT });
 });
 // ---------- Cập nhật phiên bản từ GitHub (cho người đã clone repo) ----------
 const UPD = require('./lib/updater.js');
@@ -940,7 +941,7 @@ app.post('/api/update/run', (req, res) => {
   // chỉ nhận từ trang BIE chạy trên máy này (chặn trang web khác gọi vào để mở terminal)
   const o = req.get('origin'); if (o && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(o)) return res.status(403).json({ error: 'Origin không hợp lệ' });
   if (running.size) return res.status(409).json({ error: 'Đang có flow chạy — hãy đợi flow xong rồi cập nhật (cập nhật sẽ khởi động lại server).' });
-  const r = UPD.launch(ROOT, { port: PORT, serverPid: process.pid, dryRun: process.env.BIE_UPDATE_DRYRUN === '1' });
+  const r = UPD.launch(ROOT, { port: LISTEN_PORT, serverPid: process.pid, dryRun: process.env.BIE_UPDATE_DRYRUN === '1' });
   if (!r.ok) return res.status(500).json(r);
   updCache = { at: 0, data: null, busy: null }; res.json(r);
 });
@@ -1026,4 +1027,17 @@ app.get('/api/runs/:id/zip/:sid', (req, res) => {
   res.set({ 'Content-Type': 'application/zip', 'Content-Disposition': `attachment; filename="${(sub ? path.basename(root) : sid)}.zip"` }).send(z.toBuffer());
 });
 
-app.listen(PORT, () => console.log(`BIE chạy tại http://localhost:${PORT}${MOCK ? '  (MOCK mode)' : ''}`));
+// Cổng đang bị dùng (vd. một bản BIE khác trên máy này) → tự chọn cổng trống kế tiếp thay vì báo lỗi khó hiểu
+function listenOn(port, tries) {
+  const srv = app.listen(port, () => {
+    LISTEN_PORT = port;
+    console.log(`BIE chạy tại http://localhost:${port}${MOCK ? '  (MOCK mode)' : ''}`);
+    console.log('Thư mục BIE đang chạy: ' + ROOT);
+    if (port !== Number(PORT)) console.log(`⚠ Cổng ${PORT} đang được một chương trình khác dùng (có thể là bản BIE khác trên máy bạn) → BIE dùng cổng ${port}. Hãy mở đúng địa chỉ ở trên.`);
+  });
+  srv.on('error', (e) => {
+    if (e.code === 'EADDRINUSE' && tries > 0) { console.log(`Cổng ${port} đang bận, thử cổng ${port + 1}…`); listenOn(port + 1, tries - 1); }
+    else { console.error('Không mở được cổng: ' + e.message); process.exit(1); }
+  });
+}
+listenOn(Number(PORT), 20);
