@@ -53,6 +53,23 @@ Trước khi chạy chặng 4, bấm **Đề xuất bố cục**: AI (có quy t�
 - Bản đã duyệt lưu ở `00-input/dashboard-plan.json` và được đưa vào prompt chặng 4 như **hợp đồng** (số trang, ô, loại, Top N, tiêu đề); Evaluator có tiêu chí kiểm tra tuân thủ. Đổi chỉ số/chiều/template/ngôn ngữ sau khi duyệt → bố cục báo "không còn khớp".
 - Template của riêng bạn: file `.pbix` phải lưu ở **PBIR** (Options → Preview features → *Store reports using enhanced metadata format (PBIR)*); file hỏng/sai định dạng bị từ chối kèm hướng dẫn.
 
+### Cài đặt trên máy khác & tự cập nhật
+
+**Cài một dòng lệnh** (Windows PowerShell; cần Git, Node.js 18+, và Claude Code CLI `claude` để chạy model thật):
+```powershell
+irm https://raw.githubusercontent.com/fuku-tn/BIE/main/install.ps1 | iex
+```
+Repo riêng tư: dùng token **chỉ có quyền đọc** repo này (GitHub → Settings → Developer settings → Fine-grained tokens → Repository access = repo BIE, Permissions → Contents = Read-only, đặt hạn ngắn):
+```powershell
+powershell -c "$env:KIT_TOKEN='<TOKEN>'; $h=@{Authorization=""Bearer $env:KIT_TOKEN""}; irm -Headers $h https://raw.githubusercontent.com/fuku-tn/BIE/main/install.ps1 | iex"
+```
+Token được lưu ở `.bie-token` (đã gitignore) chỉ để chức năng cập nhật dùng lại; không ghi vào URL hay `.git/config`.
+
+**Thông báo phiên bản mới:** BIE định kỳ (mỗi ~20 phút và khi mở) so sánh với `origin/main` trên GitHub. Có commit mới → nút **⬆ Có bản mới** ở thanh trên + cửa sổ liệt kê thay đổi. Bấm **Cập nhật ngay** → server mở một cửa sổ terminal chạy `update.ps1`: dừng server → `git pull --ff-only` → `npm install` (chỉ khi thư viện đổi) → chạy lại BIE và mở trình duyệt. Dữ liệu/kết quả trong `output/` được giữ nguyên.
+- Không cập nhật khi đang có flow chạy; nếu bạn đã sửa file đã theo dõi trong thư mục BIE thì dừng lại và báo (không ghi đè).
+- Cần bản **clone git** (không phải tải .zip). Tự mở terminal hiện hỗ trợ Windows; hệ khác hiển thị lệnh để chạy tay.
+- Người phát hành chỉ cần **push lên `main`** — máy khác sẽ nhận thông báo.
+
 ### Cổng Version (Budget / Target / Forecast…)
 
 Nếu ở Key Metrics bạn chọn so sánh với **Version**, flow có một nhánh kiểm tra riêng:

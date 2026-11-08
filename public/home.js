@@ -59,13 +59,13 @@ async function vHome(id) {
     <div class="nodes" id="nodes">${nodes.map((n, i) => `
       <div class="fnode pending ${i % 2 ? 'low' : ''}" data-i="${i}" ${i > 0 && i < N - 1 ? 'tabindex="0" role="button"' : ''}>
         <div class="fn-h"><span class="fn-badge">${i === 0 ? '⇩' : i === N - 1 ? '⎘' : i}</span><b>${esc(n.name)}</b><span class="fn-ico"></span></div>
-        <div class="fn-m"></div><div class="fn-s"></div><div class="fn-x"></div><button class="fn-err" hidden>Xem lỗi chi tiết</button>
+        <div class="fn-m"></div><div class="fn-s"></div><div class="fn-x"></div><div class="fsubs"></div><button class="fn-err" hidden>Xem lỗi chi tiết</button>
       </div>`).join('')}</div></div>
     <div class="legend"><span><i class="lg pending"></i>Chờ</span><span><i class="lg running"></i>Đang chạy</span><span><i class="lg done"></i>Hoàn thành</span><span><i class="lg error"></i>Lỗi (bấm để xem)</span></div></div>
   <div class="card"><h2>Tổng quan các chặng</h2><p class="sub">Cập nhật theo thời gian thực.</p><div style="overflow:auto"><table class="tbl" id="htbl"></table></div></div>`;
 
   const flow = $('#flow'), svg = $('#edges'), nodeEls = [...view.querySelectorAll('.fnode')];
-  let run = null, prev = {}, lastStates = [];
+  let run = null, prev = {}, lastStates = [], lastSig = '';
   const states = (r) => nodes.map((n, i) => {
     if (i === 0) return r ? 'done' : 'pending';
     if (i === N - 1) return r && r.status === 'done' ? 'done' : 'pending';
@@ -77,7 +77,8 @@ async function vHome(id) {
     let h = '<defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
     for (let i = 0; i < N - 1; i++) {
       const a = nodeEls[i].getBoundingClientRect(), b = nodeEls[i + 1].getBoundingClientRect();
-      const x1 = a.right - fr.left + flow.scrollLeft, y1 = a.top + a.height / 2 - fr.top + flow.scrollTop, x2 = b.left - fr.left + flow.scrollLeft, y2 = b.top + b.height / 2 - fr.top + flow.scrollTop;
+      const sa = nodeEls[i].querySelector('.fsub:last-child'), sb = nodeEls[i + 1].querySelector('.fsub'), ra = (sa || nodeEls[i]).getBoundingClientRect(), rb = (sb || nodeEls[i + 1]).getBoundingClientRect();
+      const x1 = a.right - fr.left + flow.scrollLeft, y1 = ra.top + ra.height / 2 - fr.top + flow.scrollTop, x2 = b.left - fr.left + flow.scrollLeft, y2 = rb.top + rb.height / 2 - fr.top + flow.scrollTop;
       const dx = (x2 - x1) * 0.5, d = `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
       h += `<g class="edge idle" data-e="${i}"><path class="base" d="${d}"/><path class="glow" d="${d}" filter="url(#gl)"/>
         ${[0, 0.5, 1].map((o) => `<circle class="dot" r="4.5" filter="url(#gl)"><animateMotion dur="1.5s" begin="${o * 1.5}s" repeatCount="indefinite" path="${d}"/></circle>`).join('')}
@@ -91,10 +92,10 @@ async function vHome(id) {
     if (vs.length && nodeEls[2] && nodeEls[3]) {
       const a = nodeEls[3].getBoundingClientRect(), b = nodeEls[2].getBoundingClientRect();
       const xa = a.left + a.width / 2 - fr.left + flow.scrollLeft, ya = a.bottom - fr.top + flow.scrollTop, xb = b.left + b.width / 2 - fr.left + flow.scrollLeft, yb = b.bottom - fr.top + flow.scrollTop;
-      const dip = 64, d = `M${xa},${ya} C${xa},${ya + dip} ${xb},${ya + dip} ${xb},${yb + 2}`;
+      const botY = Math.max(a.bottom, b.bottom) - fr.top + flow.scrollTop, dip = 58, d = `M${xa},${ya} C${xa},${botY + dip} ${xb},${botY + dip} ${xb},${yb + 2}`;   // đi vòng dưới cả hai nhóm
       const st = vc?.status === 'needs_data' ? 'wait' : ['ok', 'applied'].includes(vc?.status) ? 'done' : ['skipped', 'partial'].includes(vc?.status) ? 'skip' : (lastStates[3] === 'done' ? 'ready' : 'idle');
       h += `<g class="vloop ${st}"><path class="base" d="${d}"/><path class="glow" d="${d}" filter="url(#gl)"/>${[0, 0.5].map((o) => `<circle class="dot" r="4.5" filter="url(#gl)"><animateMotion dur="1.8s" begin="${o * 1.8}s" repeatCount="indefinite" path="${d}"/></circle>`).join('')}<path class="arrow" d="M${xb - 6},${yb + 12} L${xb},${yb + 2} L${xb + 6},${yb + 12}"/></g>`;
-      const my = ya * 0.875 + yb * 0.125 + dip * 0.75;
+      const my = ya * 0.125 + yb * 0.125 + (botY + dip) * 0.75;
       chip.hidden = false; chip.className = 'vchip ' + st; chip.style.left = (xa + xb) / 2 + 'px'; chip.style.top = my + 'px';
       chip.innerHTML = { wait: '⚠ Version check — cần bổ sung dữ liệu', done: '✓ Version check — đã có dữ liệu', skip: '⚠ Version check — chạy không có dữ liệu', ready: '⟲ Version check', idle: '⟲ Version check' }[st];
       chip.title = 'Kiểm tra dữ liệu Version (' + vs.join(', ') + ') sau Data (ETL), quay lại Key Metrics';
@@ -130,12 +131,13 @@ async function vHome(id) {
         if (s === 'error') x = esc((st.error || '').slice(0, 60));
       }
       $('.fn-m', el).innerHTML = m; $('.fn-x', el).innerHTML = x;
+      flowSyncSubs(el, flowStepsFor(r, i, N), now);
       const eb = $('.fn-err', el); eb.hidden = s !== 'error'; eb.onclick = (e) => { e.stopPropagation(); showError(r, i - 1); };
       el.onclick = () => { if (!r) return; if (s === 'error') showError(r, i - 1); else if (s === 'done' || i === N - 1) location.hash = '#run/' + r.id; };
       if (el.className.includes(' pop') || el.className.includes(' shake')) setTimeout(() => el.classList.remove('pop', 'shake'), 1400);
       prev[i] = s;
     });
-    applyEdges();
+    { const sig = nodeEls.map((e) => e.offsetHeight).join(','); if (sig !== lastSig) { lastSig = sig; requestAnimationFrame(drawEdges); } else applyEdges(); }   // chỉ vẽ lại đường nối khi bố cục đổi (giữ hiệu ứng chạy liên tục)
     if (r && r.status === 'waiting' && r.versionCheck?.status === 'needs_data' && window.openVersionModal) window.openVersionModal(r, { auto: true, refresh: () => window.__homeRefresh && window.__homeRefresh() });
     const chip = $('#vchip'); if (chip) chip.onclick = () => window.openVersionModal && window.openVersionModal(run, { refresh: () => window.__homeRefresh && window.__homeRefresh() });
     const t = r?.totals; setMeter(t);

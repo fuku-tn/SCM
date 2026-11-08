@@ -134,7 +134,7 @@ app.get('/api/samples/:k', (req, res, next) => {
   const s = require('./lib/samples.js').SAMPLES[req.params.k]; if (!s) return next();   // vd. /api/samples/version-data ở route riêng
   res.set({ 'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'Content-Disposition': `attachment; filename="${s.file}"` }).send(s.build());
 });
-app.get('/api/meta', (req, res) => res.json({ stages: STAGES, models: MODELS, mock: MOCK, port: PORT }));
+app.get('/api/meta', (req, res) => res.json({ stages: STAGES, models: MODELS, mock: MOCK, port: PORT, steps: STEP_LABELS.map((l) => l.map(([id, label]) => ({ id, label }))) }));
 
 app.get('/api/docs/:k', (req, res) => {
   if (!DOCS[req.params.k]) return res.sendStatus(404);
@@ -701,8 +701,9 @@ async function execStage(run, i) {
       feedback = `Lần chạy trước thất bại:${s.error}\nHãy sửa đầu ra để các bước tự động chạy được (đúng khối FILE, JSON hợp lệ, đúng tên bảng/cột).`;
       continue;
     }
-    s.status = 'running'; s.phase = 'evaluating'; saveRun(run);
+    s.status = 'running'; s.phase = 'evaluating'; saveRun(run); markStep(run, i, 'eval', 'running');
     const ev = await evaluateStage(run, i, attempt);
+    markStep(run, i, 'eval', ev.verdict === 'FAIL' ? 'error' : 'done', ev.verdict + (ev.score != null ? ' · ' + ev.score : ''));
     s.attempts.push({ attempt, verdict: ev.verdict, score: ev.score, failed: ev.failedCritical || [] });
     s.evaluation = { ...ev, attempt, history: s.attempts }; s.phase = null;
     try { wr(path.join(dir, 'evaluation.json'), JSON.stringify(s.evaluation, null, 2)); wr(path.join(dir, 'evaluation.md'), EV.toMarkdown(s.evaluation, st.name)); } catch {}
@@ -723,42 +724,76 @@ async function execStage(run, i) {
   return false;
 }
 
+// ---------- Các bước nhỏ (flow con) bên trong mỗi chặng — hiển thị trên workflow ----------
+const fmtK = (n) => (n >= 10000 ? Math.round(n / 1000) + 'k' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n));
+const STEP_LABELS = [
+  [['prompt', 'Đọc ngữ cảnh + EDA'], ['model', 'Model viết bối cảnh'], ['post', 'Kiểm tra G→Q→D']],
+  [['prompt', 'Nạp bối cảnh + chỉ số'], ['model', 'Model chọn measure'], ['post', 'Sinh DAX (script)']],
+  [['pre', 'Làm sạch dữ liệu'], ['prompt', 'Chuẩn bị prompt'], ['model', 'Model: modeling'], ['post', 'Dựng model-spec'], ['version', 'Kiểm tra Version']],
+  [['plan', 'Bố cục đã duyệt'], ['prompt', 'Nạp measure + template'], ['model', 'Model gắn biểu đồ'], ['post', 'Dựng PBIP + kiểm tra']],
+];
+function initSteps(run, i) {
+  const f = run.form || {}, sd = path.join(SKILLS, STAGES[i].id, 'scripts');
+  const list = STEP_LABELS[i].filter(([id]) => (id !== 'pre' || fs.existsSync(path.join(sd, 'pre.js'))) && (id !== 'version' || (f.versions || []).length) && (id !== 'plan' || fs.existsSync(path.join(runDir(run.id), '00-input', 'dashboard-plan.json'))));
+  if (run.gate && run.gate.enabled) { const k = list.findIndex(([id]) => id === 'version'); list.splice(k < 0 ? list.length : k, 0, ['eval', 'Evaluator độc lập']); }
+  run.stages[i].steps = list.map(([id, label]) => ({ id, label, status: id === 'plan' ? 'done' : 'pending' }));
+}
+function markStep(run, i, id, status, note) {
+  const s = run.stages[i]; if (!s) return; s.steps = s.steps || [];
+  let x = s.steps.find((t) => t.id === id);
+  if (!x) { const lab = (STEP_LABELS[i].find(([k]) => k === id) || [id, id])[1]; x = { id, label: lab, status: 'pending' }; s.steps.push(x); }
+  x.status = status; if (note !== undefined) x.note = note;
+  if (status === 'running') { x.startedAt = Date.now(); delete x.endedAt; } else if (x.startedAt && ['done', 'error', 'skipped'].includes(status)) x.endedAt = Date.now();
+  saveRun(run);
+}
+
 async function attemptStage(run, i, feedback, attempt) {
   const st = STAGES[i], s = run.stages[i];
   const dir = path.join(runDir(run.id), st.id);
   fs.mkdirSync(dir, { recursive: true });
-  s.status = 'running'; s.startedAt = s.startedAt && attempt > 1 ? s.startedAt : Date.now(); s.error = null; s.errorDetail = null; s.scripts = []; saveRun(run);
+  s.status = 'running'; s.startedAt = s.startedAt && attempt > 1 ? s.startedAt : Date.now(); s.error = null; s.errorDetail = null; s.scripts = [];
+  const keepVersion = (s.steps || []).find((t) => t.id === 'version'); initSteps(run, i); if (keepVersion) { const v = s.steps.find((t) => t.id === 'version'); if (v) Object.assign(v, keepVersion); }
+  saveRun(run);
   try {
     // 1) pre.js (tiền xử lý xác định, không tốn token)
     let preOut = '';
+    if ((s.steps || []).some((t) => t.id === 'pre')) markStep(run, i, 'pre', 'running');
     const pre = await runScript(st.id, 'pre.js', runDir(run.id), dir);
     if (pre) {
       wr(path.join(dir, 'pre.log'), pre.stdout + (pre.stderr ? '\n[stderr]\n' + pre.stderr : ''));
       s.scripts.push({ name: 'pre.js', code: pre.code });
       if (pre.code !== 0) throw scriptFail(pre);
       preOut = pre.stdout.length > 30000 ? pre.stdout.slice(0, 30000) + '\n…(cắt bớt)' : pre.stdout;
+      markStep(run, i, 'pre', 'done');
     }
     // 2) gọi model
+    markStep(run, i, 'prompt', 'running');
     const meta = skillMeta(st.id);
     const prompt = buildPrompt(run, i, preOut, feedback);
     s.promptTokensEst = estTokens(prompt);
     wr(path.join(dir, 'prompt.md'), prompt);
+    markStep(run, i, 'prompt', 'done', '~' + fmtK(s.promptTokensEst) + ' token');
+    markStep(run, i, 'model', 'running');
     const opts = meta.tools ? { tools: meta.tools, addDirs: [path.join(runDir(run.id), '00-input'), TEMPLATES_DIR].filter((d) => fs.existsSync(d)) } : {};
     const r = await callClaude(prompt, s.model, undefined, opts);
     const ex = extractFileBlocks(r.text, dir);
     wr(path.join(dir, 'result.md'), ex.text);
     wr(path.join(dir, 'metrics.json'), JSON.stringify({ model: r.model, usage: r.usage, contextWindow: r.contextWindow, costUSD: r.cost, ms: r.ms, filesFromModel: ex.written }, null, 2));
     s.usage = r.usage; s.contextWindow = r.contextWindow; s.cost = r.cost; s.ms = r.ms; s.usedModel = r.model;
+    markStep(run, i, 'model', 'done', fmtK(r.usage.input + r.usage.output + r.usage.cacheRead + r.usage.cacheCreate) + ' token');
     // 3) post.js (kiểm tra / sinh file xác định từ kết quả của model, ví dụ dựng PBIP)
+    markStep(run, i, 'post', 'running');
     const post = await runScript(st.id, 'post.js', runDir(run.id), dir);
     if (post) {
       wr(path.join(dir, 'post.log'), post.stdout + (post.stderr ? '\n[stderr]\n' + post.stderr : ''));
       s.scripts.push({ name: 'post.js', code: post.code });
       if (post.code !== 0) throw scriptFail(post);
     }
+    markStep(run, i, 'post', 'done');
     s.files = listFiles(dir).map((f) => f.path).sort((a, b) => (a === 'result.md' ? -1 : b === 'result.md' ? 1 : a.localeCompare(b))).slice(0, 400);
     s.status = 'done';
   } catch (e) {
+    (s.steps || []).forEach((t) => { if (t.status === 'running') { t.status = 'error'; t.endedAt = Date.now(); } });
     s.status = 'error'; s.error = e.message;
     s.errorDetail = { ...(e.detail || {}), stack: e.stack, model: s.model, at: new Date().toISOString() };
     try { wr(path.join(dir, 'error.json'), JSON.stringify({ message: s.error, ...s.errorDetail }, null, 2)); } catch {}
@@ -798,6 +833,7 @@ async function runPipeline(run, from, only) {
   for (let i = from; i < STAGES.length; i++) {
     if (i === 3) {
       let g = 'go'; try { g = versionGate(run, !only); } catch (e) { console.error('Cổng Version lỗi (bỏ qua):', e.message); }
+      { const vc = run.versionCheck || {}; if ((run.form && run.form.versions || []).length && run.stages[2]) markStep(run, 2, 'version', g === 'wait' ? 'waiting' : ['skipped', 'partial'].includes(vc.status) ? 'skipped' : 'done', g === 'wait' ? 'chờ dữ liệu' : (vc.status || '')); }
       if (g === 'wait') { run.status = 'waiting'; saveRun(run); running.delete(run.id); return; }
       saveRun(run);
     }
@@ -888,6 +924,27 @@ app.get('/api/activity', (req, res) => {
   }
   res.json({ items, running: runningN, total: ids.length, mock: MOCK, now: Date.now() });
 });
+// ---------- Cập nhật phiên bản từ GitHub (cho người đã clone repo) ----------
+const UPD = require('./lib/updater.js');
+let updCache = { at: 0, data: null, busy: null };
+app.get('/api/update/status', async (req, res) => {
+  const force = req.query.force === '1';
+  if (!force && updCache.data && Date.now() - updCache.at < 10 * 60 * 1000) return res.json(updCache.data);
+  try {
+    updCache.busy = updCache.busy || UPD.status(ROOT, { token: UPD.readToken(ROOT) });   // tránh nhiều request cùng lúc chạy git fetch
+    const data = await updCache.busy; updCache = { at: Date.now(), data, busy: null };
+    res.json(data);
+  } catch (e) { updCache.busy = null; res.status(500).json({ supported: false, error: e.message }); }
+});
+app.post('/api/update/run', (req, res) => {
+  // chỉ nhận từ trang BIE chạy trên máy này (chặn trang web khác gọi vào để mở terminal)
+  const o = req.get('origin'); if (o && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(o)) return res.status(403).json({ error: 'Origin không hợp lệ' });
+  if (running.size) return res.status(409).json({ error: 'Đang có flow chạy — hãy đợi flow xong rồi cập nhật (cập nhật sẽ khởi động lại server).' });
+  const r = UPD.launch(ROOT, { port: PORT, serverPid: process.pid, dryRun: process.env.BIE_UPDATE_DRYRUN === '1' });
+  if (!r.ok) return res.status(500).json(r);
+  updCache = { at: 0, data: null, busy: null }; res.json(r);
+});
+
 // ---------- API: dữ liệu Version (file mẫu, tải lên, tiếp tục) ----------
 app.get('/api/samples/version-data', (req, res) => {
   const run = req.query.run && safeId(String(req.query.run)) ? loadRun(String(req.query.run)) : null; const f = (run && run.form) || {};

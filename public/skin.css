@@ -250,3 +250,82 @@ input[type=text],textarea,select{border:1px solid var(--line)}
 .vres b{color:var(--ok)}.vres span{color:var(--mut)}.vres ul{margin:4px 0 0 18px;padding:0;color:var(--acct)}
 .vwarn{padding:14px 16px;border-radius:14px;background:rgba(227,184,102,.12);border:1px solid rgba(227,184,102,.45);font-size:13px;line-height:1.55}
 .vwarn b{color:var(--acct);font-size:15px}.vwarn p{margin:8px 0 0}
+
+/* ---- thông báo phiên bản mới ---- */
+.upd-btn{border:1px solid rgba(227,184,102,.6);background:rgba(227,184,102,.14);color:#F3D391;border-radius:999px;padding:6px 13px;font:700 12px 'Quicksand',sans-serif;cursor:pointer;white-space:nowrap;transition:.2s}
+:root:not([data-theme=dark]) .upd-btn{color:#8A6A26;background:rgba(200,169,107,.2)}
+.upd-btn:hover{background:rgba(227,184,102,.26)}
+.upd-btn.pulse{animation:scpulse 1.6s ease-in-out infinite}
+.sc-ver{font-family:Consolas,monospace;font-size:10px;opacity:.75;margin-left:4px}
+.updmodal{width:min(620px,100%)}
+.updlist{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;max-height:240px;overflow-y:auto}
+.updlist li{display:grid;grid-template-columns:62px 1fr auto;gap:10px;align-items:baseline;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.5px}
+.updlist li:last-child{border-bottom:0}
+.updlist code{font:11px Consolas,monospace;color:var(--acct)}
+.updlist small{color:var(--mut);font-size:10.5px;white-space:nowrap}
+
+/* ---- Home: thẻ số liệu gọn (thấp), workflow cao hơn ---- */
+.grid4{gap:12px;align-items:start}
+.stat{padding:11px 16px 12px;border-radius:14px}
+.stat .k{font-size:11.5px;line-height:1.3}
+.stat .v{font-size:21px;line-height:1.2;margin:1px 0}
+.stat .s{font-size:10.5px;line-height:1.35}
+.ctxbar{height:6px;margin:5px 0 3px}
+.flowcard{padding:16px}
+.flow{display:flex;flex-direction:column;justify-content:center;min-height:clamp(430px,54vh,620px);padding:56px 24px 50px}
+.flow.has-loop{padding-bottom:128px}
+.nodes{width:100%}
+.fnode{padding:18px 16px 16px;border-radius:22px}
+.fnode.low{margin-top:104px}
+.fn-h{margin-bottom:12px}.fn-h b{font-size:14.5px}
+.fn-m{margin-bottom:2px}.fn-s{margin-top:10px;font-size:12.5px}.fn-x{margin-top:4px}
+.legend{padding:14px 6px 0}
+.grid4{align-items:stretch}
+.fnode{padding:17px 12px 15px}
+.fn-h b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ===== Workflow: mỗi chặng là một NHÓM chứa các bước nhỏ (flow con) nối với nhau ===== */
+.nodes{align-items:flex-start}
+.fnode,.fnode.low{margin-top:0}
+.fnode{padding:15px 11px 13px}
+.fn-h{margin-bottom:8px}
+.fn-m{margin-bottom:0}.fn-s{margin-top:6px}.fn-x{margin-top:2px;min-height:0}
+.fsubs{display:flex;flex-direction:column;gap:16px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);position:relative}
+.fsub{position:relative;display:grid;grid-template-columns:18px minmax(0,1fr);column-gap:7px;row-gap:1px;align-items:center;padding:7px 8px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.035);font-size:11.5px;line-height:1.25;transition:border-color .35s,background .35s,box-shadow .35s;cursor:default}
+.fs-i{grid-row:1/3;display:grid;place-items:center;width:18px;height:18px}
+.fs-c{font-style:normal;font-size:11px;font-weight:800;line-height:1}
+.fs-t{font-weight:700;overflow-wrap:anywhere}
+.fs-x{grid-column:2;font-size:10px;color:var(--mut);min-height:0}.fs-x:empty{display:none}
+.fs-i .spin{width:12px;height:12px;border-width:2px}
+/* đường nối dọc giữa các bước */
+.fsub+.fsub::before{content:"";position:absolute;left:16px;top:-17px;width:2px;height:16px;border-radius:2px;background:var(--line)}
+.fsub.pending{opacity:.6}.fsub.pending .fs-c{color:var(--mut)}
+.fsub.done{border-color:rgba(76,196,154,.4);background:rgba(76,196,154,.07)}.fsub.done .fs-c{color:var(--ok)}
+.fsub.done+.fsub::before,.fsub+.fsub.done::before{background:var(--ok);box-shadow:0 0 6px rgba(76,196,154,.5)}
+.fsub.running{border-color:rgba(227,184,102,.85);background:rgba(227,184,102,.10);box-shadow:0 0 0 1px rgba(227,184,102,.2),0 0 18px rgba(227,184,102,.28);animation:fsglow 1.6s ease-in-out infinite}
+.fsub.running .fs-x{color:var(--acct)}
+.fsub+.fsub.running::before{background:linear-gradient(180deg,rgba(243,211,145,0),#F6DC9B,rgba(243,211,145,0));background-size:100% 220%;animation:fsflow .8s linear infinite}
+.fsub.error{border-color:rgba(232,118,106,.7);background:rgba(232,118,106,.10)}.fsub.error .fs-c{color:var(--err)}
+.fsub+.fsub.error::before{background:var(--err)}
+.fsub.skipped{border-style:dashed;opacity:.55}
+.fsub.waiting{border-color:rgba(227,184,102,.8);background:rgba(227,184,102,.12);animation:fsglow 1.4s ease-in-out infinite}.fsub.waiting .fs-c{color:var(--acct)}
+@keyframes fsflow{from{background-position:0 -120%}to{background-position:0 120%}}
+@keyframes fsglow{0%,100%{box-shadow:0 0 0 1px rgba(227,184,102,.2),0 0 10px rgba(227,184,102,.18)}50%{box-shadow:0 0 0 1px rgba(227,184,102,.35),0 0 24px rgba(227,184,102,.42)}}
+:root:not([data-theme=dark]) .fsub{background:rgba(13,23,38,.03)}
+@media(prefers-reduced-motion:reduce){.fsub.running,.fsub.waiting,.fsub+.fsub.running::before{animation:none}}
+
+/* ---- Giao diện sáng: các chấm/tia chạy trên đường nối phải đủ đậm để nổi trên nền kem ---- */
+:root:not([data-theme=dark]) .edge .amb{r:4.4px;stroke:#fff;stroke-width:1.5px}
+:root:not([data-theme=dark]) .edge.done .amb,:root:not([data-theme=dark]) .edge.ready .amb{fill:#15805A;opacity:1}
+:root:not([data-theme=dark]) .edge.done .base{stroke:#1E9A6E;filter:drop-shadow(0 0 3px rgba(30,154,110,.45))}
+:root:not([data-theme=dark]) .edge.flow .base{stroke:#D49A2A;filter:drop-shadow(0 0 5px rgba(212,154,42,.6))}
+:root:not([data-theme=dark]) .edge.flow .glow{stroke:#E8A92E}
+:root:not([data-theme=dark]) .edge.flow .dot{fill:#E39A12;stroke:#fff;stroke-width:2.5px}
+:root:not([data-theme=dark]) .vloop.wait .base{stroke:#D49A2A}
+:root:not([data-theme=dark]) .vloop.wait .glow{stroke:#E8A92E}
+:root:not([data-theme=dark]) .vloop.wait .dot{fill:#E39A12;stroke:#fff}
+:root:not([data-theme=dark]) .vchip.wait{color:#8A6A26;border-color:#D49A2A}
+:root:not([data-theme=dark]) .fsub+.fsub.running::before{background:linear-gradient(180deg,rgba(212,154,42,0),#D49A2A,rgba(212,154,42,0));background-size:100% 220%}
+:root:not([data-theme=dark]) .fsub.running{border-color:#D49A2A;background:rgba(212,154,42,.12)}
+:root:not([data-theme=dark]) .fsub.running .fs-x,:root:not([data-theme=dark]) .fsub.waiting .fs-c{color:#8A6A26}
+:root:not([data-theme=dark]) .fsub.done .fs-c{color:#15805A}
