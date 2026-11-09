@@ -145,14 +145,15 @@ async function vHome(id) {
     $('#hb-sub').textContent = r ? [r.file, fmtDT(r.startedAt || r.createdAt), `${(r.stages || []).filter((x) => x.status === 'done').length}/${(r.stages || []).length || 4} chặng xong`].filter(Boolean).join(' · ') : 'Tải file dữ liệu để bắt đầu.';
     $('#hb-pill').innerHTML = r ? statusPill(r.running ? 'running' : r.status) : '';
     const pct = t?.contextWindow ? Math.min(100, (t.maxContext / t.contextWindow) * 100) : 0;
-    $('#hstats').innerHTML = `
+    const setH = (el, html) => { if (el.__h !== html) { el.__h = html; el.innerHTML = html; } };
+    setH($('#hstats'), `
       <div class="stat"><div class="k">Tổng token</div><div class="v">${fmt(t?.total)}</div><div class="s">in ${fmt(t?.input)} · out ${fmt(t?.output)} · cache ${fmt((t?.cacheRead || 0) + (t?.cacheCreate || 0))}</div></div>
       <div class="stat"><div class="k">Context Window</div><div class="v">${pct.toFixed(1)}%</div><div class="ctxbar"><i style="width:${pct}%"></i></div><div class="s">${fmt(t?.maxContext)} / ${fmt(t?.contextWindow)}</div></div>
       <div class="stat"><div class="k">Chặng hoàn thành</div><div class="v">${r ? r.stages.filter((s) => s.status === 'done').length : 0}/${META.stages.length}</div><div class="s">${r?.stages?.some((s) => s.status === 'error') ? '<span style="color:var(--err)">Có chặng lỗi</span>' : 'Không lỗi'}${r && r.stages.some((s) => s.evaluation) ? ` · Evaluator đạt ${r.stages.filter((s) => s.evaluation && s.evaluation.verdict === 'PASS').length}/${r.stages.filter((s) => s.evaluation).length}` : ''}</div></div>
-      <div class="stat"><div class="k">Chi phí · Thời gian</div><div class="v">$${(t?.cost || 0).toFixed(3)}</div><div class="s">${dur(t?.ms)} model</div></div>`;
-    $('#htbl').innerHTML = `<tr><th>Chặng</th><th>Model</th><th>Trạng thái</th><th>Input</th><th>Output</th><th>Context</th><th>Thời gian</th></tr>` +
+      <div class="stat"><div class="k">Chi phí · Thời gian</div><div class="v">$${(t?.cost || 0).toFixed(3)}</div><div class="s">${dur(t?.ms)} model</div></div>`);
+    setH($('#htbl'), `<tr><th>Chặng</th><th>Model</th><th>Trạng thái</th><th>Input</th><th>Output</th><th>Context</th><th>Thời gian</th></tr>` +
       META.stages.map((sg, i) => { const s = r?.stages?.[i]; const u = s?.usage; const ctx = u ? u.input + u.output + u.cacheRead + u.cacheCreate : 0;
-        return `<tr class="${s?.status === 'error' ? 'click' : ''}" data-err="${i}"><td><b>${i + 1}. ${esc(sg.name)}</b></td><td>${esc(s?.model || '—')}</td><td>${statusPill(s?.status || 'pending')}</td><td>${u ? fmt(u.input + u.cacheRead + u.cacheCreate) : '—'}</td><td>${u ? fmt(u.output) : '—'}</td><td>${u ? ((ctx / s.contextWindow) * 100).toFixed(1) + '%' : '—'}</td><td>${s?.ms ? dur(s.ms) : '—'}</td></tr>`; }).join('');
+        return `<tr class="${s?.status === 'error' ? 'click' : ''}" data-err="${i}"><td><b>${i + 1}. ${esc(sg.name)}</b></td><td>${esc(s?.model || '—')}</td><td>${statusPill(s?.status || 'pending')}</td><td>${u ? fmt(u.input + u.cacheRead + u.cacheCreate) : '—'}</td><td>${u ? fmt(u.output) : '—'}</td><td>${u ? ((ctx / s.contextWindow) * 100).toFixed(1) + '%' : '—'}</td><td>${s?.ms ? dur(s.ms) : '—'}</td></tr>`; }).join(''));
     view.querySelectorAll('#htbl tr[data-err].click').forEach((tr) => (tr.onclick = () => showError(r, +tr.dataset.err)));
   };
   const rs = $('#runsel'); if (rs) rs.onchange = () => (location.hash = '#home/' + rs.value);

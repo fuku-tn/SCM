@@ -332,3 +332,40 @@ input[type=text],textarea,select{border:1px solid var(--line)}
 
 .sc-root{font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default}
 .side-collapsed .sc-root{display:none}
+
+/* =====================================================================================
+   HIỆU NĂNG: giảm giật khi cuộn / khi workflow cập nhật (nhất là máy yếu, không có card đồ họa rời)
+   - bỏ background-attachment:fixed (mỗi lần cuộn phải vẽ lại cả nền) → dùng 1 lớp nền cố định riêng
+   - bỏ backdrop-filter (làm mờ nền phía sau từng thẻ) và filter blur trên các chấm chạy
+   - viền neon xoay (vẽ lại mỗi khung hình) → nhấp nháy bằng opacity
+   ===================================================================================== */
+body{background:var(--bg)!important}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;transform:translateZ(0)}
+:root[data-theme=dark] body::before{background:radial-gradient(900px 520px at 88% -8%,rgba(255,164,72,.26),transparent 62%),radial-gradient(760px 520px at 6% 112%,rgba(227,184,102,.13),transparent 62%),linear-gradient(180deg,#0b1424 0%,#070b12 55%,#05080d 100%)}
+:root:not([data-theme=dark]) body::before{background:radial-gradient(900px 520px at 88% -8%,rgba(227,184,102,.30),transparent 62%),radial-gradient(760px 520px at 6% 112%,rgba(200,169,107,.16),transparent 62%),linear-gradient(180deg,#F8F3E7,#EFE7D3)}
+:root[data-theme=dark]{--card:rgba(19,27,40,.9)}
+.side,.card,.stat,.slot,.meter,.collapse-btn,.icon-btn,.fnode,.modal-bg,.modal,.dd-menu,.notif,.lgs-card{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+:root[data-theme=dark] .side{background:rgba(7,11,18,.92)}
+:root:not([data-theme=dark]) .side{background:rgba(255,253,248,.92)}
+:root[data-theme=dark] .fnode{background:rgba(16,23,35,.95)}
+.edge .dot,.edge .amb,.edge .glow,.vloop .dot,.vloop .glow{filter:none!important}
+.fnode.running::before{animation:fnpulse 1.8s ease-in-out infinite!important;background:conic-gradient(from 200deg,transparent 0 35%,rgba(243,211,145,.3) 58%,#F3D391 82%,#fff 90%,transparent 100%)}
+@keyframes fnpulse{0%,100%{opacity:.4}50%{opacity:1}}
+.fsub.running,.fsub.waiting{animation:none}
+.fsub.running{box-shadow:0 0 0 1px rgba(227,184,102,.3),0 0 14px rgba(227,184,102,.3)}
+
+/* ===== Chế độ mượt (nút ⚡ trên thanh trên; tự bật trên máy ít nhân CPU): tắt hiệu ứng chuyển động ===== */
+html.lite *,html.lite *::before,html.lite *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+html.lite .spin{animation:sp .8s linear infinite!important}
+html.lite .edge .dot,html.lite .edge .amb,html.lite .edge .glow,html.lite .vloop .dot,html.lite .vloop .glow{display:none!important}
+html.lite .card,html.lite .stat,html.lite .slot,html.lite .meter,html.lite .fnode,html.lite .fsub,html.lite .icon-btn,html.lite .btn{box-shadow:none!important}
+html.lite .fnode.running{border-color:#E3B866}
+html.lite .fnode.running::before{opacity:1!important;background:none!important}
+html.lite body::after{display:none}
+html.lite .vchip.wait,html.lite .upd-btn.pulse,html.lite .bell.ring svg{animation:none!important}
+.lite-btn{font-size:15px;line-height:1;opacity:.75}
+html.lite .lite-btn{opacity:1;background:var(--accsoft);color:var(--acct)}
+.health-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 16px;border-radius:14px;background:rgba(232,118,106,.12);border:1px solid rgba(232,118,106,.45);font-size:13px;line-height:1.5}
+.health-bar b{color:var(--err)}.health-bar code{font:12px Consolas,monospace;background:rgba(255,255,255,.07);padding:2px 7px;border-radius:6px;word-break:break-all}
+.health-bar .hb-btns{margin-left:auto;display:flex;gap:8px}
+.health-bar[hidden]{display:none}

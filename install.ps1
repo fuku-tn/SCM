@@ -50,6 +50,7 @@ try { & npm install --no-audit --no-fund; if ($LASTEXITCODE -ne 0) { Say '  npm 
 if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
   Say '  Luu y: chua thay lenh "claude" (Claude Code CLI). Cac chang chay model that can no: https://claude.com/claude-code' Yellow
 }
+if ($env:BIE_NO_START) { Say '  Cai xong (BIE_NO_START: khong chay server).' Green; return }   # dung de thu / tu dong hoa
 Say '[3/3] Chay BIE...' Cyan
 Say '  Mo http://localhost:6688  (dong cua so nay de tat BIE; lan sau chay:  cd "' + $dir + '"; npm start)' DarkGray
 $env:PORT = '6688'

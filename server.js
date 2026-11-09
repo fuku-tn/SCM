@@ -32,6 +32,7 @@ const MODELS = [
   { id: 'claude-haiku-5-5', label: 'Haiku 5.5' },
 ];
 const MOCK = process.env.BIE_MOCK === '1';
+const CLAUDE = require('./lib/claude-cli.js');   // tìm & gọi Claude Code CLI (PATH, thư mục mặc định, tiện ích VS Code…)
 let LISTEN_PORT = Number(PORT);   // cổng thật sự đang nghe (có thể khác PORT nếu cổng bận)
 
 const app = express();
@@ -135,6 +136,8 @@ app.get('/api/samples/:k', (req, res, next) => {
   const s = require('./lib/samples.js').SAMPLES[req.params.k]; if (!s) return next();   // vd. /api/samples/version-data ở route riêng
   res.set({ 'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'Content-Disposition': `attachment; filename="${s.file}"` }).send(s.build());
 });
+// Tình trạng máy: có Claude Code CLI chưa (giao diện hiện cảnh báo nếu thiếu)
+app.get('/api/health', (req, res) => res.json({ claude: CLAUDE.check(req.query.force === '1'), mock: MOCK, platform: process.platform, node: process.version, root: ROOT, port: LISTEN_PORT }));
 app.get('/api/meta', (req, res) => res.json({ stages: STAGES, models: MODELS, mock: MOCK, port: LISTEN_PORT, root: ROOT, steps: STEP_LABELS.map((l) => l.map(([id, label]) => ({ id, label }))) }));
 
 app.get('/api/docs/:k', (req, res) => {
@@ -446,12 +449,13 @@ function callClaude(prompt, model, mockText, opts = {}) {
     }
     const toolArgs = opts.tools ? ['--tools', opts.tools, '--allowedTools', opts.tools, ...(opts.addDirs || []).flatMap((d) => ['--add-dir', d])] : ['--tools', ''];
     const args = ['-p', '--output-format', 'json', '--model', model, ...toolArgs, '--no-session-persistence', '--strict-mcp-config', '--disable-slash-commands', '--system-prompt', 'Ban la chuyen gia Business Intelligence. Lam theo huong dan trong tin nhan nguoi dung.'];
-    const child = spawn('claude', args, { cwd: SCRATCH, windowsHide: true });
-    let out = '', err = '';
+    let child; let out = '', err = '';
+    try { child = CLAUDE.spawnClaude(args, { cwd: SCRATCH }).child; }
+    catch (e) { e.detail = { exitCode: null, stderr: e.message, stdout: '', command: 'claude ' + args.slice(0, 9).join(' ') + ' ...' }; return reject(e); }
     child.stdout.on('data', (d) => (out += d));
     child.stderr.on('data', (d) => (err += d));
-    const fail = (msg, code) => { const e = new Error(String(msg).slice(0, 1500)); e.detail = { exitCode: code ?? null, stderr: err.slice(0, 6000), stdout: out.slice(0, 6000), command: 'claude ' + args.slice(0, 9).join(' ') + ' ...' }; reject(e); };
-    child.on('error', (e) => fail('Không chạy được claude CLI: ' + e.message));
+    const fail = (msg, code) => { const e = new Error(CLAUDE.explain(String(msg)).slice(0, 1800)); e.detail = { exitCode: code ?? null, stderr: err.slice(0, 6000), stdout: out.slice(0, 6000), command: 'claude ' + args.slice(0, 9).join(' ') + ' ...' }; reject(e); };
+    child.on('error', (e) => fail(e.code === 'ENOENT' ? CLAUDE.notFoundMessage() : 'Không chạy được claude CLI: ' + e.message));
     child.on('close', (code) => {
       let j; try { j = JSON.parse(out); } catch { return fail(err || out || 'CLI lỗi, exit ' + code, code); }
       if (j.is_error || j.subtype && j.subtype !== 'success') return fail(j.result || err || j.subtype, code);
@@ -1033,6 +1037,7 @@ function listenOn(port, tries) {
     LISTEN_PORT = port;
     console.log(`BIE chạy tại http://localhost:${port}${MOCK ? '  (MOCK mode)' : ''}`);
     console.log('Thư mục BIE đang chạy: ' + ROOT);
+    if (!MOCK) { const c = CLAUDE.check(); console.log(c.found ? `Claude Code CLI: ${c.version} (${c.source}: ${c.path})` : '⚠ ' + c.message); }
     if (port !== Number(PORT)) console.log(`⚠ Cổng ${PORT} đang được một chương trình khác dùng (có thể là bản BIE khác trên máy bạn) → BIE dùng cổng ${port}. Hãy mở đúng địa chỉ ở trên.`);
   });
   srv.on('error', (e) => {
