@@ -94,7 +94,7 @@ function profileData(buf, filename) {
       let type = 'text';
       if (nn.length && num / nn.length > 0.9) type = 'number';
       else if (nn.length && dt / nn.length > 0.9) type = 'date';
-      const info = { name: c, type, nulls: rows.length - nn.length, distinct: uniq.size };
+      const info = { name: String(c).replace(/\s+/g, ' ').trim(), type, nulls: rows.length - nn.length, distinct: uniq.size };   // cùng cách chuẩn hóa tên cột với chặng ETL
       if (type === 'number') {
         const ns = nn.filter((v) => typeof v === 'number');
         info.min = Math.min(...ns); info.max = Math.max(...ns);
@@ -105,7 +105,7 @@ function profileData(buf, filename) {
       } else info.examples = [...uniq].slice(0, 5);
       return info;
     });
-    const sample = rows.slice(0, 20).map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, v instanceof Date ? v.toISOString().slice(0, 10) : v])));
+    const sample = rows.slice(0, 20).map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [String(k).replace(/\s+/g, ' ').trim(), v instanceof Date ? v.toISOString().slice(0, 10) : v])));
     return { name, rowCount: rows.length, columns, sample };
   });
   return { filename, sheets };

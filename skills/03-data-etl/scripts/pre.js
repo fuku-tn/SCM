@@ -180,7 +180,7 @@ function cleanSheet(name, grid) {
   if (ncol - colKeep.length > 0) { setRule(1, 'fixed', `${(log.rules[RULES[1]].detail ? log.rules[RULES[1]].detail + '; ' : '')}đã xóa ${ncol - colKeep.length} cột trống hoàn toàn`); log.actions.push(`Xóa ${ncol - colKeep.length} cột trống`); }
 
   // R1 tiêu đề thiếu / trùng
-  const names = []; let blankHdr = 0, dupHdr = 0;
+  const names = []; const colRenames = []; let blankHdr = 0, dupHdr = 0;
   colKeep.forEach((c, k) => {
     let n = headerRow[c];
     if (n instanceof Date) n = isoDate(n);
@@ -188,7 +188,11 @@ function cleanSheet(name, grid) {
     if (!n) { n = 'Column' + (k + 1); blankHdr++; }
     let base = n, i = 2; while (names.includes(n)) { n = base + '_' + i++; dupHdr++; }
     names.push(n);
+    const orig = headerRow[c] instanceof Date ? isoDate(headerRow[c]) : (isBlank(headerRow[c]) ? '' : String(headerRow[c]));
+    if (orig !== n) colRenames.push({ from: orig, to: n });
   });
+  { const tidy = colRenames.filter((r) => r.from && r.from.replace(/\s+/g, ' ').trim() === r.to);
+    if (tidy.length) { setRule(0, 'fixed', `${tidy.length} tên cột thừa khoảng trắng đầu/cuối hoặc trùng khoảng trắng → đã chuẩn hóa (vd. "${tidy[0].from}" → "${tidy[0].to}")`); log.actions.push(`Chuẩn hóa ${tidy.length} tên cột (cắt khoảng trắng thừa): ` + tidy.slice(0, 6).map((r) => `"${r.from}"→"${r.to}"`).join(', ') + (tidy.length > 6 ? ', …' : '')); } }
   if (blankHdr) { setRule(0, 'fixed', `${blankHdr} cột thiếu tiêu đề → đặt tên Column<n>`); setRule(1, 'fixed', `${blankHdr} tiêu đề trống`); log.actions.push(`Đặt tên cho ${blankHdr} cột thiếu tiêu đề`); }
   if (dupHdr) { setRule(0, 'fixed', `${dupHdr} tiêu đề trùng → thêm hậu tố _2, _3`); log.actions.push(`Đổi tên ${dupHdr} tiêu đề trùng`); }
 
@@ -305,7 +309,7 @@ function cleanSheet(name, grid) {
     else if (c.type === 'date' || c.type === 'datetime') { const s = [...vs].sort(); c.min = s[0]; c.max = s[s.length - 1]; }
     else c.examples = [...set].slice(0, 5);
   });
-  return { name, table, log, rowsBefore, rowsAfter: nrows };
+  return { name, table, log, rowsBefore, rowsAfter: nrows, colRenames };
 }
 
 // ---------- CSV ----------
@@ -444,7 +448,7 @@ function refreshStats(t) {
     const grid = loadGrid(wb.Sheets[sn]);
     const tname = safeTable((ext === '.csv' || ext === '.tsv') ? baseName : sn);
     const res = cleanSheet(tname, grid);
-    res.fileName = safeFile(tname) + '.csv';
+    res.fileName = safeFile(tname) + '.csv'; res.sourceSheet = sn;
     if (res.table.rows.length === 0 && res.table.header.length === 0) { console.error(`Sheet "${sn}" không có dữ liệu — bỏ qua`); continue; }
     tables.push(res);
   }
@@ -484,6 +488,8 @@ function refreshStats(t) {
     relationships: rel,
   };
   fs.writeFileSync(path.join(stageDir, 'data-checks.json'), JSON.stringify(checks, null, 2), 'utf8');
+  // bản đồ tên gốc → tên đã chuẩn hóa: các chặng sau PHẢI dùng tên mới (model/measure/dashboard dùng đúng tên trong clean/)
+  fs.writeFileSync(path.join(stageDir, 'column-map.json'), JSON.stringify({ note: 'Tên gốc trong file nguồn → tên đã chuẩn hóa ở chặng ETL. Chỉ liệt kê tên bị đổi.', tables: tables.map((t) => ({ sheet: t.sourceSheet, name: t.name, renamed: t.sourceSheet !== t.name, columns: (t.colRenames || []).filter((r) => r.from !== r.to) })) }, null, 2), 'utf8');
 
   // ----- tóm tắt cho model (stdout) -----
   const L = [];

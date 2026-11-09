@@ -55,6 +55,9 @@ const AGG_DAX = {
 
 // ---- tra cột trong dữ liệu thật ----
 const norm = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+// ETL (chặng 3) chuẩn hóa tên bảng/cột: gộp khoảng trắng, cắt đầu-cuối → phải dùng đúng tên đã chuẩn hóa này
+const cleanCol = (n) => String(n).replace(/\s+/g, ' ').trim();
+const cleanTbl = (s) => String(s).replace(/['"\\\/:*?<>|\[\]\r\n]+/g, ' ').replace(/\s+/g, ' ').trim() || 'Table';
 function lookup(table, column) {
   // Chưa có dữ liệu (người dùng chạy riêng chặng này): không đối chiếu được → tin spec của model
   if (!profile.sheets.length) return { ok: true, sheet: { name: table }, col: { name: column, type: null } };
@@ -76,7 +79,7 @@ for (const m of spec.metrics) {
     const isNum = lk.col.type === 'number';
     if (lk.col.type === null) warn(`Chưa có dữ liệu để đối chiếu cột "${m.table}.${m.column}" — dùng đúng như model khai báo`);
     else if (kind === 'numerical' && !isNum) { warn(`"${m.label}" (${m.table}.${m.column}) được khai báo Numerical nhưng dữ liệu là "${lk.col.type}" → chuyển sang Categorical`); kind = 'categorical'; }
-    m.table = lk.sheet.name; m.column = lk.col.name;
+    m.table = cleanTbl(lk.sheet.name); m.column = cleanCol(lk.col.name);
   } else { warn(`Metric "${m.label}": ${lk.why} → BỎ metric này (sửa tên bảng/cột trong metrics-spec.json)`); continue; }
   const allowed = kind === 'numerical' ? NUM_AGG : CAT_AGG;
   let aggs = (Array.isArray(m.aggregations) && m.aggregations.length ? m.aggregations : (kind === 'numerical' ? ['SUM'] : ['DISTINCTCOUNT'])).map((a) => String(a).toUpperCase().replace('AVERAGE', 'AVG'));
@@ -143,7 +146,7 @@ const dims = [];
 for (const d of Array.isArray(spec.dimensions) ? spec.dimensions : []) {
   if (!d || !d.id || !d.label || !d.table || !d.column) { warn('Bỏ qua dimension thiếu id/label/table/column'); continue; }
   const lk = lookup(d.table, d.column);
-  if (lk.ok) { d.table = lk.sheet.name; d.column = lk.col.name; } else { warn(`Dimension "${d.label}": ${lk.why} → BỎ dimension này`); continue; }
+  if (lk.ok) { d.table = cleanTbl(lk.sheet.name); d.column = cleanCol(lk.col.name); } else { warn(`Dimension "${d.label}": ${lk.why} → BỎ dimension này`); continue; }
   dims.push({ id: d.id, label: d.label, table: d.table, column: d.column, isDate: !!d.isDate || (lk.ok && lk.col.type === 'date') });
 }
 const dimById = new Map(dims.map((d) => [d.id, d]));

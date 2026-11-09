@@ -90,6 +90,8 @@ const canon = (tn, cn) => { // tên chuẩn (đúng hoa/thường) của bảng/
 let measures = [];
 if (mjson && Array.isArray(mjson.measures)) measures = mjson.measures.map((m) => ({ ...m }));
 else warn('Không có 02-key-metrics/measures.json → dashboard sẽ không có measure');
+// ETL đã chuẩn hóa tên cột (cắt khoảng trắng đầu/cuối, gộp khoảng trắng) → DAX/cột của measure cũ (vd. 'Sales'[ Revenue ]) cũng phải khớp
+for (const m of measures) { if (typeof m.expression === 'string') m.expression = m.expression.replace(/('(?:[^']|'')+')\[([^\]]+)\]/g, (x, t, c) => t + '[' + c.replace(/\s+/g, ' ').trim() + ']'); if (m.column) m.column = String(m.column).replace(/\s+/g, ' ').trim(); }
 {
   const needCal = (m) => /'Calendar'\[Date\]/.test(m.expression);
   let changed = true; const drop = new Set();
@@ -391,7 +393,7 @@ if (templateMode) {
   templateInfo = { ...(templateInfo || {}), name: tpl.name, id: tpl.id, pages: res.pageNames, clones: res.clones, bound: res.bound, dropped: res.dropped, cleaned: res.cleaned, resources: res.resources, summary: res.summary, ownColors: run.form.colorMode === 'own' };
   topNNotes.forEach((n) => console.log('Top N: ' + n));
   if (approvedPlan && Array.isArray(approvedPlan.pages)) { const planned = approvedPlan.pages.reduce((n, p) => n + p.visuals.filter((v) => !v.remove && v.slot).length, 0); if (res.bound < planned) warn(`Bố cục đã duyệt có ${planned} biểu đồ nhưng chỉ gắn được ${res.bound} — các ô còn lại bị bỏ (xem cảnh báo phía trên)`); }
-  if (approvedPlan && Array.isArray(approvedPlan.pages) && approvedPlan.pages.length !== res.pages) warn(`Bố cục đã duyệt có ${approvedPlan.pages.length} trang nhưng bản dựng có ${res.pages} trang — kiểm tra pages.keep / pages.clones trong dashboard-spec.json`);
+  if (approvedPlan && Array.isArray(approvedPlan.pages) && approvedPlan.pages.length > res.pages) warn(`Bố cục đã duyệt có ${approvedPlan.pages.length} trang nhưng bản dựng chỉ có ${res.pages} trang — kiểm tra pages.keep / pages.clones trong dashboard-spec.json`);
   wjson(path.join(repDir, 'definition.pbir'), { $schema: SCHEMA.pbir, version: '4.0', datasetReference: { byPath: { path: '../' + projectName + '.SemanticModel' } } });
   // thống kê trang / biểu đồ đã ghi
   const pdir = path.join(repDir, 'definition', 'pages');
