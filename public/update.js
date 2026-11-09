@@ -37,12 +37,28 @@
         try {
           const r = await fetch('/api/update/run', { method: 'POST' }); const j = await r.json().catch(() => ({}));
           if (!r.ok) { draw(false, '', (j.error || r.statusText) + (j.manual ? '\nChạy tay: ' + j.manual : '')); return; }
-          draw(false, 'Đã mở cửa sổ terminal. Trang này sẽ mất kết nối trong giây lát — khi ứng dụng khởi động lại, tải lại trang (F5) nếu trình duyệt không tự mở.');
-          bg.querySelector('[data-go]').disabled = true;
-        } catch (er) { draw(false, '', er.message); }
+          if (j.opened === false) { draw(false, '', 'Không thấy cửa sổ terminal cập nhật mở ra (có thể bị chặn bởi phần mềm bảo mật).\nHãy mở PowerShell/Terminal và chạy tay:\n' + (j.manual || 'git pull --ff-only && npm install && npm start')); return; }
+          watchRestart(draw, bg, j.manual);
+        } catch (er) { watchRestart(draw, bg, ''); }   // mất kết nối = server đã bị update.ps1 dừng → coi như đang cập nhật
       }
     };
     document.onkeydown = (e) => { if (e.key === 'Escape') close(); };
+  }
+  /** hiện tiến trình, chờ server tắt rồi chạy lại (terminal đang cập nhật) → tự tải lại trang */
+  function watchRestart(draw, bg, manual) {
+    const t0 = Date.now(); let wentDown = false;
+    const tick = async () => {
+      if (!document.body.contains(bg)) return;
+      const s = Math.round((Date.now() - t0) / 1000); let up = false;
+      try { const r = await fetch('/api/meta', { cache: 'no-store' }); up = r.ok; } catch {}
+      if (!up) wentDown = true;
+      if (up && (wentDown || s > 90)) { draw(false, '✓ Đã cập nhật xong — đang tải lại trang…'); setTimeout(() => location.reload(), 800); return; }
+      if (s > 240) { draw(false, '', 'Quá 4 phút mà ứng dụng chưa chạy lại. Hãy xem cửa sổ terminal “BIE - Update” để biết lỗi, hoặc chạy tay:\n' + (manual || 'git pull --ff-only && npm install && npm start')); return; }
+      draw(true, wentDown ? 'Đang cài bản mới và khởi động lại… (' + s + ' giây) — xem tiến trình trong cửa sổ terminal “BIE - Update”.' : 'Cửa sổ terminal “BIE - Update” đã mở — đang tải bản mới… (' + s + ' giây)');
+      const b = bg.querySelector('[data-go]'); if (b) b.innerHTML = '<span class="spin"></span> Đang cập nhật…';
+      setTimeout(tick, 2000);
+    };
+    tick();
   }
   async function check(force) {
     try { const r = await fetch('/api/update/status' + (force ? '?force=1' : ''), { cache: 'no-store' }); if (!r.ok) return; st = await r.json(); } catch { return; }

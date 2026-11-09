@@ -38,7 +38,7 @@ test('token: chỉ truyền qua http.extraheader, không lộ trong lỗi / URL'
 });
 test('launch (dry-run): lệnh mở terminal đúng tham số, xử lý đường dẫn có khoảng trắng', () => {
   const r = U.launch(ROOT, { port: 6688, serverPid: 4242, dryRun: true });
-  if (process.platform === 'win32') { assert.ok(r.ok && r.dryRun); assert.match(r.command, /Start-Process powershell/); assert.match(r.command, /'-ServerPid','4242'/); assert.ok(r.command.includes('update.ps1')); assert.ok(r.command.includes('"' + ROOT + '"'), 'RepoDir được bọc nháy kép'); }
+  if (process.platform === 'win32') { assert.ok(r.ok && r.dryRun); assert.match(r.command, /^powershell\.exe -NoExit/); assert.match(r.command, /-ServerPid 4242/); assert.ok(r.command.includes('update.ps1')); assert.ok(r.command.includes('-RepoDir ' + ROOT)); }
   else assert.ok(!r.ok && r.manual);
 });
 test('update.ps1: kéo bản mới về repo thật (đường dẫn có khoảng trắng), giữ nguyên khi repo bẩn', { skip: process.platform !== 'win32' }, () => {

@@ -13,6 +13,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $Host.UI.RawUI.WindowTitle = 'BIE - Update'
 Set-Location -LiteralPath $RepoDir
+try { Set-Content -LiteralPath (Join-Path $RepoDir '.update-status') -Value ('started ' + (Get-Date -Format o)) -Encoding ASCII } catch {}   # server doc file nay de biet terminal da mo
 
 function Say($m, $c = 'White') { Write-Host $m -ForegroundColor $c }
 Say ''

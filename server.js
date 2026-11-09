@@ -941,13 +941,20 @@ app.get('/api/update/status', async (req, res) => {
     res.json(data);
   } catch (e) { updCache.busy = null; res.status(500).json({ supported: false, error: e.message }); }
 });
-app.post('/api/update/run', (req, res) => {
+app.post('/api/update/run', async (req, res) => {
   // chỉ nhận từ trang BIE chạy trên máy này (chặn trang web khác gọi vào để mở terminal)
   const o = req.get('origin'); if (o && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(o)) return res.status(403).json({ error: 'Origin không hợp lệ' });
   if (running.size) return res.status(409).json({ error: 'Đang có flow chạy — hãy đợi flow xong rồi cập nhật (cập nhật sẽ khởi động lại server).' });
   const r = UPD.launch(ROOT, { port: LISTEN_PORT, serverPid: process.pid, dryRun: process.env.BIE_UPDATE_DRYRUN === '1' });
   if (!r.ok) return res.status(500).json(r);
-  updCache = { at: 0, data: null, busy: null }; res.json(r);
+  updCache = { at: 0, data: null, busy: null };
+  if (r.dryRun) return res.json(r);
+  // update.ps1 ghi .update-status ngay khi cửa sổ terminal mở; không thấy sau ~12 s → báo để người dùng chạy tay
+  const mark = path.join(ROOT, '.update-status'); let opened = false;
+  const waitMark = async (n) => { for (let i = 0; i < n && !opened; i++) { opened = fs.existsSync(mark); if (!opened) await new Promise((k) => setTimeout(k, 300)); } };
+  await waitMark(14);
+  if (!opened) { UPD.launchFallback(ROOT, { port: LISTEN_PORT, serverPid: process.pid }); await waitMark(30); }
+  res.json({ ...r, opened });
 });
 
 // ---------- API: dữ liệu Version (file mẫu, tải lên, tiếp tục) ----------

@@ -17,3 +17,4 @@ templates/.cache/
 
 # Token cập nhật (nếu repo riêng tư) — không bao giờ commit
 .bie-token
+.update-status
