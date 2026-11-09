@@ -369,3 +369,36 @@ html.lite .lite-btn{opacity:1;background:var(--accsoft);color:var(--acct)}
 .health-bar b{color:var(--err)}.health-bar code{font:12px Consolas,monospace;background:rgba(255,255,255,.07);padding:2px 7px;border-radius:6px;word-break:break-all}
 .health-bar .hb-btns{margin-left:auto;display:flex;gap:8px}
 .health-bar[hidden]{display:none}
+
+/* =====================================================================================
+   Workflow: (1) vòng xoay mượt — chạy trên compositor (transform), không bị kéo theo layout/paint
+             (2) đường nối giữa các bước nhỏ: vạch thẳng + chấm sáng chạy theo chiều trên → dưới khi đang xử lý
+   ===================================================================================== */
+.fs-i{contain:layout paint;overflow:visible}
+.fs-i .spin,.fnode .spin{will-change:transform;transform:translateZ(0);backface-visibility:hidden;animation:sp .9s linear infinite!important;border-top-color:var(--acc)}
+.fs-x{font-variant-numeric:tabular-nums;min-width:3.2em}   /* "9s"→"10s" không làm nhảy bố cục */
+.fsub{transition:border-color .35s,background .35s}   /* bỏ chuyển box-shadow (vẽ lại mỗi khung hình) */
+.fsub+.fsub::before{content:"";position:absolute;left:16px;top:-17px;width:2px;height:16px;border-radius:2px;background:var(--line);opacity:.8;animation:none;background-size:auto}
+.fsub.done+.fsub::before,.fsub+.fsub.done::before{background:var(--ok);box-shadow:none;opacity:1}
+.fsub+.fsub.running::before{background:#F3D391!important;background-size:auto!important;animation:none!important;opacity:1}
+.fsub+.fsub.waiting::before{background:#E3B866;opacity:1}
+.fsub+.fsub.error::before{background:var(--err);opacity:1}
+:root:not([data-theme=dark]) .fsub+.fsub.running::before{background:#D49A2A!important}
+/* chấm sáng chạy từ bước trước xuống bước đang chạy */
+.fsub.running::after{content:"";position:absolute;left:14px;top:-17px;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 6px 1px #F3D391,0 -5px 5px -1px rgba(243,211,145,.55);opacity:0;
+  animation:fsdot 1s cubic-bezier(.45,0,.35,1) infinite;will-change:transform,opacity;pointer-events:none}
+:root:not([data-theme=dark]) .fsub.running::after{background:#8A6A26;box-shadow:0 0 6px 1px rgba(212,154,42,.8)}
+.fsub:first-child.running::after{display:none}
+@keyframes fsdot{0%{transform:translateY(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateY(14px);opacity:0}}
+html.lite .fsub.running::after{display:none}
+@media(prefers-reduced-motion:reduce){.fsub.running::after{display:none}}
+
+/* Đường nối giữa các BƯỚC LỚN: nét mảnh, đầu sao chổi có đuôi mờ chạy mượt (ease), thay cho 3 chấm trắng viền dày */
+.edge.flow .base{stroke-width:2.4;filter:none;stroke:rgba(227,184,102,.4)}
+.edge.flow .glow{stroke-width:1.6;opacity:.55;filter:none!important}
+.edge.flow .dot{fill:#FFF3CF;stroke:none}
+.edge.flow .dot.t1{fill:#F6DC9B;fill-opacity:.7}.edge.flow .dot.t2{fill:#F3D391;fill-opacity:.45}.edge.flow .dot.t3{fill:#E3B866;fill-opacity:.25}
+:root:not([data-theme=dark]) .edge.flow .base{stroke:rgba(212,154,42,.45);filter:none}
+:root:not([data-theme=dark]) .edge.flow .dot{fill:#E39A12;stroke:none}
+:root:not([data-theme=dark]) .edge.flow .dot.t1{fill:#E8A92E;fill-opacity:.7}:root:not([data-theme=dark]) .edge.flow .dot.t2{fill:#E8A92E;fill-opacity:.45}:root:not([data-theme=dark]) .edge.flow .dot.t3{fill:#D49A2A;fill-opacity:.25}
+.edge:not(.flow) .dot{display:none}

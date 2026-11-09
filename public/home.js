@@ -81,7 +81,7 @@ async function vHome(id) {
       const x1 = a.right - fr.left + flow.scrollLeft, y1 = ra.top + ra.height / 2 - fr.top + flow.scrollTop, x2 = b.left - fr.left + flow.scrollLeft, y2 = rb.top + rb.height / 2 - fr.top + flow.scrollTop;
       const dx = (x2 - x1) * 0.5, d = `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
       h += `<g class="edge idle" data-e="${i}"><path class="base" d="${d}"/><path class="glow" d="${d}" filter="url(#gl)"/>
-        ${[0, 0.5, 1].map((o) => `<circle class="dot" r="4.5" filter="url(#gl)"><animateMotion dur="1.5s" begin="${o * 1.5}s" repeatCount="indefinite" path="${d}"/></circle>`).join('')}
+        ${[0, 0.5].map((o) => [0, 1, 2, 3].map((k) => `<circle class="dot t${k}" r="${[3.4, 2.8, 2.2, 1.6][k]}"><animateMotion dur="2.1s" begin="${(o * 2.1 + k * 0.07).toFixed(2)}s" repeatCount="indefinite" calcMode="spline" keyTimes="0;1" keySplines=".45 0 .35 1" path="${d}"/><animate attributeName="opacity" dur="2.1s" begin="${(o * 2.1 + k * 0.07).toFixed(2)}s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;.12;.88;1"/></circle>`).join('')).join('')}
         <circle class="amb" r="3.2" filter="url(#gl)"><animateMotion dur="${2.4 + (i % 3) * 0.4}s" begin="${i * 0.6}s" repeatCount="indefinite" path="${d}"/></circle>
         <circle class="pt" cx="${x1}" cy="${y1}" r="4"/><circle class="pt" cx="${x2}" cy="${y2}" r="4"/>
         <text class="lbl" x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 - 10}" text-anchor="middle"></text></g>`;
