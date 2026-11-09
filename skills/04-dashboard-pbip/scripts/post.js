@@ -388,7 +388,7 @@ if (templateMode) {
   let useSpec = spec;
   if (!spec.bind || typeof spec.bind !== 'object' || !Object.keys(spec.bind).length) { console.log('Model không cung cấp "bind" hợp lệ → tự gắn dữ liệu theo quy tắc mặc định'); useSpec = { ...spec, bind: autoBind(tpl) }; templateInfo = { auto: true }; }
   const res = TPL.applyTemplate({ template: tpl, spec: useSpec, model, outReportDir: repDir, userColors: run.form.colorMode === 'own' && COLORS.length === 5 ? COLORS : null, warn });
-  templateInfo = { ...(templateInfo || {}), name: tpl.name, id: tpl.id, pages: res.pageNames, clones: res.clones, bound: res.bound, dropped: res.dropped, resources: res.resources, summary: res.summary, ownColors: run.form.colorMode === 'own' };
+  templateInfo = { ...(templateInfo || {}), name: tpl.name, id: tpl.id, pages: res.pageNames, clones: res.clones, bound: res.bound, dropped: res.dropped, cleaned: res.cleaned, resources: res.resources, summary: res.summary, ownColors: run.form.colorMode === 'own' };
   topNNotes.forEach((n) => console.log('Top N: ' + n));
   if (approvedPlan && Array.isArray(approvedPlan.pages)) { const planned = approvedPlan.pages.reduce((n, p) => n + p.visuals.filter((v) => !v.remove && v.slot).length, 0); if (res.bound < planned) warn(`Bố cục đã duyệt có ${planned} biểu đồ nhưng chỉ gắn được ${res.bound} — các ô còn lại bị bỏ (xem cảnh báo phía trên)`); }
   if (approvedPlan && Array.isArray(approvedPlan.pages) && approvedPlan.pages.length !== res.pages) warn(`Bố cục đã duyệt có ${approvedPlan.pages.length} trang nhưng bản dựng có ${res.pages} trang — kiểm tra pages.keep / pages.clones trong dashboard-spec.json`);
