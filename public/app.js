@@ -279,7 +279,7 @@ async function vHistory() {
 // ---- Router ----
 async function route() {
   stopPoll(); window.onresize = null; window.ondragover = null; window.ondrop = null; closeModal();
-  const [v, arg] = (location.hash.slice(1) || 'home').split('/');
+  const [v, arg] = (location.hash.slice(1) || 'home').split('/'); document.documentElement.classList.toggle('is-home', v === 'home');
   document.querySelectorAll('#nav a').forEach((a) => a.classList.toggle('on', a.dataset.v === v));
   try {
     if (v === 'home') await vHome(arg);

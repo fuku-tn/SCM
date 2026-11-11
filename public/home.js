@@ -41,11 +41,8 @@ async function vHome(id) {
   if (!id && runs.length) id = runs[0].id;
   const nodes = [{ k: 'in', name: 'Dữ liệu đầu vào' }, ...META.stages.map((s) => ({ k: s.id, name: s.name })), { k: 'out', name: 'Output' }];
   const N = nodes.length;
-  view.innerHTML = `
+  view.innerHTML = homeHero() + `
   <div class="card homebar">
-    <div class="home-hero"><small>Business Intelligence Engine</small>
-      <h2>${(() => { let n = ''; try { n = localStorage.getItem('bie-user') || ''; } catch {} return n ? `Welcome back, <em>${esc(n.split(' ')[0])}</em>` : 'Turn raw data into a <em>story</em>'; })()}</h2>
-      <p>Four stages — Business Context, Key Metrics, Data and Dashboard — take a CSV or Excel file all the way to a Power BI project.</p></div>
     <div class="hb-strip">
       <div class="hb-cur"><span class="hb-lbl">Lần chạy hiện tại</span><b id="hb-title">Chưa có lần chạy nào</b><span id="hb-sub">Tải file dữ liệu để bắt đầu.</span></div>
       <div class="hb-ctl">
@@ -59,7 +56,7 @@ async function vHome(id) {
     <div class="nodes" id="nodes">${nodes.map((n, i) => `
       <div class="fnode pending ${i % 2 ? 'low' : ''}" data-i="${i}" ${i > 0 && i < N - 1 ? 'tabindex="0" role="button"' : ''}>
         <div class="fn-h"><span class="fn-badge">${i === 0 ? '⇩' : i === N - 1 ? '⎘' : i}</span><b>${esc(n.name)}</b><span class="fn-ico"></span></div>
-        <div class="fn-m"></div><div class="fn-s"></div><div class="fn-x"></div><div class="fsubs"></div><button class="fn-err" hidden>Xem lỗi chi tiết</button>
+        <div class="fn-m"></div><div class="fn-s"></div><div class="fn-x"></div><button class="fn-err" hidden>Xem lỗi chi tiết</button>
       </div>`).join('')}</div></div>
     <div class="legend"><span><i class="lg pending"></i>Chờ</span><span><i class="lg running"></i>Đang chạy</span><span><i class="lg done"></i>Hoàn thành</span><span><i class="lg error"></i>Lỗi (bấm để xem)</span></div></div>
   <div class="card"><h2>Tổng quan các chặng</h2><p class="sub">Cập nhật theo thời gian thực.</p><div style="overflow:auto"><table class="tbl" id="htbl"></table></div></div>`;
@@ -131,7 +128,6 @@ async function vHome(id) {
         if (s === 'error') x = esc((st.error || '').slice(0, 60));
       }
       $('.fn-m', el).innerHTML = m; $('.fn-x', el).innerHTML = x;
-      flowSyncSubs(el, flowStepsFor(r, i, N), now);
       const eb = $('.fn-err', el); eb.hidden = s !== 'error'; eb.onclick = (e) => { e.stopPropagation(); showError(r, i - 1); };
       el.onclick = () => { if (!r) return; if (s === 'error') showError(r, i - 1); else if (s === 'done' || i === N - 1) location.hash = '#run/' + r.id; };
       if (el.className.includes(' pop') || el.className.includes(' shake')) setTimeout(() => el.classList.remove('pop', 'shake'), 1400);
@@ -156,6 +152,9 @@ async function vHome(id) {
         return `<tr class="${s?.status === 'error' ? 'click' : ''}" data-err="${i}"><td><b>${i + 1}. ${esc(sg.name)}</b></td><td>${esc(s?.model || '—')}</td><td>${statusPill(s?.status || 'pending')}</td><td>${u ? fmt(u.input + u.cacheRead + u.cacheCreate) : '—'}</td><td>${u ? fmt(u.output) : '—'}</td><td>${u ? ((ctx / s.contextWindow) * 100).toFixed(1) + '%' : '—'}</td><td>${s?.ms ? dur(s.ms) : '—'}</td></tr>`; }).join(''));
     view.querySelectorAll('#htbl tr[data-err].click').forEach((tr) => (tr.onclick = () => showError(r, +tr.dataset.err)));
   };
+  { const f = $('#tp-form'); if (f) f.onsubmit = (e) => { e.preventDefault(); location.hash = '#analysis'; };
+    const lo = $('#tp-login'); if (lo) lo.onclick = () => { try { sessionStorage.removeItem('bie-in'); } catch {} location.reload(); };
+    const th = $('#tp-theme'); if (th) th.onclick = () => $('#theme').click(); }
   const rs = $('#runsel'); if (rs) rs.onchange = () => (location.hash = '#home/' + rs.value);
   window.onresize = drawEdges;
   const fetchRun = async () => { const r = await jget('/api/runs/' + id); update(r); return r; };
