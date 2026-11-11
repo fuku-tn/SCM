@@ -43,6 +43,7 @@ Kết quả: `result.md` (thiết kế & bảng gắn dữ liệu) + `dashboard-
 ## Bố cục đã duyệt, nhân bản trang, Top N
 - Nếu prompt có mục **BỐ CỤC DASHBOARD ĐÃ ĐƯỢC NGƯỜI DÙNG DUYỆT**: đó là hợp đồng. Giữ đúng số trang, thứ tự, trang nguồn của template, ô (key), loại biểu đồ (`visualType`), `topN` và tiêu đề; phần của bạn là điền `roles` bằng đúng tên measure / cột thật. Góp ý của người dùng ghi trong cột "góp ý" phải được thể hiện.
 - Template có ít trang nhưng cần nhiều trang để phân tích đủ chỉ số/chiều → **nhân bản trang** bằng `pages.clones` (khóa bind của bản clone: `<cloneId>:<key>`). Mỗi trang (kể cả clone) giữ đúng số ô biểu đồ của trang template nguồn.
+- **Đa dạng giữa các trang**: các trang (kể cả bản nhân bản của cùng một trang template) không được giống hệt nhau — mỗi trang một góc phân tích (chiều + chỉ số khác nhau) và loại biểu đồ khác nhau trong họ cho phép (`visualType`: Column/Bar/Stacked/Line/Area, Pie/Donut). Chọn loại theo dữ liệu: ít giá trị → column/donut; nhiều giá trị → bar ngang + `topN`; chỉ số tỷ lệ/giá/trung bình → line; khối lượng cộng dồn → area/column; cần cơ cấu trong nhóm → stacked. Nếu bố cục đã duyệt đã ghi loại cho từng ô thì giữ đúng như vậy.
 - Chiều có nhiều giá trị (xem `distinct`): đặt `topN` (script tự sinh DAX xếp hạng) hoặc chọn chiều/biểu đồ khác; không dùng donut/pie với chiều > 5 giá trị.
 - Chi tiết cú pháp: `references/dashboard-spec-schema.md` mục "Mở rộng".
 
