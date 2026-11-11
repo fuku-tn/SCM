@@ -43,17 +43,28 @@ function transporterScene() {
 function homeHero() {
   let n = ''; try { n = localStorage.getItem('bie-user') || ''; } catch {}
   const first = n ? n.split(' ')[0] : '';
-  return `<section class="tp-hero">
-    <header class="tp-nav"><a class="tp-logo" href="#home"><img src="/assets/logo.svg" alt=""><span>transporter<b>.</b></span></a>
-      <nav><a href="#analysis">Send</a><a href="#run">Track</a><a href="#skills">Business</a><a href="#memory">Pricing</a><a href="#history">Support</a></nav>
-      <div class="tp-nav-r"><button type="button" class="tp-btn light" id="tp-login">${first ? 'Hi, ' + esc(first) : 'Log in'}</button><a class="tp-btn dark" href="#analysis">Ship Now <i>→</i></a>
-        <button type="button" class="tp-ico" id="tp-theme" aria-label="Đổi giao diện" title="Đổi giao diện sáng/tối">◐</button></div></header>
-    <div class="tp-body">
-      <div class="tp-copy"><small>DELIVERING A BRIGHTER TOMORROW</small>
-        <h2>Send<br>Anything.<br><em>Anywhere.</em></h2>
-        <p>Fast, reliable, and affordable delivery for individuals and businesses. From your doorstep to anywhere in the country.</p>
-        <form class="tp-search" id="tp-form"><img src="/assets/tabler/package.svg" alt="" class="tp-pk"><input id="tp-a" placeholder="Enter pickup location" autocomplete="off"><input id="tp-b" placeholder="Enter delivery location" autocomplete="off"><button type="submit" aria-label="Bắt đầu"><img src="/assets/tabler/arrow-right.svg" alt=""></button></form>
-        <div class="tp-stats"><div><b>1M+</b><span>Packages Delivered</span></div><div><b>99%</b><span>On-Time Delivery</span></div><div><b>24/7</b><span>Customer Support</span></div></div></div>
-      <div class="tp-art">${transporterScene()}</div>
+  const imgs = ['truck-1', 'truck-2', 'dock-3'];
+  const globe = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>';
+  return `<section class="lp">
+    <header class="lp-nav"><a class="lp-logo" href="#home">transporter<b>.</b></a>
+      <nav><a class="on" href="#home">Home</a><a href="#analysis">Services</a><a href="#skills">Fleet</a><a href="#memory">About</a><a href="#history">Cases</a></nav>
+      <a class="lp-quote" href="#analysis">Get a Quote</a></header>
+    <div class="lp-body">
+      <div class="lp-copy"><div class="lp-eye">${first ? 'Welcome back, ' + esc(first) : 'Logistics solutions'}</div>
+        <h2>Delivering more than cargo. <em>Delivering trust.</em><a class="lp-go" href="#analysis" aria-label="Bắt đầu">↗</a></h2>
+        <p>Safe driving. Smart logistics. Strong partnerships. Moving businesses forward, every mile.</p>
+        <div class="lp-stats">
+          <div class="lp-stat">${globe}<strong>Nationwide Coverage</strong><span>Delivering across 50+ states</span></div>
+          <div class="lp-stat"><b>99.6%</b><strong>On-Time Delivery Rate</strong><span>Reliability you can count on</span></div></div></div>
+      <div class="lp-art" id="lp-art">${imgs.map((s, k) => `<img src="/assets/hero/${s}.jpg" alt="" class="${k ? '' : 'on'}">`).join('')}
+        <div class="lp-dots">${imgs.map((s, k) => `<button type="button" aria-label="Ảnh ${k + 1}" class="${k ? '' : 'on'}"></button>`).join('')}</div></div>
     </div></section>`;
 }
+window.__lpSlider = function () {
+  const art = document.getElementById('lp-art'); if (!art || art.__s) return; art.__s = 1;
+  const im = [...art.querySelectorAll('img')], dt = [...art.querySelectorAll('.lp-dots button')]; let k = 0, tm;
+  const show = (j) => { k = j; im.forEach((x, q) => x.classList.toggle('on', q === j)); dt.forEach((x, q) => x.classList.toggle('on', q === j)); };
+  const reset = () => { clearInterval(tm); tm = setInterval(() => { if (!art.isConnected) return clearInterval(tm); if (!document.hidden) show((k + 1) % im.length); }, 5000); };
+  dt.forEach((b, q) => (b.onclick = () => { show(q); reset(); }));
+  reset();
+};

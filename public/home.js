@@ -152,9 +152,7 @@ async function vHome(id) {
         return `<tr class="${s?.status === 'error' ? 'click' : ''}" data-err="${i}"><td><b>${i + 1}. ${esc(sg.name)}</b></td><td>${esc(s?.model || '—')}</td><td>${statusPill(s?.status || 'pending')}</td><td>${u ? fmt(u.input + u.cacheRead + u.cacheCreate) : '—'}</td><td>${u ? fmt(u.output) : '—'}</td><td>${u ? ((ctx / s.contextWindow) * 100).toFixed(1) + '%' : '—'}</td><td>${s?.ms ? dur(s.ms) : '—'}</td></tr>`; }).join(''));
     view.querySelectorAll('#htbl tr[data-err].click').forEach((tr) => (tr.onclick = () => showError(r, +tr.dataset.err)));
   };
-  { const f = $('#tp-form'); if (f) f.onsubmit = (e) => { e.preventDefault(); location.hash = '#analysis'; };
-    const lo = $('#tp-login'); if (lo) lo.onclick = () => { try { sessionStorage.removeItem('bie-in'); } catch {} location.reload(); };
-    const th = $('#tp-theme'); if (th) th.onclick = () => $('#theme').click(); }
+  window.__lpSlider && window.__lpSlider();
   const rs = $('#runsel'); if (rs) rs.onchange = () => (location.hash = '#home/' + rs.value);
   window.onresize = drawEdges;
   const fetchRun = async () => { const r = await jget('/api/runs/' + id); update(r); return r; };

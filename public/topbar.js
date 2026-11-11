@@ -20,7 +20,6 @@
     $('#sc-name').textContent = n; $('#sc-av').textContent = (n[0] || 'G').toUpperCase();
   }
   drawUser(); window.addEventListener('bie-login', drawUser);
-  $('#sc-out').onclick = () => { try { sessionStorage.removeItem('bie-in'); } catch {} root.classList.add('locked'); };
 
   // ---------- hoạt động & chuông ----------
   const SEEN_KEY = 'bie-seen';
