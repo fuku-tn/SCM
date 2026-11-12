@@ -1,4 +1,4 @@
-/* Thanh trên cùng: đồng hồ, chuông thông báo flow (đang chạy / lỗi / xong) và thẻ trạng thái ở sidebar */
+/* Thanh trên cùng: đồng hồ, chuông thông báo flow (đang chạy / lỗi / xong) */
 (function () {
   const $ = (s, r = document) => r.querySelector(s);
   const escH = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -12,14 +12,6 @@
     $('#clk-t').textContent = `${two(d.getHours())}:${two(d.getMinutes())}`;
   }
   tick(); setInterval(tick, 10000);
-
-  // ---------- thẻ người dùng / trạng thái ở sidebar ----------
-  function who() { let n = ''; try { n = localStorage.getItem('bie-user') || ''; } catch {} return n.trim(); }
-  function drawUser() {
-    const n = who() || 'Guest';
-    $('#sc-name').textContent = n; $('#sc-av').textContent = (n[0] || 'G').toUpperCase();
-  }
-  drawUser(); window.addEventListener('bie-login', drawUser);
 
   // ---------- hoạt động & chuông ----------
   const SEEN_KEY = 'bie-seen';
@@ -61,13 +53,6 @@
     $('#bell').classList.toggle('ring', hasErr || un.some((i) => i.status === 'waiting'));
     $('#bell').title = n ? `${data.running} đang chạy · ${un.filter((i) => i.status === 'error').length} lỗi · ${un.filter((i) => i.status !== 'error').length} chưa xem` : 'Không có thông báo mới';
   }
-  function drawCard() {
-    $('#sc-dot').className = 'sc-dot ' + (online ? (data.running ? 'run' : 'ok') : 'off');
-    $('#sc-state').textContent = online ? (data.running ? `${data.running} flow đang chạy` : 'Server online') : 'Server offline';
-    $('#sc-mode').textContent = online ? (data.mock ? 'MOCK' : 'Live') : '';
-    { const r = data.root || '', name = r.split(/[\\/]/).filter(Boolean).pop() || '', el = $('#sc-root'); if (el) { el.textContent = online && name ? '📁 ' + name + (data.port ? ' · :' + data.port : '') : ''; el.title = online ? 'BIE đang chạy từ thư mục:\n' + r : ''; } }
-    $('#sc-runs').textContent = online ? data.total : '–'; $('#sc-act').textContent = online ? data.running : '–';
-  }
   function drawPanel() {
     const host = $('#notif'); if (!open) return;
     const seen = getSeen();
@@ -105,7 +90,7 @@
       }
       prev = new Map(j.items.map((i) => [i.id, i.status])); data = j;
     } catch { online = false; }
-    drawBadge(); drawCard(); if (open) drawPanel();
+    drawBadge(); if (open) drawPanel();
   }
   (function loop() { const go = () => { (document.hidden ? Promise.resolve() : poll()).finally(() => setTimeout(go, data.running ? 3000 : 8000)); }; go(); })();
   window.refreshActivity = poll;   // gọi ngay sau khi bấm chạy

@@ -276,7 +276,6 @@ async function vHistory() {
 async function route() {
   stopPoll(); window.onresize = null; window.ondragover = null; window.ondrop = null; closeModal();
   const [v, arg] = (location.hash.slice(1) || 'home').split('/'); { const p = document.querySelector('.lp-nav .nav-pill'); window.__navPrev = p ? p.getBoundingClientRect() : null; } document.documentElement.classList.toggle('is-home', v === 'home'); { const g = document.getElementById('gnav'); if (g) g.innerHTML = v === 'home' ? '' : navHTML(v === 'new' ? 'analysis' : v); }
-  document.querySelectorAll('#nav a').forEach((a) => a.classList.toggle('on', a.dataset.v === v));
   try {
     if (v === 'home') await vHome(arg);
     else if (v === 'analysis' || v === 'new') { if (v === 'new') { location.replace('#analysis'); return; } vAnalysis(); }
@@ -291,15 +290,3 @@ async function route() {
 window.addEventListener('hashchange', route);
 (async () => { META = await jget('/api/meta'); if (META.mock) document.title += ' (MOCK)'; route(); })();
 
-// ---- Sidebar collapse ----
-(() => {
-  const root = document.documentElement, btn = $('#collapse');
-  const apply = (on, save) => {
-    root.classList.toggle('side-collapsed', on);
-    btn.setAttribute('aria-expanded', String(!on)); btn.setAttribute('aria-label', on ? 'Expand sidebar' : 'Collapse sidebar'); btn.title = on ? 'Expand sidebar' : 'Collapse sidebar';
-    if (save) try { localStorage.setItem('bie-side', on ? '1' : '0'); } catch {}
-    setTimeout(() => window.onresize && window.onresize(), 300); // vẽ lại đường nối Workflow theo bề rộng mới
-  };
-  apply(root.classList.contains('side-collapsed'), false);
-  btn.onclick = () => apply(!root.classList.contains('side-collapsed'), true);
-})();
