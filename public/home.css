@@ -170,3 +170,20 @@ nav a{border-radius:999px;padding:10px 16px}
 .lp-copy>:nth-child(2){animation-delay:.08s}.lp-copy>:nth-child(3){animation-delay:.16s}.lp-copy>:nth-child(4){animation-delay:.24s}
 @media(prefers-reduced-motion:reduce){.nav-pill,.nav-ghost,#view.vin,.lp-copy>*{animation:none;transition:none}}
 html,body,button,input,select,textarea,code,pre,kbd,samp,table,th,td,svg text{font-family:"Quicksand","Segoe UI",system-ui,sans-serif}
+
+/* ===== Workflow: hiệu ứng nền luôn chạy (kể cả khi không có flow đang chạy) ===== */
+.wf .edge .dot,.wf .edge:not(.flow) .dot,html.lite .wf .edge .dot{display:inline!important;fill:#FFE2A3;stroke:none}
+.wf .edge .dot.t1{fill-opacity:.7}.wf .edge .dot.t2{fill-opacity:.45}.wf .edge .dot.t3{fill-opacity:.25}
+.wf .edge.idle .dot{fill:#8a7a58}
+.wf .edge .ring{stroke:var(--acc);stroke-width:1.5;pointer-events:none}
+.wf .edge.idle .ring{display:none}
+.wf .edge.done .glow,.wf .edge.ready .glow{display:inline;fill:none;stroke:var(--acc);stroke-width:2;stroke-linecap:round;stroke-dasharray:6 18;opacity:.7;animation:dash 1.6s linear infinite}
+html.lite .wf .edge.done .glow,html.lite .wf .edge.ready .glow{animation:dash 1.6s linear infinite!important}
+.wf .fnode.done::after{content:"";position:absolute;inset:-1px;border-radius:20px;box-shadow:0 0 24px 2px rgba(233,176,74,.4);opacity:0;pointer-events:none;animation:wfbreath 3.4s ease-in-out infinite}
+.wf .fnode:nth-child(2n).done::after{animation-delay:.6s}.wf .fnode:nth-child(3n).done::after{animation-delay:1.2s}
+@keyframes wfbreath{0%,100%{opacity:0}50%{opacity:1}}
+html.lite .wf .fnode.done::after{animation:wfbreath 3.4s ease-in-out infinite!important}
+.wf .fnode{transition:transform .25s,border-color .25s,box-shadow .25s}
+.wf .fnode[role=button]:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(233,176,74,.18)}
+.wf .fn-ico .spin{border-top-color:var(--acc)}
+@media(prefers-reduced-motion:reduce){.wf .edge .dot,.wf .edge .ring{display:none!important}.wf .fnode.done::after,.wf .edge .glow{animation:none!important}}

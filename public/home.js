@@ -82,7 +82,7 @@ async function vHome(id) {
       const d = `M${x},${y1} L${x},${y2}`;
       h += `<g class="edge idle" data-e="${i}"><path class="base" d="${d}"/><path class="glow" d="${d}" filter="url(#gl)"/>
         ${[0, 0.5].map((o) => [0, 1, 2, 3].map((k) => `<circle class="dot t${k}" r="${[3.4, 2.8, 2.2, 1.6][k]}"><animateMotion dur="1.8s" begin="${(o * 1.8 + k * 0.07).toFixed(2)}s" repeatCount="indefinite" calcMode="spline" keyTimes="0;1" keySplines=".45 0 .35 1" path="${d}"/><animate attributeName="opacity" dur="1.8s" begin="${(o * 1.8 + k * 0.07).toFixed(2)}s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;.12;.88;1"/></circle>`).join('')).join('')}
-        <circle class="pt" cx="${x}" cy="${y1}" r="4"/><circle class="pt" cx="${x}" cy="${y2}" r="4"/><circle class="pt mid" cx="${x}" cy="${ym}" r="6.5"/>
+        <circle class="pt" cx="${x}" cy="${y1}" r="4"/><circle class="pt" cx="${x}" cy="${y2}" r="4"/><circle class="pt mid" cx="${x}" cy="${ym}" r="6.5"/><circle class="ring" cx="${x}" cy="${ym}" r="6" fill="none"><animate attributeName="r" values="6;18" dur="2.6s" begin="${(i*0.5).toFixed(1)}s" repeatCount="indefinite"/><animate attributeName="opacity" values=".75;0" dur="2.6s" begin="${(i*0.5).toFixed(1)}s" repeatCount="indefinite"/></circle>
         <g class="chip" transform="translate(${x + 22} ${ym - 15})"><rect width="76" height="30" rx="8"/><text class="chip-t" x="38" y="19" text-anchor="middle"></text></g></g>`;
     }
     // Vòng kiểm tra Version: Data (ETL) → quay lại Key Metrics (chỉ khi người dùng chọn so sánh Version)
