@@ -372,6 +372,23 @@ app.get('/api/metrics-catalog', (req, res) => {
   res.json({ version: cat.version, source: cat.source, generatedAt: cat.generatedAt, hasData: !!(profile && profile.sheets && profile.sheets.length), suggestDomain: MC.domainFor(req.query.dept, req.query.pos), domains });
 });
 
+// Kiểm tra các Key Metrics đã chọn có tính được từ dữ liệu (các bảng đã tick) không — dựa trên tên cột, chỉ mang tính tham khảo
+app.post('/api/runs/:id/metrics-check', (req, res) => {
+  const { id } = req.params; const run = safeId(id) && loadRun(id);
+  if (!run) return res.sendStatus(404);
+  const profile = readJsonSafe(path.join(runDir(run.id), '00-input', 'profile.json'));
+  if (!profile || !Array.isArray(profile.sheets) || !profile.sheets.length) return res.json({ hasData: false, items: [] });
+  const want = Array.isArray(req.body.sheets) ? new Set(req.body.sheets.map(String)) : null;
+  const used = { ...profile, sheets: profile.sheets.filter((s) => !want || want.has(s.name)) };
+  const items = (Array.isArray(req.body.metrics) ? req.body.metrics : []).map((n) => String(n || '').trim()).filter(Boolean).slice(0, 60).map((name) => {
+    const m = MC.lookup(name);
+    if (!m) return { name, status: 'unknown' };
+    const d = MC.fitDetail(m, used);
+    return { name: m.name || name, asked: name, status: d.level || 'unknown', missing: d.missing, formula: m.formula, description: m.description, domain: m.domainLabel };
+  });
+  res.json({ hasData: used.sheets.length > 0, sheets: used.sheets.map((s) => s.name), items });
+});
+
 app.post('/api/runs/:id/suggest', async (req, res) => {
   const { id } = req.params; const run = safeId(id) && loadRun(id);
   if (!run) return res.sendStatus(404);

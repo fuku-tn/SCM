@@ -285,7 +285,7 @@ function panel1() {
 
 function drawData() {
   const host = $('#data-view'); if (!host) return;
-  if (!A.data || A.data.busy) { host.innerHTML = ''; return; }
+  if (!A.data || A.data.busy) { host.innerHTML = ''; drawMetricCheck(); return; }
   const P = A.data.profile, multi = P.sheets.length > 1, sh = P.sheets[Math.min(A.pv, P.sheets.length - 1)];
   host.innerHTML = `${multi ? `<div class="lbl" style="margin:14px 0 8px">Chọn các bảng / sheet sẽ dùng <small style="font-weight:400;color:var(--mut)">(bấm vào thẻ để xem dữ liệu mẫu, tick để chọn dùng)</small></div>
       <div class="sheets">${P.sheets.map((s, i) => `<div class="sheetcard ${i === A.pv ? 'on' : ''}" data-i="${i}"><label class="chk" title="Dùng bảng này"><input type="checkbox" data-c="${i}" ${A.sheets.includes(s.name) ? 'checked' : ''}><span></span></label><div><b>${esc(s.name)}</b><small>${fmt(s.rowCount)} dòng · ${s.columns.length} cột</small></div></div>`).join('')}</div>`
@@ -293,12 +293,38 @@ function drawData() {
     <div class="lbl" style="margin:14px 0 6px">Dữ liệu mẫu — ${esc(sh.name)} <small style="font-weight:400;color:var(--mut)">(${Math.min(10, sh.sample.length)} / ${fmt(sh.rowCount)} dòng)</small></div>
     <div class="preview-tbl tall"><table><tr>${sh.columns.map((c) => `<th>${esc(c.name)}<br><small class="ty ${c.type}">${c.type}</small></th>`).join('')}</tr>${sh.sample.slice(0, 10).map((r) => `<tr>${sh.columns.map((c) => `<td>${esc(r[c.name] ?? '')}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${sh.columns.length || 1}" class="sub">Bảng không có dữ liệu</td></tr>`}</table></div>`;
   host.querySelectorAll('.sheetcard').forEach((c) => (c.onclick = (e) => { if (e.target.closest('.chk')) return; A.pv = +c.dataset.i; drawData(); }));
-  host.querySelectorAll('[data-c]').forEach((c) => (c.onchange = () => { const n = P.sheets[+c.dataset.c].name; A.sheets = c.checked ? [...new Set([...A.sheets, n])] : A.sheets.filter((x) => x !== n); refresh(); }));
+  host.querySelectorAll('[data-c]').forEach((c) => (c.onchange = () => { const n = P.sheets[+c.dataset.c].name; A.sheets = c.checked ? [...new Set([...A.sheets, n])] : A.sheets.filter((x) => x !== n); refresh(); drawMetricCheck(); }));
+  drawMetricCheck();
 }
+// Kiểm tra Key Metrics đã chọn với dữ liệu vừa import: chỉ số nào có thể KHÔNG tính được vì thiếu cột / bảng (dựa trên tên cột → mang tính tham khảo)
+let mcSeq = 0;
+async function drawMetricCheck() {
+  const host = $('#metric-check'); if (!host) return;
+  const seq = ++mcSeq;
+  if (!A.data || A.data.busy || !A.runId) { host.innerHTML = ''; return; }
+  if (!A.metrics.length) { host.innerHTML = '<div class="mchk"><div class="mchk-h"><b>Kiểm tra Key Metrics với dữ liệu</b></div><p class="sub" style="margin:6px 0 0">Bạn chưa chọn Key Metrics ở Bước 2 nên chưa có gì để kiểm tra.</p></div>'; return; }
+  if (!A.sheets.length) { host.innerHTML = ''; return; }
+  let r; try { r = await jsend('/api/runs/' + A.runId + '/metrics-check', 'POST', { metrics: A.metrics, sheets: A.sheets }); } catch { return; }
+  if (seq !== mcSeq || !$('#metric-check')) return;   // có lần gọi mới hơn
+  if (!r || !r.hasData) { host.innerHTML = ''; return; }
+  const by = (st) => r.items.filter((i) => i.status === st), ok = by('high'), part = by('partial'), none = by('none'), unk = by('unknown');
+  const item = (i, why) => `<li><b>${esc(i.name)}</b>${why}${i.formula ? `<small>Công thức: ${esc(i.formula)}</small>` : ''}</li>`;
+  const miss = (i) => (i.missing && i.missing.length ? ` — chưa thấy cột cho: <em>${i.missing.map(esc).join(', ')}</em>` : '');
+  const bad = part.length + none.length;
+  host.innerHTML = `<div class="mchk ${bad ? 'warn' : 'good'}">
+    <div class="mchk-h"><b>Kiểm tra Key Metrics với dữ liệu</b><span class="mchk-sum">${ok.length ? `<i class="ok">✓ ${ok.length} tính được</i>` : ''}${part.length ? `<i class="pa">⚠ ${part.length} có thể thiếu dữ liệu</i>` : ''}${none.length ? `<i class="no">✕ ${none.length} chưa thấy dữ liệu phù hợp</i>` : ''}${unk.length ? `<i class="un">? ${unk.length} chưa kiểm tra được</i>` : ''}</span></div>
+    ${bad ? `<p class="sub" style="margin:8px 0 6px">Các chỉ số dưới đây <b>có thể không tính được</b> từ các bảng đã chọn do thiếu cột dữ liệu. Chặng Key Metrics sẽ ghi chúng vào mục "không thực hiện được" thay vì bịa số liệu.</p>
+      <ul class="mchk-l">${none.map((i) => item(i, miss(i) || ' — không thấy cột nào phù hợp')).join('')}${part.map((i) => item(i, miss(i))).join('')}</ul>` : `<p class="sub" style="margin:8px 0 0">Mọi chỉ số trong danh mục bạn chọn đều có cột dữ liệu phù hợp.</p>`}
+    ${unk.length ? `<details class="mchk-d"><summary>${unk.length} chỉ số chưa kiểm tra được (không có trong danh mục BI nên chưa rõ công thức)</summary><div class="sub" style="margin:6px 0 0">${unk.map((i) => esc(i.name)).join(' · ')}</div></details>` : ''}
+    ${ok.length ? `<details class="mchk-d"><summary>${ok.length} chỉ số tính được</summary><ul class="mchk-l ok">${ok.map((i) => `<li><b>${esc(i.name)}</b></li>`).join('')}</ul></details>` : ''}
+    <div class="mchk-f"><span class="sub" style="margin:0">Kiểm tra dựa trên tên cột nên chỉ mang tính tham khảo. Bạn có thể bổ sung cột / bảng vào file rồi nạp lại, hoặc chọn lại chỉ số.</span>${bad ? '<button type="button" class="btn ghost sm" id="mchk-back">← Chọn lại Key Metrics</button>' : ''}</div></div>`;
+  const b = $('#mchk-back'); if (b) b.onclick = () => go(1);
+}
+
 function panel2() {
   $('#panel').innerHTML = `<div class="card wz-card"><div class="wz-title"><span class="fn-badge">3</span><div><h2>Import Data <small style="font-weight:500;color:var(--mut)">· Transformation · Modeling</small></h2><p class="sub" style="margin:0">Kéo thả hoặc chọn file CSV / Excel. Nếu có nhiều bảng, bạn chọn bảng sẽ dùng.</p></div></div>
     ${A.versions.length ? `<div class="warn-box">${verWarn()}</div>` : ''}
-    <div class="f"><label>File dữ liệu ${REQ} <small>— CSV hoặc Excel (.csv, .tsv, .xlsx, .xls)</small></label><div id="dz-data"></div></div><div id="data-view"></div>${foot()}</div>`;
+    <div class="f"><label>File dữ liệu ${REQ} <small>— CSV hoặc Excel (.csv, .tsv, .xlsx, .xls)</small></label><div id="dz-data"></div></div><div id="data-view"></div><div id="metric-check"></div>${foot()}</div>`;
   dz($('#dz-data'), {
     slot: 'data', exts: ['csv', 'tsv', 'xlsx', 'xls', 'xlsm'], title: 'Kéo thả file dữ liệu vào đây hoặc bấm để chọn', hint: '.csv · .tsv · .xlsx · .xls', minBusy: 1100, busyText: 'Đang tải và đọc dữ liệu…',
     get: () => A.data, set: (v) => { A.data = v; if (v && !v.busy) { A.sheets = v.profile.sheets.map((s) => s.name); A.pv = 0; } if (!v) A.sheets = []; drawData(); },

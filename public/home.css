@@ -222,3 +222,22 @@ html.lite .wf .fnode.done::after{animation:wfbreath 3.4s ease-in-out infinite!im
 .mhint{flex:1 1 100%;order:9;margin:0!important;font-size:11.5px}
 .mdom small{white-space:nowrap}
 .mhint{color:var(--mut)}
+
+/* ===== Kiểm tra Key Metrics với dữ liệu (bước Import Data) ===== */
+.mchk{margin-top:16px;padding:16px 18px;border-radius:16px;border:1px solid var(--line);background:var(--card2);animation:vin .4s cubic-bezier(.2,.8,.25,1)}
+.mchk.warn{border-color:rgba(233,176,74,.55);background:rgba(233,176,74,.07)}
+.mchk.good{border-color:rgba(76,196,154,.4);background:rgba(76,196,154,.06)}
+.mchk-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mchk-sum{display:flex;gap:8px;flex-wrap:wrap}
+.mchk-sum i{font-style:normal;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid var(--line)}
+.mchk-sum .ok{color:var(--ok);background:rgba(76,196,154,.12);border-color:rgba(76,196,154,.35)}
+.mchk-sum .pa{color:var(--acc);background:rgba(233,176,74,.12);border-color:rgba(233,176,74,.4)}
+.mchk-sum .no{color:var(--err);background:rgba(232,118,106,.12);border-color:rgba(232,118,106,.4)}
+.mchk-sum .un{color:var(--mut)}
+.mchk-l{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.mchk-l li{font-size:13px;line-height:1.45;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--line)}
+.mchk-l li em{font-style:normal;color:var(--acc);font-weight:600}
+.mchk-l li small{display:block;color:var(--mut);font-size:11.5px;margin-top:2px}
+.mchk-l.ok{margin-top:8px}.mchk-l.ok li{padding:6px 12px}
+.mchk-d{margin-top:10px;font-size:12.5px}.mchk-d summary{cursor:pointer;color:var(--mut);font-weight:600}
+.mchk-f{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
