@@ -21,10 +21,6 @@ const S = {
 };
 
 // ---- Theme ----
-$('#theme').onclick = () => {
-  const d = document.documentElement; const t = d.dataset.theme === 'dark' ? 'light' : 'dark';
-  d.dataset.theme = t; try { localStorage.setItem('bie-theme', t); } catch {}
-};
 
 // ---- Meter (token + context window) ----
 function setMeter(t) {

@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="/styles.css">
 <link rel="stylesheet" href="/skin.css">
 <link rel="stylesheet" href="/home.css">
-<script>try{const q=new URLSearchParams(location.search).get('theme');const t=q||localStorage.getItem('bie-theme');document.documentElement.dataset.theme=t==='light'?'light':'dark'}catch(e){}</script>
 <script>try{if(localStorage.getItem('bie-side')==='1')document.documentElement.classList.add('side-collapsed')}catch(e){}</script>
 <script>try{const l=localStorage.getItem('bie-lite');if(l==='1'||(l===null&&(navigator.hardwareConcurrency||8)<=4)||/[?&]lite=1/.test(location.search))document.documentElement.classList.add('lite')}catch(e){}</script>
 </head>
@@ -43,8 +42,7 @@
         <div class="meter" id="meter" title="Token của lần chạy đang xem"><span class="m-lbl">Token</span><b id="m-tok">0</b><div class="m-bar"><i id="m-fill"></i></div><span class="m-ctx" id="m-ctx">Ctx —</span></div>
         <div class="bell-wrap"><button class="icon-btn bell" id="bell" type="button" aria-label="Thông báo" aria-expanded="false" title="Thông báo flow"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="bell-badge" id="bell-badge" hidden>0</span></button>
           <div class="notif" id="notif" hidden role="dialog" aria-label="Thông báo flow"></div></div>
-        <button class="icon-btn lite-btn" id="lite-btn" type="button" title="Chế độ mượt: tắt hiệu ứng chuyển động (dùng khi màn hình giật)" aria-label="Chế độ mượt">⚡</button>
-        <button class="icon-btn" id="theme" title="Đổi giao diện sáng/tối" aria-label="Đổi giao diện">◐</button>
+        <button class="icon-btn lite-btn" id="lite-btn" type="button" title="Chế độ mượt: tắt hiệu ứng chuyển động (dùng khi màn hình giật)" aria-label="Chế độ mượt"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></button>
       </div>
     </header>
     <div class="health-bar" id="health-bar" hidden></div>

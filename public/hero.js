@@ -43,7 +43,7 @@ function transporterScene() {
 function homeHero() {
   let n = ''; try { n = localStorage.getItem('bie-user') || ''; } catch {}
   const first = n ? n.split(' ')[0] : '';
-  const imgs = ['truck-1', 'truck-2', 'dock-3'];
+  const imgs = ['truck-1', 'truck-2', 'truck-3'], pos = ['78% 50%', '62% 50%', '58% 50%'];
   const globe = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>';
   return `<section class="lp">
     <header class="lp-nav"><a class="lp-logo" href="#home">transporter<b>.</b></a>
@@ -56,7 +56,7 @@ function homeHero() {
         <div class="lp-stats">
           <div class="lp-stat">${globe}<strong>Nationwide Coverage</strong><span>Delivering across 50+ states</span></div>
           <div class="lp-stat"><b>99.6%</b><strong>On-Time Delivery Rate</strong><span>Reliability you can count on</span></div></div></div>
-      <div class="lp-art" id="lp-art">${imgs.map((s, k) => `<img src="/assets/hero/${s}.jpg" alt="" class="${k ? '' : 'on'}">`).join('')}
+      <div class="lp-art" id="lp-art">${imgs.map((s, k) => `<img src="/assets/hero/${s}.jpg" alt="" style="object-position:${pos[k]}" class="${k ? "" : "on"}">`).join('')}
         <div class="lp-dots">${imgs.map((s, k) => `<button type="button" aria-label="Ảnh ${k + 1}" class="${k ? '' : 'on'}"></button>`).join('')}</div></div>
     </div></section>`;
 }
