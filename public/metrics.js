@@ -18,7 +18,7 @@
     if (!host) return;
     const draw = () => {
       const A = getA(), set = new Set(A.metrics.map(norm));
-      host.innerHTML = `<div class="catbar"><button type="button" class="btn acc sm" data-open>📚 Chọn từ danh mục chỉ số BI</button>
+      host.innerHTML = `<div class="catbar"><button type="button" class="btn acc sm" data-open>Chọn từ danh mục chỉ số BI</button>
         <span class="sub" style="margin:0">297 chỉ số chuẩn theo lĩnh vực — có mô tả, công thức và mức quan trọng${set.size ? ` · đang chọn <b>${set.size}</b>` : ''}</span></div>`;
       host.querySelector('[data-open]').onclick = () => open(getA, () => { onChange(); draw(); });
     };
@@ -33,20 +33,35 @@
     let dom = (() => { try { return localStorage.getItem(DKEY); } catch { return null; } })();
     if (cat.suggestDomain) dom = cat.suggestDomain; else if (!dom) dom = 'supply-chain';   // web SCM: mặc định mở lĩnh vực Chuỗi cung ứng
     if (!cat.domains.some((d) => d.id === dom)) dom = cat.domains[0].id;
-    const st = { q: '', imp: false, fit: false };
+    const st = { q: '', imp: false, fit: false }; let opened = false;
     const close = () => { document.onkeydown = null; bg.remove(); changed(); };
 
     const selected = () => new Set(getA().metrics.map(norm));
     const countIn = (d) => { const s = selected(); return d.categories.reduce((n, c) => n + c.metrics.filter((m) => s.has(norm(m.name))).length, 0); };
     const total = (d) => d.categories.reduce((n, c) => n + c.metrics.length, 0);
-    const pass = (m) => (!st.imp || m.importance === 'High') && (!st.fit || m.fit === 'high' || m.fit === 'partial') && (!st.q || norm(m.name + ' ' + m.description + ' ' + m.formula).includes(norm(st.q)));
+    const pass = (m) => (!st.imp || m.importance === 'High') && (!st.fit || m.fit === 'high' || m.fit === 'partial') && (!st.q || norm(m.name + ' ' + m.description + ' ' + (m.descriptionEn || '') + ' ' + m.formula).includes(norm(st.q)));
     const toggle = (name) => { const A2 = getA(), k = norm(name), i = A2.metrics.findIndex((x) => norm(x) === k); if (i >= 0) A2.metrics.splice(i, 1); else A2.metrics.push(name); changed(); };
+
+    const footText = (n) => `Đang chọn <b>${n}</b> chỉ số${n > 12 ? ' — nhiều chỉ số sẽ làm dashboard rối, nên chọn gọn' : ''}. Mỗi trang dashboard chỉ hiện 4–6 thẻ KPI.${n ? ' <a href="#" data-clear style="color:var(--acct);font-weight:700">Xóa toàn bộ lựa chọn</a>' : ''}`;
+    // cập nhật TẠI CHỖ (không dựng lại cửa sổ) → tick/bỏ tick mượt, không giật
+    function sync(flash) {
+      const s = selected();
+      bg.querySelectorAll('.mrow').forEach((row) => {
+        const inp = row.querySelector('input'), on = s.has(norm(inp.dataset.n));
+        if (row.classList.contains('on') !== on) { row.classList.toggle('on', on); if (flash) { row.classList.add('just'); setTimeout(() => row.classList.remove('just'), 420); } }
+        inp.checked = on;
+      });
+      bg.querySelectorAll('.mdom').forEach((b) => { const d = cat.domains.find((x) => x.id === b.dataset.d), c = countIn(d); b.querySelector('small').innerHTML = (c ? '<b>' + c + '</b>/' : '') + total(d); });
+      const f = bg.querySelector('[data-foot]'); if (f) { f.innerHTML = footText(getA().metrics.length); bindClear(); }
+    }
+    function bindClear() { const a = bg.querySelector('[data-clear]'); if (a) a.onclick = (e) => { e.preventDefault(); getA().metrics.length = 0; changed(); sync(true); }; }
+    function visibleNames() { return [...bg.querySelectorAll('.mrow input')].map((i) => i.dataset.n); }
 
     function row(m, s) {
       const on = s.has(norm(m.name)), f = cat.hasData && m.fit ? FIT[m.fit] : null;
       return `<label class="mrow ${on ? 'on' : ''}"><input type="checkbox" data-n="${esc(m.name)}" ${on ? 'checked' : ''}>
         <span class="mb"><span class="mt"><b>${esc(m.name)}</b><i class="imp ${m.importance === 'High' ? 'hi' : ''}">${esc(m.importance)}</i>${f ? `<i class="fit ${f[1]}" title="${esc(f[2])}">${f[0]}</i>` : ''}${m.link ? `<a href="${esc(m.link)}" target="_blank" rel="noopener" title="Xem giải thích" onclick="event.stopPropagation()">↗</a>` : ''}</span>
-        <span class="mdesc">${esc(m.description)}</span><code class="mf">${esc(m.formula)}</code></span></label>`;
+        <span class="mdesc" ${m.descriptionEn && m.descriptionEn !== m.description ? `title="${esc(m.descriptionEn)}"` : ""}>${esc(m.description)}</span><code class="mf">${esc(m.formula)}</code></span></label>`;
     }
     function render() {
       const s = selected(), D = cat.domains.find((d) => d.id === dom);
@@ -62,12 +77,19 @@
         <div class="modal-b metbody">
           <div class="mtools"><input type="search" data-q placeholder="Tìm chỉ số (tên, mô tả, công thức)…" value="${esc(st.q)}">
             <button type="button" class="chip ${st.imp ? 'on' : ''}" data-imp>★ Quan trọng (High)</button>
-            ${cat.hasData ? `<button type="button" class="chip ${st.fit ? 'on' : ''}" data-fit title="Chỉ hiện chỉ số có thể tính từ cột trong dữ liệu của bạn">✓ Khớp dữ liệu</button>` : '<span class="sub" style="margin:0">Tải dữ liệu ở bước Import Data để thấy chỉ số nào tính được.</span>'}
-            <button type="button" class="btn ghost sm" data-quick title="Chọn tối đa 8 chỉ số High (ưu tiên khớp dữ liệu) của lĩnh vực đang xem">⚡ Chọn nhanh</button></div>
+            ${cat.hasData ? `<button type="button" class="chip ${st.fit ? 'on' : ''}" data-fit title="Chỉ hiện chỉ số có thể tính từ cột trong dữ liệu của bạn">✓ Khớp dữ liệu</button>` : '<span class="sub mhint">Tải dữ liệu ở bước Import Data để thấy chỉ số nào tính được.</span>'}
+            <div class="mbtns"><button type="button" class="btn ghost sm" data-all title="Chọn tất cả chỉ số đang hiển thị trong danh sách bên dưới">Chọn tất cả</button>
+            <button type="button" class="btn ghost sm" data-none title="Bỏ chọn tất cả chỉ số đang hiển thị trong danh sách bên dưới">Bỏ chọn tất cả</button>
+            <button type="button" class="btn ghost sm" data-quick title="Chọn tối đa 8 chỉ số High (ưu tiên khớp dữ liệu) của lĩnh vực đang xem">⚡ Chọn nhanh</button></div></div>
           <div class="mgrid"><nav class="mdoms">${cat.domains.map((d) => `<button type="button" class="mdom ${d.id === dom && !st.q.trim() ? 'on' : ''}" data-d="${d.id}"><span>${esc(d.label)}</span><small>${countIn(d) ? `<b>${countIn(d)}</b>/` : ''}${total(d)}</small></button>`).join('')}</nav>
           <div class="mlist">${!st.q.trim() && cat.suggestDomain === dom ? '<div class="sub" style="margin:0 0 6px">✦ Gợi ý lĩnh vực theo phòng ban/vị trí người xem.</div>' : ''}${body}</div></div>
         </div>
-        <div class="modal-f"><span class="sub" style="margin:0 auto 0 0">Đang chọn <b>${n}</b> chỉ số${n > 12 ? ' — nhiều chỉ số sẽ làm dashboard rối, nên chọn gọn' : ''}. Mỗi trang dashboard chỉ hiện 4–6 thẻ KPI.</span><button class="btn acc" data-x>Xong</button></div></div>`;
+        <div class="modal-f"><span class="sub" style="margin:0 auto 0 0" data-foot>${footText(n)}</span><button class="btn acc" data-x>Xong</button></div></div>`;
+      if (opened) { const mo = bg.querySelector('.modal'); if (mo) mo.style.animation = 'none'; } opened = true;
+      bindClear();
+      const bAll = bg.querySelector('[data-all]'), bNone = bg.querySelector('[data-none]');
+      bAll.onclick = () => { const A2 = getA(), s2 = selected(); visibleNames().forEach((n) => { if (!s2.has(norm(n))) A2.metrics.push(n); }); changed(); sync(true); };
+      bNone.onclick = () => { const A2 = getA(), vis = new Set(visibleNames().map(norm)); A2.metrics = A2.metrics.filter((x) => !vis.has(norm(x))); changed(); sync(true); };
       const q = bg.querySelector('[data-q]');
       q.oninput = () => { st.q = q.value; const pos = q.selectionStart; render(); const q2 = bg.querySelector('[data-q]'); q2.focus(); q2.setSelectionRange(pos, pos); };
       bg.querySelector('[data-imp]').onclick = () => { st.imp = !st.imp; render(); };
@@ -75,10 +97,10 @@
       bg.querySelector('[data-quick]').onclick = () => {
         const D2 = cat.domains.find((d) => d.id === dom), s2 = selected();
         const pool = D2.categories.flatMap((c) => c.metrics).filter((m) => m.importance === 'High' && !s2.has(norm(m.name))).sort((a, b) => (cat.hasData ? ({ high: 0, partial: 1, none: 2 }[a.fit] ?? 2) - ({ high: 0, partial: 1, none: 2 }[b.fit] ?? 2) : 0));
-        pool.slice(0, 8).forEach((m) => getA().metrics.push(m.name)); changed(); render();
+        pool.slice(0, 8).forEach((m) => getA().metrics.push(m.name)); changed(); sync(true);
       };
       bg.querySelectorAll('.mdom').forEach((b) => (b.onclick = () => { dom = b.dataset.d; st.q = ''; try { localStorage.setItem(DKEY, dom); } catch {} render(); }));
-      bg.querySelectorAll('.mrow input').forEach((c) => (c.onchange = () => { toggle(c.dataset.n); const sc = bg.querySelector('.mlist').scrollTop; render(); bg.querySelector('.mlist').scrollTop = sc; }));
+      bg.querySelectorAll('.mrow input').forEach((c) => (c.onchange = () => { toggle(c.dataset.n); sync(true); }));
     }
     bg.onclick = (e) => { if (e.target === bg || e.target.closest('[data-x]')) close(); };
     document.onkeydown = (e) => { if (e.key === 'Escape') close(); };

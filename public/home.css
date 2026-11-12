@@ -205,3 +205,20 @@ html.lite .wf .fnode.done::after{animation:wfbreath 3.4s ease-in-out infinite!im
 .wf .fnode.noskill .fn-s{color:var(--err)}
 .pill.noskill{background:rgba(232,118,106,.14);color:var(--err)}
 .mtools input[type=search]{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--ink);outline:none}.mtools input[type=search]:focus{border-color:var(--acc)}
+
+/* ===== Danh mục chỉ số: chuyển trạng thái mượt khi tick / bỏ tick ===== */
+.mrow{transition:background-color .28s ease,border-color .28s ease,box-shadow .28s ease}
+.mrow.on{box-shadow:0 0 0 1px rgba(233,176,74,.25)}
+.mrow input{transition:transform .25s cubic-bezier(.34,1.56,.5,1)}
+.mrow.just input{animation:mpop .38s cubic-bezier(.34,1.56,.5,1)}
+@keyframes mpop{0%{transform:scale(.75)}60%{transform:scale(1.22)}100%{transform:scale(1)}}
+.mdom{transition:background-color .25s ease,border-color .25s ease}
+.mdom small b{display:inline-block;animation:mcnt .3s ease}
+@keyframes mcnt{from{opacity:.3;transform:translateY(-3px)}to{opacity:1;transform:none}}
+.mtools .btn{white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.mrow,.mdom,.mrow input{transition:none}.mrow.just input,.mdom small b{animation:none}}
+.mtools input[type=search]{flex:1 1 200px}
+.mbtns{display:flex;gap:8px;margin-left:auto;flex-wrap:nowrap}
+.mhint{flex:1 1 100%;order:9;margin:0!important;font-size:11.5px}
+.mdom small{white-space:nowrap}
+.mhint{color:var(--mut)}
