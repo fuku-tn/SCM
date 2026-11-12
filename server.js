@@ -362,6 +362,16 @@ app.delete('/api/runs/:id/files/:slot', (req, res) => {
 });
 
 // Gợi ý Key Metrics / Dimensions bằng AI (dựa trên ngữ cảnh + yêu cầu + người xem)
+// ---------- Danh mục chỉ số BI (từ documents/Business Intelligence Metrics.xlsx) ----------
+const MC = require('./lib/metrics-catalog.js');
+app.get('/api/metrics-catalog', (req, res) => {
+  const run = req.query.run && safeId(String(req.query.run)) ? loadRun(String(req.query.run)) : null;
+  const profile = run ? readJsonSafe(path.join(runDir(run.id), '00-input', 'profile.json')) : null;
+  const cat = MC.load();
+  const domains = cat.domains.map((d) => ({ id: d.id, label: d.label, name: d.name, categories: d.categories.map((c) => ({ name: c.name, metrics: c.metrics.map((m) => ({ ...m, fit: MC.fit(m, profile) })) })) }));
+  res.json({ version: cat.version, source: cat.source, generatedAt: cat.generatedAt, hasData: !!(profile && profile.sheets && profile.sheets.length), suggestDomain: MC.domainFor(req.query.dept, req.query.pos), domains });
+});
+
 app.post('/api/runs/:id/suggest', async (req, res) => {
   const { id } = req.params; const run = safeId(id) && loadRun(id);
   if (!run) return res.sendStatus(404);
@@ -377,7 +387,7 @@ app.post('/api/runs/:id/suggest', async (req, res) => {
     '## Yêu cầu phân tích\n' + (req2 || '(không có)'),
     `## Người xem trực tiếp của dashboard\n- Phòng ban: ${a.department || '?'}\n- Vị trí: ${a.position || '?'}\n- Level: ${a.level || '?'}\n- Học vấn: ${a.education || '(không khai báo)'}\n- Thâm niên tại doanh nghiệp hiện tại: ${a.tenureCompany || '?'}\n- Thâm niên từ khi đi làm: ${a.tenureCareer || '(không khai báo)'}`,
     kind === 'metrics'
-      ? '## Nhiệm vụ\nGợi ý 8–10 chỉ số (Key Metrics / measure để viết DAX) phù hợp nhất với người xem và yêu cầu trên. Sắp xếp từ quan trọng nhất.'
+      ? '## Danh mục chỉ số chuẩn của doanh nghiệp (BI Metrics)\n' + MC.namesForPrompt(MC.domainFor(a.department, a.position) || '') + '\n\n## Nhiệm vụ\nGợi ý 8–10 chỉ số (Key Metrics / measure để viết DAX) phù hợp nhất với người xem và yêu cầu trên. ƯU TIÊN chọn ĐÚNG TÊN trong danh mục chuẩn ở trên; chỉ thêm chỉ số ngoài danh mục khi thật sự cần cho yêu cầu. Sắp xếp từ quan trọng nhất.'
       : `## Các chỉ số đã chọn\n${chosen || '(chưa có)'}\n\n## Nhiệm vụ\nGợi ý 8–10 chiều phân tích (dimension) phù hợp để cắt lát các chỉ số đã chọn. Sắp xếp từ quan trọng nhất.`,
     '## Định dạng\nChỉ trả về DUY NHẤT một JSON array, không markdown, không giải thích ngoài JSON: [{"name":"tên ngắn gọn","reason":"lý do trong 1 câu"}]',
   ].join('\n\n');
@@ -390,6 +400,7 @@ app.post('/api/runs/:id/suggest', async (req, res) => {
     const m = r.text.match(/\[[\s\S]*\]/);
     try { items = JSON.parse(m ? m[0] : r.text); } catch { items = r.text.split('\n').map((l) => l.replace(/^[-*\d.\s]+/, '').trim()).filter(Boolean).slice(0, 10).map((n) => ({ name: n, reason: '' })); }
     items = items.map((x) => (typeof x === 'string' ? { name: x, reason: '' } : { name: String(x.name || '').trim(), reason: String(x.reason || '').trim() })).filter((x) => x.name).slice(0, 12);
+    if (kind === 'metrics') items = items.map((x) => { const m = MC.lookup(x.name); return m ? { name: m.name, reason: x.reason || m.description, catalog: true } : x; }).filter((x, i, a) => a.findIndex((y) => y.name === x.name) === i);
     run.extra = run.extra || []; run.extra.push({ label: 'Gợi ý ' + (kind === 'metrics' ? 'Key Metrics' : 'Dimensions'), model: r.model, usage: r.usage, cost: r.cost, ms: r.ms, at: new Date().toISOString() });
     saveRun(run);
     res.json({ items, usage: r.usage, model: r.model });
@@ -593,6 +604,7 @@ function buildPrompt(run, stageIdx, preOut, feedback) {
     '## Hồ sơ người xem trực tiếp (tính bằng code từ level, học vấn + thâm niên — tuân thủ)\n' + AUD.profileMarkdown(a),
     ...((AUD.indirectMarkdown(f.indirect) || indNote) ? ['## Người xem GIÁN TIẾP (Indirect) — nhận kết quả hoặc bị ảnh hưởng, không trực tiếp thao tác\n' + [AUD.indirectMarkdown(f.indirect), indNote ? '### Ghi chú từ file người dùng tải lên (trích các thông tin cần thiết về từng người/nhóm: vai trò, nhu cầu, mức hiểu biết)\n' + indNote.slice(0, 8000) : ''].filter(Boolean).join('\n\n')] : []),
     '## Chỉ số cần phân tích (Key Metrics, để tính DAX)\n' + ((f.metrics || []).map((x) => '- ' + x).join('\n') || '(trống)'),
+    ...(MC.definitionsMd(f.metrics) ? [MC.definitionsMd(f.metrics)] : []),
     '## Kỳ so sánh cần tính (time intelligence; viết DAX cho từng chỉ số)\n' + ((f.periods || []).map((x) => '- ' + x + ' (' + (PERIOD_DESC[x] || x) + ')').join('\n') || '(không yêu cầu)'),
     ...((f.versions || []).length ? ['## So sánh với Version (kế hoạch / dự báo) — người dùng đã chọn\n' + f.versions.map((x) => '- ' + (VERSION_DESC[x] || x)).join('\n') + '\nLưu ý: script KHÔNG sinh DAX cho Version. Chỉ làm được nếu dữ liệu ở chặng 3 có cột/sheet tương ứng (vd. cột Budget, sheet Target): khai báo giá trị version là metric cơ bản trong metrics-spec.json và so sánh bằng `derived` (vd. `{rev.SUM} - {budget.SUM}`). Không có dữ liệu → ghi rõ trong "Giả định và những việc không thực hiện được", KHÔNG bịa số liệu.'] : []),
     '## Các chiều (Dimension) cần phân tích\n' + ((f.dimensions || []).map((x) => '- ' + x).join('\n') || '(trống)'),

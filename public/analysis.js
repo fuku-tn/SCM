@@ -236,7 +236,7 @@ function panel1() {
       <div class="ind-add"><button type="button" class="btn ghost sm" id="ind-add">＋ Thêm người xem gián tiếp</button></div>
       <div class="f" style="margin-top:10px"><label>Hoặc tải file mô tả người xem gián tiếp <small>(.docx / .md / .pdf)</small></label><div id="dz-aud-indirect"></div></div></div>
     <div class="sec" id="sec-metrics"><div class="sec-h"><span class="sec-n">2.3</span><b>Key Metrics sẽ phân tích</b>${REQ}<span class="lock-note"></span></div>
-      <div id="tags-metrics"></div><div id="sug-metrics" class="sug-box"></div></div>
+      <div id="tags-metrics"></div><div id="cat-metrics" class="catpick"></div><div id="sug-metrics" class="sug-box"></div></div>
     <div class="sec" id="sec-periods"><div class="sec-h"><span class="sec-n">2.4</span><b>Kỳ so sánh cần tính</b><small style="color:var(--mut)">chọn nhiều · không bắt buộc</small><span class="lock-note"></span></div>
       <div class="cmp-grid">${CMP_GROUPS.map((g) => `<div class="f" style="margin:0"><label>${g.title} <small>— ${g.sub}</small></label>
         <details class="dd" data-g="${g.id}"><summary><span class="dd-v" data-sum="${g.id}"></span></summary>
@@ -280,6 +280,7 @@ function panel1() {
     metrics: tagList($('#tags-metrics'), A.metrics, refresh, 'Gõ chỉ số rồi Enter (VD: Doanh thu, Lợi nhuận gộp…) hoặc chọn gợi ý bên dưới'),
     dimensions: tagList($('#tags-dims'), A.dimensions, refresh, 'Gõ chiều rồi Enter (VD: Khu vực, Sản phẩm…) hoặc chọn gợi ý bên dưới'),
   };
+  if (window.MetricsPicker) A.redrawCat = window.MetricsPicker.mount($('#cat-metrics'), () => A, () => { A.redraw.metrics(); drawSug('metrics'); refresh(); });
 }
 
 function drawData() {

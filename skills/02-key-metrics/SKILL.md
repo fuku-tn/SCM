@@ -24,6 +24,7 @@ Kết quả: `result.md` + `metrics-spec.json` (bạn viết) → script `post.j
 Output chặng 1 (Business Context) · danh sách Key Metrics, kỳ so sánh (cùng kỳ YoY/QoQ/MoM; liền trước PY/PQ/PM) và Version (Budget/Target/Forecast…, nếu chọn), Dimension người dùng chọn · profile dữ liệu của các bảng/sheet đã chọn (tên bảng = tên sheet).
 
 ## Quy trình
+0. **Định nghĩa chuẩn**: nếu prompt có mục **ĐỊNH NGHĨA CHỈ SỐ TỪ DANH MỤC BI METRICS** (chỉ số người dùng chọn từ danh mục `knowledge-base/metrics-catalog.json`), dùng đúng tên, ý nghĩa và công thức trong đó để ánh xạ sang cột thật. Thành phần công thức thiếu trong dữ liệu (vd. COGS) → ghi [Giả định] hoặc đưa vào "không thực hiện được"; không tự đổi công thức. Chỉ số có mức *High* ưu tiên đưa vào thẻ KPI tổng quan.
 1. **Ánh xạ**: mỗi Key Metric người dùng chọn → bảng + cột thật trong profile. Metric không có cột tương ứng:
    - tính được từ các cột khác (Lợi nhuận = Doanh thu − Chi phí) → dùng `derived`;
    - không tính được → ghi vào "Cảnh báo / không thực hiện được", **không bịa cột**.

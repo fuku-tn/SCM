@@ -129,14 +129,14 @@ nav a{border-radius:999px;padding:10px 16px}
 /* Run impact */
 .wf-impact{border:1px solid #1f1d1a;border-radius:22px;padding:22px 22px 8px;background:#0f0f0e}
 .wf-impact h3{margin:0 0 6px;padding-bottom:14px;border-bottom:1px solid #1f1d1a;font:600 13px 'Quicksand','Segoe UI',sans-serif;letter-spacing:.04em;color:#D9D3C8}
-.imp{display:flex;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid #1a1917}.imp:last-child{border-bottom:0}
+.wf-impact .imp{display:flex;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid #1a1917}.wf-impact .imp:last-child{border-bottom:0}
 .imp-i{flex:none;width:58px;height:58px;border-radius:14px;border:1px solid #2c2a26;background:#121110;display:grid;place-items:center;color:#E6E0D4}
 .imp-i svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-.imp>div{min-width:0;flex:1}
-.imp small{display:block;font:600 11px/1.2 'Quicksand','Segoe UI',sans-serif;letter-spacing:.05em;color:#9A9489}
-.imp b{display:block;margin:3px 0 2px;font:600 26px/1.15 'Quicksand','Segoe UI',sans-serif;color:var(--acc);letter-spacing:-.01em}
-.imp em{display:block;font-style:normal;font-size:11px;color:#8D877C;line-height:1.35}
-.imp .ctxbar{margin:4px 0}
+.wf-impact .imp>div{min-width:0;flex:1}
+.wf-impact .imp small{display:block;font:600 11px/1.2 'Quicksand','Segoe UI',sans-serif;letter-spacing:.05em;color:#9A9489}
+.wf-impact .imp b{display:block;margin:3px 0 2px;font:600 26px/1.15 'Quicksand','Segoe UI',sans-serif;color:var(--acc);letter-spacing:-.01em}
+.wf-impact .imp em{display:block;font-style:normal;font-size:11px;color:#8D877C;line-height:1.35}
+.wf-impact .imp .ctxbar{margin:4px 0}
 @media(max-width:1100px){.wf-grid{grid-template-columns:1fr}.wf .flow{padding-left:64px}}
 @media(max-width:640px){.wf .flow,.wf .flow.has-loop{padding:6px 0 6px 56px}.fn-trig{left:-54px}}
 .wf-impact{position:sticky;top:20px}
@@ -204,3 +204,4 @@ html.lite .wf .fnode.done::after{animation:wfbreath 3.4s ease-in-out infinite!im
 .wf .fnode.noskill{border-color:rgba(232,118,106,.6)}
 .wf .fnode.noskill .fn-s{color:var(--err)}
 .pill.noskill{background:rgba(232,118,106,.14);color:var(--err)}
+.mtools input[type=search]{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--ink);outline:none}.mtools input[type=search]:focus{border-color:var(--acc)}
