@@ -102,18 +102,18 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .spin{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:sp .8s linear infinite;display:inline-block}
 @keyframes sp{to{transform:rotate(360deg)}}
 .files{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.files a{font-size:12px;text-decoration:none;color:var(--ink);background:var(--card2);padding:4px 10px;border-radius:8px;font-family:Consolas,monospace}
+.files a{font-size:12px;text-decoration:none;color:var(--ink);background:var(--card2);padding:4px 10px;border-radius:8px;font-family:'Quicksand',sans-serif}
 .files a:hover{background:var(--accsoft);color:var(--acct)}
 .files a.on{background:var(--acc);color:var(--on-acc)}
 .md{background:var(--card2);border-radius:14px;padding:16px;max-height:520px;overflow:auto}
 .md h1,.md h2,.md h3{margin:.8em 0 .4em;line-height:1.2}.md h1{font-size:20px}.md h2{font-size:17px}.md h3{font-size:15px}
 .md :first-child{margin-top:0}
 .md pre{background:var(--dark);color:#f5e9df;padding:12px;border-radius:10px;overflow:auto;font-size:12px}
-.md code{font-family:Consolas,monospace;font-size:12px}.md p code,.md li code{background:var(--accsoft);padding:1px 5px;border-radius:5px}
+.md code{font-family:'Quicksand',sans-serif;font-size:12px}.md p code,.md li code{background:var(--accsoft);padding:1px 5px;border-radius:5px}
 .md table{border-collapse:collapse;width:100%;margin:8px 0;font-size:13px}.md th,.md td{border:1px solid var(--line);padding:5px 9px;text-align:left}.md th{background:var(--card)}
 .err-box{background:rgba(214,64,47,.1);color:var(--err);border-radius:12px;padding:10px 14px;font-size:12px;white-space:pre-wrap;margin-bottom:10px}
 .tbl{width:100%;border-collapse:collapse}.tbl td,.tbl th{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}.tbl tr.click{cursor:pointer}.tbl tr.click:hover{background:var(--card2)}
-.editor{width:100%;min-height:420px;font-family:Consolas,monospace;font-size:13px}
+.editor{width:100%;min-height:420px;font-family:'Quicksand',sans-serif;font-size:13px}
 .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 .tabs button{border:0;border-radius:999px;padding:8px 16px;background:var(--card2);cursor:pointer;font-weight:600}
 .tabs button.on{background:var(--ink);color:var(--shell)}
@@ -137,7 +137,7 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .fn-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}.fn-h b{font-size:14px;line-height:1.15;flex:1}
 .fn-badge{width:26px;height:26px;border-radius:9px;background:var(--ink);color:var(--shell);display:grid;place-items:center;font-weight:800;font-size:12px;flex:none;transition:background .4s}
 .fn-ico{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--mut)}
-.fn-m{font-size:11px;color:var(--mut);font-family:Consolas,monospace;word-break:break-all}
+.fn-m{font-size:11px;color:var(--mut);font-family:'Quicksand',sans-serif;word-break:break-all}
 .fn-s{font-weight:700;font-size:12px;margin-top:6px}.fn-x{font-size:11px;color:var(--mut);margin-top:2px;min-height:15px}
 .fn-err{margin-top:8px;width:100%;border:0;border-radius:10px;background:var(--err);color:#fff;font-weight:700;padding:6px;cursor:pointer;font-size:12px}
 .fnode.running{border-color:var(--acc);animation:glow 1.6s ease-in-out infinite}
@@ -187,7 +187,7 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .slot-h{display:flex;gap:10px;align-items:center}.slot-h b{font-size:15px}
 .sk-name{font-weight:700}.sk-desc{color:var(--mut);font-size:12px;margin:2px 0 8px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;min-height:54px}
 .sk-chips{display:flex;gap:6px;flex-wrap:wrap}
-.sk-files{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}.sk-files span{font:11px Consolas,monospace;background:var(--card2);padding:2px 7px;border-radius:6px;color:var(--mut)}
+.sk-files{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}.sk-files span{font:11px 'Quicksand',sans-serif;background:var(--card2);padding:2px 7px;border-radius:6px;color:var(--mut)}
 .slot-drop{margin-top:auto;border:2px dashed var(--line);border-radius:16px;padding:14px;text-align:center;background:var(--card2);transition:.15s}
 .slot.over .slot-drop{border-color:var(--acc);background:var(--card)}
 .slot-drop b{display:block}.slot-drop>span{font-size:11px;color:var(--mut)}
@@ -269,7 +269,7 @@ nav a.on i{color:var(--acc)}
 .palette{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:12px}
 .pcol{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--card);display:flex;flex-direction:column}
 .pcol i{display:block;height:64px;background:var(--c);transition:.3s}.pcol.empty i{background:repeating-linear-gradient(45deg,var(--card2),var(--card2) 6px,var(--card) 6px,var(--card) 12px)}
-.pcol b{padding:7px 10px;font:700 12px Consolas,monospace;text-align:center}
+.pcol b{padding:7px 10px;font:700 12px 'Quicksand',sans-serif;text-align:center}
 .pcol button{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(29,23,18,.6);color:#fff;cursor:pointer;font-size:11px;opacity:0;transition:.15s}
 .pcol:hover button,.pcol button:focus-visible{opacity:1}
 .cinput{display:flex;gap:10px;align-items:center}

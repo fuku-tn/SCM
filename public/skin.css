@@ -256,12 +256,12 @@ input[type=text],textarea,select{border:1px solid var(--line)}
 :root:not([data-theme=dark]) .upd-btn{color:#8A6414;background:rgba(233,176,74,.2)}
 .upd-btn:hover{background:rgba(233,176,74,.26)}
 .upd-btn.pulse{animation:scpulse 1.6s ease-in-out infinite}
-.sc-ver{font-family:Consolas,monospace;font-size:10px;opacity:.75;margin-left:4px}
+.sc-ver{font-family:'Quicksand',sans-serif;font-size:10px;opacity:.75;margin-left:4px}
 .updmodal{width:min(620px,100%)}
 .updlist{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;max-height:240px;overflow-y:auto}
 .updlist li{display:grid;grid-template-columns:62px 1fr auto;gap:10px;align-items:baseline;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.5px}
 .updlist li:last-child{border-bottom:0}
-.updlist code{font:11px Consolas,monospace;color:var(--acct)}
+.updlist code{font:11px 'Quicksand',sans-serif;color:var(--acct)}
 .updlist small{color:var(--mut);font-size:10.5px;white-space:nowrap}
 
 /* ---- Home: thẻ số liệu gọn (thấp), workflow cao hơn ---- */
@@ -366,7 +366,7 @@ html.lite .vchip.wait,html.lite .upd-btn.pulse,html.lite .bell.ring svg{animatio
 .lite-btn{font-size:15px;line-height:1;opacity:.75}
 html.lite .lite-btn{opacity:1;background:var(--accsoft);color:var(--acct)}
 .health-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 16px;border-radius:14px;background:rgba(232,118,106,.12);border:1px solid rgba(232,118,106,.45);font-size:13px;line-height:1.5}
-.health-bar b{color:var(--err)}.health-bar code{font:12px Consolas,monospace;background:rgba(255,255,255,.07);padding:2px 7px;border-radius:6px;word-break:break-all}
+.health-bar b{color:var(--err)}.health-bar code{font:12px 'Quicksand',sans-serif;background:rgba(255,255,255,.07);padding:2px 7px;border-radius:6px;word-break:break-all}
 .health-bar .hb-btns{margin-left:auto;display:flex;gap:8px}
 .health-bar[hidden]{display:none}
 

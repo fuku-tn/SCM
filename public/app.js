@@ -275,7 +275,7 @@ async function vHistory() {
 // ---- Router ----
 async function route() {
   stopPoll(); window.onresize = null; window.ondragover = null; window.ondrop = null; closeModal();
-  const [v, arg] = (location.hash.slice(1) || 'home').split('/'); document.documentElement.classList.toggle('is-home', v === 'home');
+  const [v, arg] = (location.hash.slice(1) || 'home').split('/'); { const p = document.querySelector('.lp-nav .nav-pill'); window.__navPrev = p ? p.getBoundingClientRect() : null; } document.documentElement.classList.toggle('is-home', v === 'home'); { const g = document.getElementById('gnav'); if (g) g.innerHTML = v === 'home' ? '' : navHTML(v === 'new' ? 'analysis' : v); }
   document.querySelectorAll('#nav a').forEach((a) => a.classList.toggle('on', a.dataset.v === v));
   try {
     if (v === 'home') await vHome(arg);
@@ -286,6 +286,7 @@ async function route() {
     else if (v === 'history') await vHistory();
     else location.hash = '#new';
   } catch (e) { view.innerHTML = `<div class="card"><div class="err-box">${esc(e.message)}</div></div>`; }
+  try { initNavs(); view.classList.remove('vin'); void view.offsetWidth; view.classList.add('vin'); } catch {}
 }
 window.addEventListener('hashchange', route);
 (async () => { META = await jget('/api/meta'); if (META.mock) document.title += ' (MOCK)'; route(); })();

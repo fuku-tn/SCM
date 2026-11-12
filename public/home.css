@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&display=swap');
 /* =====================================================================================
    Giao diện Transporter — Home theo "Template - SCM", các trang còn lại theo "Template - 2"
    Bảng màu hòa trộn: kem trắng + cam #E9B04A + nâu #171614 + be #E6DED0
@@ -48,9 +47,9 @@ nav a{border-radius:999px;padding:10px 16px}
 .is-home .side,.is-home .top{display:none}
 .is-home .shell,.is-home.side-collapsed .shell{grid-template-columns:1fr}
 .is-home .main{padding:18px clamp(14px,3vw,44px) 40px;gap:20px}
-.lp{--gold:#E9B04A;--gold2:#F6CD7A;--mut:#B5AEA3;position:relative;overflow:hidden;border-radius:30px;background:#0a0a0b;color:#fff;border:1px solid #1d1b19;isolation:isolate;font-family:'Archivo','Segoe UI',Arial,sans-serif}
+.lp{--gold:#E9B04A;--gold2:#F6CD7A;--mut:#B5AEA3;position:relative;overflow:hidden;border-radius:30px;background:#0a0a0b;color:#fff;border:1px solid #1d1b19;isolation:isolate;font-family:'Quicksand','Segoe UI',Arial,sans-serif}
 .lp-nav{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px clamp(18px,3vw,44px);border-bottom:1px dashed rgba(255,255,255,.14);position:relative;z-index:3}
-.lp-logo{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font:800 20px/1 'Archivo','Segoe UI',sans-serif;letter-spacing:.01em;text-transform:uppercase}
+.lp-logo{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font:800 20px/1 'Quicksand','Segoe UI',sans-serif;letter-spacing:.01em;text-transform:uppercase}
 .lp-logo img{width:34px;height:34px;border-radius:9px}.lp-logo b{color:var(--gold)}
 .lp-nav nav{display:flex;flex-direction:row;gap:6px}
 .lp-nav nav a{padding:9px 18px;border-radius:999px;background:none;color:#D9D3C8;font-weight:500;font-size:14px;border:1px solid transparent;text-decoration:none;transition:.15s}
@@ -60,8 +59,8 @@ nav a{border-radius:999px;padding:10px 16px}
 .lp-quote:hover{background:var(--gold);border-color:var(--gold);color:#111}
 .lp-body{position:relative;display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);min-height:560px}
 .lp-copy{position:relative;z-index:2;padding:clamp(34px,5vw,72px) clamp(18px,3vw,44px) 40px;display:flex;flex-direction:column;justify-content:center}
-.lp-eye{font:500 12.5px/1 'JetBrains Mono',Consolas,monospace;color:#CFC8BC;padding-left:9px;border-left:2px solid var(--gold);margin-bottom:22px;align-self:flex-start}
-.lp-copy h2{margin:0 0 22px;font:800 clamp(34px,4.3vw,60px)/1.04 'Archivo','Segoe UI',Arial,sans-serif;text-transform:uppercase;letter-spacing:-.01em;color:#fff}
+.lp-eye{font:500 12.5px/1 'Quicksand',sans-serif;color:#CFC8BC;padding-left:9px;border-left:2px solid var(--gold);margin-bottom:22px;align-self:flex-start}
+.lp-copy h2{margin:0 0 22px;font:800 clamp(30px,3.5vw,50px)/1.06 'Quicksand','Segoe UI',Arial,sans-serif;text-transform:uppercase;letter-spacing:-.01em;color:#fff}
 .lp-copy h2 em{font-style:normal;color:var(--gold)}
 .lp-go{display:inline-grid;place-items:center;width:44px;height:44px;margin-left:12px;border-radius:50%;border:1.5px solid rgba(255,255,255,.6);color:#fff;text-decoration:none;font-size:20px;vertical-align:middle;transition:.18s}
 .lp-go:hover{background:var(--gold);border-color:var(--gold);color:#111}
@@ -69,7 +68,7 @@ nav a{border-radius:999px;padding:10px 16px}
 .lp-stats{display:flex;gap:14px;flex-wrap:wrap}
 .lp-stat{width:min(172px,44%);min-height:140px;padding:18px;border-radius:16px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.04);display:flex;flex-direction:column;gap:5px}
 .lp-stat svg{width:30px;height:30px;color:#fff;margin-bottom:6px}
-.lp-stat b{font:600 30px/1.05 'Archivo','Segoe UI',sans-serif;color:#fff;margin-bottom:4px}
+.lp-stat b{font:600 30px/1.05 'Quicksand','Segoe UI',sans-serif;color:#fff;margin-bottom:4px}
 .lp-stat strong{font-size:14px;font-weight:600;color:#fff;line-height:1.3}
 .lp-stat span{font-size:12px;color:var(--mut);line-height:1.4}
 .lp-art{position:absolute;top:0;right:0;bottom:0;width:62%;z-index:1;overflow:hidden}
@@ -82,3 +81,92 @@ nav a{border-radius:999px;padding:10px 16px}
 @media(max-width:900px){.lp-body{grid-template-columns:1fr;min-height:0}.lp-art{position:relative;width:100%;height:300px;order:-1}.lp-art::before{background:linear-gradient(0deg,#0a0a0b,rgba(10,10,11,0) 60%)}.lp-nav nav{display:none}}
 .homebar.card{padding:18px 22px}
 .lite-btn{color:var(--acc)}
+
+/* =====================================================================================
+   WORKFLOW dọc kiểu "Automated Journey": thẻ từng chặng xếp dọc, đường nối phát sáng + chip trạng thái, bảng Run impact bên phải (vàng trên nền đen)
+   ===================================================================================== */
+.wf{padding:34px clamp(18px,3vw,40px) 34px;border-radius:28px;background:#0b0b0c;border-color:#1d1b19}
+.wf-head small{font:600 12px/1 'Quicksand','Segoe UI',sans-serif;letter-spacing:.06em;color:var(--acc)}
+.wf-head h2{margin:12px 0 12px;font:700 clamp(30px,3.6vw,46px)/1.08 'Quicksand','Segoe UI',sans-serif;letter-spacing:-.02em;color:#fff}
+.wf-head p{margin:0 0 18px;max-width:420px;color:var(--mut);font-size:15px;line-height:1.5}
+.wf-goal{display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border-radius:999px;border:1px solid #2c2a26;background:#121110;font-size:12.5px;font-weight:600;letter-spacing:.03em;color:#E6E0D4}
+.wf-goal i{width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc)}
+.wf-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:34px;align-items:start;margin-top:28px}
+.wf .flow{background:none!important;border-radius:0;min-height:0;padding:6px 40px 6px 74px;display:block;overflow:visible}
+.wf .flow.has-loop{padding-bottom:6px;padding-right:200px}
+.wf .nodes{display:flex;flex-direction:column;align-items:stretch;gap:78px;min-width:0;max-width:470px;width:100%}
+.wf .fnode,.wf .fnode.low{position:relative;flex:none;width:100%;max-width:none;margin:0;align-self:stretch;padding:20px 22px 18px;border-radius:20px;background:#121110!important;border:1px solid #2c2a26;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
+.wf .fn-h{display:flex;flex-wrap:nowrap;align-items:center;gap:14px;margin:0 0 12px;justify-content:flex-start}
+.wf .fn-h b{order:0;flex:1 1 auto;min-width:0;white-space:normal;overflow:visible;font:600 16px/1.2 'Quicksand','Segoe UI',sans-serif;text-transform:uppercase;letter-spacing:.02em;color:#fff}
+.wf .fn-badge{width:28px;height:28px;border-radius:7px;background:transparent!important;border:1px solid rgba(233,176,74,.6);color:var(--acc)!important;font:600 13px 'Quicksand',sans-serif}
+.wf .fn-ico{margin-left:auto}
+.wf .fn-m{font:12.5px/1.4 'Quicksand','Segoe UI',sans-serif;color:#B5AEA3;padding:9px 0 9px 30px;border-top:1px solid rgba(255,255,255,.05);position:relative;word-break:break-word}
+.wf .fn-m::before{content:"";position:absolute;left:6px;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:2px;border:1.5px solid var(--acc)}
+.wf .fn-s{margin:0;padding:9px 0 9px 30px;font:600 13px 'Quicksand','Segoe UI',sans-serif;border-top:1px solid rgba(255,255,255,.05);position:relative}
+.wf .fn-s::before{content:"";position:absolute;left:6px;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;border:1.5px solid currentColor}
+.wf .fn-x{margin:0;padding:0 0 0 30px;font-size:12px;color:#B5AEA3;min-height:0}.wf .fn-x:empty{display:none}
+.wf .fnode[role=button]:hover{border-color:rgba(233,176,74,.55)}
+.wf .fnode.running{border-color:var(--acc);box-shadow:0 0 0 1px rgba(233,176,74,.35),0 0 30px rgba(233,176,74,.22)}
+.wf .fnode.running::before{display:none}
+.wf .fnode.done{border-color:rgba(233,176,74,.55);box-shadow:0 0 18px rgba(233,176,74,.10)}
+.wf .fnode.done .fn-badge{border-color:var(--acc)}.wf .fnode.done .fn-s{color:var(--acc)}
+.wf .fnode.done .fn-ico{background:var(--acc);color:#111}
+.wf .fnode.error{border-color:var(--err)}
+/* ô kích hoạt bên trái chặng đầu (như biểu tượng sự kiện ở bản mẫu) */
+.fn-trig{position:absolute;left:-60px;top:26px;width:44px;height:44px;border-radius:11px;border:1.5px solid var(--acc);color:var(--acc);display:grid;place-items:center;font-size:18px;font-weight:800;background:#121110;box-shadow:0 0 18px rgba(233,176,74,.35)}
+.fn-trig::after{content:"";position:absolute;left:100%;top:50%;width:16px;height:1.5px;background:var(--acc)}
+/* đường nối + chấm giữa + chip */
+.wf .edge .base{stroke:#3a3631;stroke-width:2;filter:none}
+.wf .edge .pt{fill:#3a3631}.wf .edge .pt.mid{fill:var(--acc);filter:drop-shadow(0 0 5px rgba(233,176,74,.9))}
+.wf .edge.idle .pt.mid{fill:#3a3631;filter:none}
+.wf .edge .chip rect{fill:#161514;stroke:#2c2a26}.wf .edge .chip-t{fill:#D9D3C8;font:600 10.5px 'Quicksand','Segoe UI',sans-serif;letter-spacing:.06em}
+.wf .edge.done .base,.wf .edge.ready .base{stroke:var(--acc);stroke-width:2;filter:drop-shadow(0 0 4px rgba(233,176,74,.5))}
+.wf .edge.done .chip-t,.wf .edge.flow .chip-t{fill:var(--acc)}
+.wf .edge.flow .base{stroke:rgba(233,176,74,.55)}
+.wf .edge.err .base{stroke:var(--err)}.wf .edge.err .chip-t{fill:var(--err)}
+.wf .edge .amb{display:none!important}
+.wf .legend{padding:26px 0 0 74px}
+/* Run impact */
+.wf-impact{border:1px solid #1f1d1a;border-radius:22px;padding:22px 22px 8px;background:#0f0f0e}
+.wf-impact h3{margin:0 0 6px;padding-bottom:14px;border-bottom:1px solid #1f1d1a;font:600 13px 'Quicksand','Segoe UI',sans-serif;letter-spacing:.04em;color:#D9D3C8}
+.imp{display:flex;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid #1a1917}.imp:last-child{border-bottom:0}
+.imp-i{flex:none;width:58px;height:58px;border-radius:14px;border:1px solid #2c2a26;background:#121110;display:grid;place-items:center;color:#E6E0D4}
+.imp-i svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.imp>div{min-width:0;flex:1}
+.imp small{display:block;font:600 11px/1.2 'Quicksand','Segoe UI',sans-serif;letter-spacing:.05em;color:#9A9489}
+.imp b{display:block;margin:3px 0 2px;font:600 26px/1.15 'Quicksand','Segoe UI',sans-serif;color:var(--acc);letter-spacing:-.01em}
+.imp em{display:block;font-style:normal;font-size:11px;color:#8D877C;line-height:1.35}
+.imp .ctxbar{margin:4px 0}
+@media(max-width:1100px){.wf-grid{grid-template-columns:1fr}.wf .flow{padding-left:64px}}
+@media(max-width:640px){.wf .flow,.wf .flow.has-loop{padding:6px 0 6px 56px}.fn-trig{left:-54px}}
+.wf-impact{position:sticky;top:20px}
+
+/* ===== Thanh điều hướng ngang cho mọi trang (không còn sidebar dọc) ===== */
+:root{--gold:#E9B04A;--gold2:#F6CD7A}
+.side{display:none!important}
+.shell,.side-collapsed .shell{grid-template-columns:1fr!important}
+.main{padding:18px clamp(14px,3vw,44px) 40px}
+.gnav:empty{display:none}
+.gnav .lp-nav{border:1px solid #1d1b19;border-radius:22px;background:#0a0a0b;padding:14px 22px;font-family:'Quicksand','Segoe UI',Arial,sans-serif}
+.lp-nav nav a{white-space:nowrap}
+.lp-quote{white-space:nowrap}
+@media(max-width:1100px){.gnav .lp-nav nav,.lp-nav nav{display:flex;overflow:auto;max-width:56vw}.lp-nav nav a{padding:8px 12px;font-size:13px}}
+@media(max-width:700px){.lp-nav nav{display:none}}
+
+/* ===== Hiệu ứng nav + chuyển trang ===== */
+.lp-nav nav{position:relative}
+.lp-nav nav a{position:relative;z-index:1;transition:color .25s}
+.lp-nav nav a.on,.lp-nav nav a.on:hover{background:none!important;border-color:transparent!important;color:#111!important;font-weight:600}
+.nav-pill,.nav-ghost{position:absolute;left:0;top:0;border-radius:999px;pointer-events:none}
+.nav-pill{z-index:0;background:linear-gradient(180deg,#F6CD7A,#E9B04A);box-shadow:0 6px 22px rgba(233,176,74,.4);transition:transform .55s cubic-bezier(.34,1.45,.5,1),width .55s cubic-bezier(.34,1.45,.5,1),height .3s}
+.nav-ghost{z-index:0;background:rgba(233,176,74,.14);border:1px solid rgba(233,176,74,.28);opacity:0;transition:transform .28s cubic-bezier(.3,.9,.4,1),width .28s cubic-bezier(.3,.9,.4,1),opacity .2s}
+.lp-nav nav a:not(.on):hover{color:#fff}
+.lp-quote{position:relative;overflow:hidden}
+.lp-quote::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(246,205,122,.35) 50%,transparent 65%);transform:translateX(-120%);transition:transform .6s}
+.lp-quote:hover::after{transform:translateX(120%)}
+@keyframes vin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+#view.vin{animation:vin .5s cubic-bezier(.2,.8,.25,1)}
+.lp-copy>*{animation:vin .7s cubic-bezier(.2,.8,.25,1) both}
+.lp-copy>:nth-child(2){animation-delay:.08s}.lp-copy>:nth-child(3){animation-delay:.16s}.lp-copy>:nth-child(4){animation-delay:.24s}
+@media(prefers-reduced-motion:reduce){.nav-pill,.nav-ghost,#view.vin,.lp-copy>*{animation:none;transition:none}}
+html,body,button,input,select,textarea,code,pre,kbd,samp,table,th,td,svg text{font-family:"Quicksand","Segoe UI",system-ui,sans-serif}

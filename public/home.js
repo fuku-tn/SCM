@@ -51,14 +51,18 @@ async function vHome(id) {
         <a class="btn acc sm" href="#analysis" style="text-decoration:none">＋ Analysis mới</a></div>
     </div>
   </div>
-  <div class="grid4" id="hstats"></div>
-  <div class="card flowcard"><div class="flow" id="flow"><svg id="edges" aria-hidden="true"></svg><button type="button" class="vchip" id="vchip" hidden></button>
-    <div class="nodes" id="nodes">${nodes.map((n, i) => `
-      <div class="fnode pending ${i % 2 ? 'low' : ''}" data-i="${i}" ${i > 0 && i < N - 1 ? 'tabindex="0" role="button"' : ''}>
-        <div class="fn-h"><span class="fn-badge">${i === 0 ? '⇩' : i === N - 1 ? '⎘' : i}</span><b>${esc(n.name)}</b><span class="fn-ico"></span></div>
-        <div class="fn-m"></div><div class="fn-s"></div><div class="fn-x"></div><button class="fn-err" hidden>Xem lỗi chi tiết</button>
-      </div>`).join('')}</div></div>
-    <div class="legend"><span><i class="lg pending"></i>Chờ</span><span><i class="lg running"></i>Đang chạy</span><span><i class="lg done"></i>Hoàn thành</span><span><i class="lg error"></i>Lỗi (bấm để xem)</span></div></div>
+  <div class="card wf">
+    <div class="wf-head"><small>RUN WORKFLOW</small><h2>Automated BI<br>Pipeline</h2><p>Từ file dữ liệu đến dự án Power BI — từng chặng được theo dõi theo thời gian thực.</p><span class="wf-goal"><i></i>GOAL: DATA → DASHBOARD</span></div>
+    <div class="wf-grid">
+      <div class="wf-left"><div class="flow" id="flow"><svg id="edges" aria-hidden="true"></svg><button type="button" class="vchip" id="vchip" hidden></button>
+        <div class="nodes" id="nodes">${nodes.map((n, i) => `
+          <div class="fnode pending" data-i="${i}" ${i > 0 && i < N - 1 ? 'tabindex="0" role="button"' : ''}>${i === 0 ? '<span class="fn-trig" aria-hidden="true">⇩</span>' : ''}
+            <div class="fn-h"><span class="fn-badge">${i === 0 ? '⇩' : i === N - 1 ? '⎘' : i}</span><b>${esc(n.name)}</b><span class="fn-ico"></span></div>
+            <div class="fn-m"></div><div class="fn-s"></div><div class="fn-x"></div><button class="fn-err" hidden>Xem lỗi chi tiết</button>
+          </div>`).join('')}</div></div>
+        <div class="legend"><span><i class="lg pending"></i>Chờ</span><span><i class="lg running"></i>Đang chạy</span><span><i class="lg done"></i>Hoàn thành</span><span><i class="lg error"></i>Lỗi (bấm để xem)</span></div></div>
+      <aside class="wf-impact"><h3>RUN IMPACT</h3><div id="hstats"></div></aside>
+    </div></div>
   <div class="card"><h2>Tổng quan các chặng</h2><p class="sub">Cập nhật theo thời gian thực.</p><div style="overflow:auto"><table class="tbl" id="htbl"></table></div></div>`;
 
   const flow = $('#flow'), svg = $('#edges'), nodeEls = [...view.querySelectorAll('.fnode')];
@@ -69,31 +73,28 @@ async function vHome(id) {
     return r?.stages?.[i - 1]?.status || 'pending';
   });
   const drawEdges = () => {
-    svg.setAttribute('width', 0); svg.setAttribute('height', 0);   // đo lại nội dung thật (không để svg cũ làm tăng scrollWidth)
+    svg.setAttribute('width', 0); svg.setAttribute('height', 0);   // đo lại nội dung thật
     const fr = flow.getBoundingClientRect(); svg.setAttribute('width', flow.scrollWidth); svg.setAttribute('height', flow.scrollHeight);
     let h = '<defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
     for (let i = 0; i < N - 1; i++) {
       const a = nodeEls[i].getBoundingClientRect(), b = nodeEls[i + 1].getBoundingClientRect();
-      const sa = nodeEls[i].querySelector('.fsub:last-child'), sb = nodeEls[i + 1].querySelector('.fsub'), ra = (sa || nodeEls[i]).getBoundingClientRect(), rb = (sb || nodeEls[i + 1]).getBoundingClientRect();
-      const x1 = a.right - fr.left + flow.scrollLeft, y1 = ra.top + ra.height / 2 - fr.top + flow.scrollTop, x2 = b.left - fr.left + flow.scrollLeft, y2 = rb.top + rb.height / 2 - fr.top + flow.scrollTop;
-      const dx = (x2 - x1) * 0.5, d = `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
+      const x = a.left + a.width / 2 - fr.left + flow.scrollLeft, y1 = a.bottom - fr.top + flow.scrollTop, y2 = b.top - fr.top + flow.scrollTop, ym = (y1 + y2) / 2;
+      const d = `M${x},${y1} L${x},${y2}`;
       h += `<g class="edge idle" data-e="${i}"><path class="base" d="${d}"/><path class="glow" d="${d}" filter="url(#gl)"/>
-        ${[0, 0.5].map((o) => [0, 1, 2, 3].map((k) => `<circle class="dot t${k}" r="${[3.4, 2.8, 2.2, 1.6][k]}"><animateMotion dur="2.1s" begin="${(o * 2.1 + k * 0.07).toFixed(2)}s" repeatCount="indefinite" calcMode="spline" keyTimes="0;1" keySplines=".45 0 .35 1" path="${d}"/><animate attributeName="opacity" dur="2.1s" begin="${(o * 2.1 + k * 0.07).toFixed(2)}s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;.12;.88;1"/></circle>`).join('')).join('')}
-        <circle class="amb" r="3.2" filter="url(#gl)"><animateMotion dur="${2.4 + (i % 3) * 0.4}s" begin="${i * 0.6}s" repeatCount="indefinite" path="${d}"/></circle>
-        <circle class="pt" cx="${x1}" cy="${y1}" r="4"/><circle class="pt" cx="${x2}" cy="${y2}" r="4"/>
-        <text class="lbl" x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 - 10}" text-anchor="middle"></text></g>`;
+        ${[0, 0.5].map((o) => [0, 1, 2, 3].map((k) => `<circle class="dot t${k}" r="${[3.4, 2.8, 2.2, 1.6][k]}"><animateMotion dur="1.8s" begin="${(o * 1.8 + k * 0.07).toFixed(2)}s" repeatCount="indefinite" calcMode="spline" keyTimes="0;1" keySplines=".45 0 .35 1" path="${d}"/><animate attributeName="opacity" dur="1.8s" begin="${(o * 1.8 + k * 0.07).toFixed(2)}s" repeatCount="indefinite" values="0;1;1;0" keyTimes="0;.12;.88;1"/></circle>`).join('')).join('')}
+        <circle class="pt" cx="${x}" cy="${y1}" r="4"/><circle class="pt" cx="${x}" cy="${y2}" r="4"/><circle class="pt mid" cx="${x}" cy="${ym}" r="6.5"/>
+        <g class="chip" transform="translate(${x + 22} ${ym - 15})"><rect width="76" height="30" rx="8"/><text class="chip-t" x="38" y="19" text-anchor="middle"></text></g></g>`;
     }
     // Vòng kiểm tra Version: Data (ETL) → quay lại Key Metrics (chỉ khi người dùng chọn so sánh Version)
     const vs = run?.form?.versions || [], vc = run?.versionCheck || null, chip = $('#vchip');
     flow.classList.toggle('has-loop', vs.length > 0);
     if (vs.length && nodeEls[2] && nodeEls[3]) {
       const a = nodeEls[3].getBoundingClientRect(), b = nodeEls[2].getBoundingClientRect();
-      const xa = a.left + a.width / 2 - fr.left + flow.scrollLeft, ya = a.bottom - fr.top + flow.scrollTop, xb = b.left + b.width / 2 - fr.left + flow.scrollLeft, yb = b.bottom - fr.top + flow.scrollTop;
-      const botY = Math.max(a.bottom, b.bottom) - fr.top + flow.scrollTop, dip = 58, d = `M${xa},${ya} C${xa},${botY + dip} ${xb},${botY + dip} ${xb},${yb + 2}`;   // đi vòng dưới cả hai nhóm
+      const xa = a.right - fr.left + flow.scrollLeft, ya = a.top + a.height / 2 - fr.top + flow.scrollTop, xb = b.right - fr.left + flow.scrollLeft, yb = b.top + b.height / 2 - fr.top + flow.scrollTop, out = 70;
+      const d = `M${xa},${ya} C${xa + out},${ya} ${xb + out},${yb} ${xb + 2},${yb}`;
       const st = vc?.status === 'needs_data' ? 'wait' : ['ok', 'applied'].includes(vc?.status) ? 'done' : ['skipped', 'partial'].includes(vc?.status) ? 'skip' : (lastStates[3] === 'done' ? 'ready' : 'idle');
-      h += `<g class="vloop ${st}"><path class="base" d="${d}"/><path class="glow" d="${d}" filter="url(#gl)"/>${[0, 0.5].map((o) => `<circle class="dot" r="4.5" filter="url(#gl)"><animateMotion dur="1.8s" begin="${o * 1.8}s" repeatCount="indefinite" path="${d}"/></circle>`).join('')}<path class="arrow" d="M${xb - 6},${yb + 12} L${xb},${yb + 2} L${xb + 6},${yb + 12}"/></g>`;
-      const my = ya * 0.125 + yb * 0.125 + (botY + dip) * 0.75;
-      chip.hidden = false; chip.className = 'vchip ' + st; chip.style.left = (xa + xb) / 2 + 'px'; chip.style.top = my + 'px';
+      h += `<g class="vloop ${st}"><path class="base" d="${d}"/><path class="glow" d="${d}" filter="url(#gl)"/>${[0, 0.5].map((o) => `<circle class="dot" r="4.5" filter="url(#gl)"><animateMotion dur="1.8s" begin="${o * 1.8}s" repeatCount="indefinite" path="${d}"/></circle>`).join('')}<path class="arrow" d="M${xb + 12},${yb - 6} L${xb + 2},${yb} L${xb + 12},${yb + 6}"/></g>`;
+      chip.hidden = false; chip.className = 'vchip ' + st; chip.style.left = Math.max(xa, xb) + out * 0.75 + 'px'; chip.style.top = (ya + yb) / 2 + 'px';
       chip.innerHTML = { wait: '⚠ Version check — cần bổ sung dữ liệu', done: '✓ Version check — đã có dữ liệu', skip: '⚠ Version check — chạy không có dữ liệu', ready: '⟲ Version check', idle: '⟲ Version check' }[st];
       chip.title = 'Kiểm tra dữ liệu Version (' + vs.join(', ') + ') sau Data (ETL), quay lại Key Metrics';
     } else if (chip) chip.hidden = true;
@@ -108,8 +109,7 @@ async function vHome(id) {
       else if (a === 'done' && b === 'done') c = 'done';
       else if (a === 'done') c = 'ready';
       g.setAttribute('class', 'edge ' + c);
-      const t = g.querySelector('.lbl'); const src = run?.stages?.[i - 1];
-      t.textContent = '';
+      const t = g.querySelector('.chip-t'); if (t) t.textContent = { flow: 'RUNNING', done: 'DONE', err: 'ERROR', ready: 'READY', idle: 'WAIT' }[c];
     });
   };
   const update = (r) => {
@@ -143,10 +143,10 @@ async function vHome(id) {
     const pct = t?.contextWindow ? Math.min(100, (t.maxContext / t.contextWindow) * 100) : 0;
     const setH = (el, html) => { if (el.__h !== html) { el.__h = html; el.innerHTML = html; } };
     setH($('#hstats'), `
-      <div class="stat"><div class="k">Tổng token</div><div class="v">${fmt(t?.total)}</div><div class="s">in ${fmt(t?.input)} · out ${fmt(t?.output)} · cache ${fmt((t?.cacheRead || 0) + (t?.cacheCreate || 0))}</div></div>
-      <div class="stat"><div class="k">Context Window</div><div class="v">${pct.toFixed(1)}%</div><div class="ctxbar"><i style="width:${pct}%"></i></div><div class="s">${fmt(t?.maxContext)} / ${fmt(t?.contextWindow)}</div></div>
-      <div class="stat"><div class="k">Chặng hoàn thành</div><div class="v">${r ? r.stages.filter((s) => s.status === 'done').length : 0}/${META.stages.length}</div><div class="s">${r?.stages?.some((s) => s.status === 'error') ? '<span style="color:var(--err)">Có chặng lỗi</span>' : 'Không lỗi'}${r && r.stages.some((s) => s.evaluation) ? ` · Evaluator đạt ${r.stages.filter((s) => s.evaluation && s.evaluation.verdict === 'PASS').length}/${r.stages.filter((s) => s.evaluation).length}` : ''}</div></div>
-      <div class="stat"><div class="k">Chi phí · Thời gian</div><div class="v">$${(t?.cost || 0).toFixed(3)}</div><div class="s">${dur(t?.ms)} model</div></div>`);
+      <div class="imp"><span class="imp-i"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 5-7"/></svg></span><div><small>TỔNG TOKEN</small><b>${fmt(t?.total)}</b><em>in ${fmt(t?.input)} · out ${fmt(t?.output)} · cache ${fmt((t?.cacheRead || 0) + (t?.cacheCreate || 0))}</em></div></div>
+      <div class="imp"><span class="imp-i"><svg viewBox="0 0 24 24"><path d="M12 3v9h9"/><circle cx="12" cy="12" r="9"/></svg></span><div><small>CONTEXT WINDOW</small><b>${pct.toFixed(1)}%</b><div class="ctxbar"><i style="width:${pct}%"></i></div><em>${fmt(t?.maxContext)} / ${fmt(t?.contextWindow)}</em></div></div>
+      <div class="imp"><span class="imp-i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg></span><div><small>CHẶNG HOÀN THÀNH</small><b>${r ? r.stages.filter((s) => s.status === 'done').length : 0}/${META.stages.length}</b><em>${r?.stages?.some((s) => s.status === 'error') ? '<span style="color:var(--err)">Có chặng lỗi</span>' : 'Không lỗi'}${r && r.stages.some((s) => s.evaluation) ? ` · Evaluator đạt ${r.stages.filter((s) => s.evaluation && s.evaluation.verdict === 'PASS').length}/${r.stages.filter((s) => s.evaluation).length}` : ''}</em></div></div>
+      <div class="imp"><span class="imp-i"><svg viewBox="0 0 24 24"><path d="M12 3v18M16.5 7.5C15.5 6.3 14 5.7 12 5.7c-2.6 0-4.2 1.2-4.2 3 0 4.2 8.6 2 8.6 6.3 0 1.8-1.7 3.3-4.4 3.3-2.1 0-3.8-.7-4.8-2"/></svg></span><div><small>CHI PHÍ · THỜI GIAN</small><b>$${(t?.cost || 0).toFixed(3)}</b><em>${dur(t?.ms)} model</em></div></div>`);
     setH($('#htbl'), `<tr><th>Chặng</th><th>Model</th><th>Trạng thái</th><th>Input</th><th>Output</th><th>Context</th><th>Thời gian</th></tr>` +
       META.stages.map((sg, i) => { const s = r?.stages?.[i]; const u = s?.usage; const ctx = u ? u.input + u.output + u.cacheRead + u.cacheCreate : 0;
         return `<tr class="${s?.status === 'error' ? 'click' : ''}" data-err="${i}"><td><b>${i + 1}. ${esc(sg.name)}</b></td><td>${esc(s?.model || '—')}</td><td>${statusPill(s?.status || 'pending')}</td><td>${u ? fmt(u.input + u.cacheRead + u.cacheCreate) : '—'}</td><td>${u ? fmt(u.output) : '—'}</td><td>${u ? ((ctx / s.contextWindow) * 100).toFixed(1) + '%' : '—'}</td><td>${s?.ms ? dur(s.ms) : '—'}</td></tr>`; }).join(''));
