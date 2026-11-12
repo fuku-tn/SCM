@@ -187,3 +187,10 @@ html.lite .wf .fnode.done::after{animation:wfbreath 3.4s ease-in-out infinite!im
 .wf .fnode[role=button]:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(233,176,74,.18)}
 .wf .fn-ico .spin{border-top-color:var(--acc)}
 @media(prefers-reduced-motion:reduce){.wf .edge .dot,.wf .edge .ring{display:none!important}.wf .fnode.done::after,.wf .edge .glow{animation:none!important}}
+
+/* ===== Logo: lockup tối ở thanh nav; icon vàng khi màn hẹp; bản nền sáng (transporter-light.png) dùng cho nền trắng/tài liệu ===== */
+.lp-logo{line-height:0}
+.lp-logo .lp-wide{height:42px;width:auto;display:block}
+.lp-logo .lp-mark{display:none;height:38px;width:auto;border-radius:10px}
+@media(max-width:560px){.lp-logo .lp-wide{display:none}.lp-logo .lp-mark{display:block}}
+@media(max-width:700px){.gnav .lp-nav nav,.lp-nav nav{display:none}.lp-nav{flex-wrap:nowrap}}

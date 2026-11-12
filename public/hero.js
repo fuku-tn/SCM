@@ -43,7 +43,7 @@ function transporterScene() {
 /* Thanh điều hướng ngang dùng chung cho mọi trang (Home nằm trong hero, các trang khác nằm ở đầu trang) */
 const NAV_ITEMS = [['home', 'Home'], ['analysis', 'Analysis'], ['run', 'Results'], ['skills', 'Stages & SKILLs'], ['memory', 'Memory'], ['history', 'History']];
 function navHTML(active) {
-  return `<header class="lp-nav"><a class="lp-logo" href="#home">transporter<b>.</b></a>
+  return `<header class="lp-nav"><a class="lp-logo" href="#home" aria-label="Transporter"><img class="lp-wide" src="/assets/logo/transporter-dark.png" alt="Transporter"><img class="lp-mark" src="/assets/logo/transporter-icon.png" alt=""></a>
     <nav>${NAV_ITEMS.map(([v, t]) => `<a href="#${v}" data-v="${v}" class="${v === active ? 'on' : ''}">${esc(t)}</a>`).join('')}</nav>
     <a class="lp-quote" href="#analysis">+ New Analysis</a></header>`;
 }
