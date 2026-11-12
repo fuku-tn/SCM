@@ -175,6 +175,7 @@ function go(i) { if (i < 0 || i > 3) return; A.step = i; render(); }
 // Thanh chạy: chạy riêng chặng đang xem, hoặc chạy tất cả; chọn model cho từng chặng
 function foot() {
   const i = A.step, name = WSTEPS[i].name;
+  const SKM = window.skMissing ? skMissing() : [], oneBad = (window.SK && window.SK[i] && !window.SK[i].ok) ? window.SK[i] : null;
   return `<div class="runbar" id="runbar">
       <div class="rb-l"><span class="rb-t">Chạy chặng ${i + 1} · ${name}</span>
         <label class="rb-m">Model <select data-m="${i}">${modelOptions(A.models[i])}</select></label>
@@ -183,7 +184,7 @@ function foot() {
           <div class="f" style="margin:10px 0 0;max-width:320px"><label>Áp dụng một model cho cả 4 chặng</label><select id="allm"><option value="">— chọn để áp dụng —</option>${modelOptions('')}</select></div></details>
         <div class="rb-gate"><label class="rb-chk" title="Sau mỗi chặng, một model độc lập chấm theo tiêu chí nghiệm thu (AC). Trượt tiêu chí critical thì chặng tự chạy lại tối đa 2 lần kèm phản hồi. Tốn thêm token."><input type="checkbox" id="gate-on" ${A.gate.enabled ? 'checked' : ''}> Kiểm chứng độc lập &amp; tự sửa (Evaluator)</label>
           <label class="rb-m" id="gate-m" ${A.gate.enabled ? '' : 'hidden'}>Model đánh giá <select id="gate-model">${modelOptions(A.gate.model)}</select></label></div></div>
-      <div class="rb-r"><button class="btn" id="run-one" type="button">▶ Chạy chặng ${i + 1}</button><button class="btn acc" id="run-all" type="button">▶ Chạy tất cả 4 chặng</button></div></div>
+      <div class="rb-r">${SKM.length ? `<div class="rb-skill" role="alert">⚠ ${esc(skNote(SKM))} <a href="#skills">Nạp SKILL</a></div>` : ''}<button class="btn" id="run-one" type="button" ${oneBad ? `disabled title="${esc('Thiếu SKILL: ' + oneBad.reason)}"` : ''}>▶ Chạy chặng ${i + 1}</button><button class="btn acc" id="run-all" type="button" ${SKM.length ? 'disabled title="Thiếu SKILL — không chạy được cả 4 chặng"' : ''}>▶ Chạy tất cả 4 chặng</button></div></div>
     <div class="wz-foot"><button class="btn ghost" id="wz-back" ${i === 0 ? 'disabled' : ''}>← Quay lại</button><div class="wz-hint" id="wz-hint"></div>
     ${i === 3 ? '' : '<button class="btn ghost" id="wz-next">Tiếp tục →</button>'}</div>`;
 }
@@ -414,6 +415,7 @@ function showMissing(groups, label) {
 }
 
 async function runStages(which) {
+  { const m = which === 'all' ? skMissing() : skMissing().filter((x) => x.id === (window.SK[which] || {}).id); if (m.length) { toast(skNote(m)); return; } }
   const label = which === 'all' ? 'cả 4 chặng' : `chặng ${which + 1} (${WSTEPS[which].name})`;
   const groups = missingFor(which);
   if (groups.length) {

@@ -127,6 +127,7 @@ async function vHome(id) {
         if (s === 'done') x = `${fmt(st.usage.input + st.usage.output + st.usage.cacheRead + st.usage.cacheCreate)} token · ${dur(st.ms)}`;
         if (s === 'error') x = esc((st.error || '').slice(0, 60));
       }
+      { const bad = i > 0 && i < N - 1 && window.SK && window.SK[i - 1] && !window.SK[i - 1].ok; el.classList.toggle('noskill', !!bad); if (bad && s !== 'running') { el.querySelector('.fn-s').textContent = '⚠ Thiếu SKILL'; x = esc(window.SK[i - 1].reason); } }
       $('.fn-m', el).innerHTML = m; $('.fn-x', el).innerHTML = x;
       const eb = $('.fn-err', el); eb.hidden = s !== 'error'; eb.onclick = (e) => { e.stopPropagation(); showError(r, i - 1); };
       el.onclick = () => { if (!r) return; if (s === 'error') showError(r, i - 1); else if (s === 'done' || i === N - 1) location.hash = '#run/' + r.id; };

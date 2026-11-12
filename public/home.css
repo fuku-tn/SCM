@@ -194,3 +194,13 @@ html.lite .wf .fnode.done::after{animation:wfbreath 3.4s ease-in-out infinite!im
 .lp-logo .lp-mark{display:none;height:38px;width:auto;border-radius:10px}
 @media(max-width:560px){.lp-logo .lp-wide{display:none}.lp-logo .lp-mark{display:block}}
 @media(max-width:700px){.gnav .lp-nav nav,.lp-nav nav{display:none}.lp-nav{flex-wrap:nowrap}}
+
+/* ===== Thiếu SKILL ===== */
+.skill-bar{margin:0 0 4px}
+.skill-bar small{color:var(--mut)}
+.rb-skill{flex:1 1 100%;font-size:12.5px;line-height:1.45;color:#F0B7AE;background:rgba(232,118,106,.1);border:1px solid rgba(232,118,106,.4);border-radius:12px;padding:8px 12px;margin-bottom:8px}
+.rb-skill a{color:var(--acc);font-weight:700;margin-left:6px}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.wf .fnode.noskill{border-color:rgba(232,118,106,.6)}
+.wf .fnode.noskill .fn-s{color:var(--err)}
+.pill.noskill{background:rgba(232,118,106,.14);color:var(--err)}

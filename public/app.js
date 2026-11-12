@@ -141,7 +141,7 @@ function stageCard(r, s, i) {
     <div class="stg-h"><div class="l"><div class="step" style="padding:0;background:none"><div class="n">${i + 1}</div></div><div><b style="font-size:16px">${esc(s.name)}</b><div class="sub" style="margin:0">output/${esc(r.id)}/${esc(s.id)}/</div></div></div>
       <div style="display:flex;gap:8px;align-items:center">${verdictPill(s)}${statusPill(s.status)}
         <select data-model="${i}" style="width:auto;padding:5px 28px 5px 10px;font-size:12px" ${r.running ? 'disabled' : ''}>${modelOptions(s.model)}</select>
-        <button class="btn ghost sm" data-rerun="${i}" ${r.running ? 'disabled' : ''}>↻ Chạy lại chặng này</button></div></div>
+        <button class="btn ghost sm" data-rerun="${i}" ${r.running || (window.SK[i] && !window.SK[i].ok) ? 'disabled' : ''} ${window.SK[i] && !window.SK[i].ok ? 'title="Thiếu SKILL — không chạy được"' : ''}>↻ Chạy lại chặng này</button></div></div>
     ${s.status === 'done' ? `<div class="meta"><span>Model <b>${esc(s.usedModel || s.model)}</b></span><span>Input <b>${fmt(u.input)}</b></span><span>Output <b>${fmt(u.output)}</b></span><span>Cache <b>${fmt(u.cacheRead + u.cacheCreate)}</b></span><span>Context <b>${fmt(ctx)} / ${fmt(s.contextWindow)}</b> (${((ctx / s.contextWindow) * 100).toFixed(1)}%)</span><span>Thời gian <b>${dur(s.ms)}</b></span><span>$<b>${(s.cost || 0).toFixed(4)}</b></span></div>` : ''}
     ${s.status === 'running' ? `<div class="meta"><span class="spin"></span><span>${s.phase === 'evaluating' ? `Evaluator độc lập đang chấm (lần ${s.attempt || 1})...` : `${(s.attempt || 1) > 1 ? `Chạy lại lần ${s.attempt} theo phản hồi của Evaluator — ` : ''}Prompt ước tính ~<b>${fmt(s.promptTokensEst)}</b> token — đang chờ model...`}</span></div>` : ''}
     ${s.error ? `<div class="err-box">${esc(s.error)}</div>` : ''}
@@ -205,9 +205,9 @@ async function vSkills() {
       <p class="sub" style="margin:0">Giống nạp skill trong Claude chat: kéo thả vào ô của chặng một file <b>.zip / .skill</b>, một <b>thư mục skill</b> (có SKILL.md) hoặc trực tiếp file <b>SKILL.md</b>. Bản cũ được sao lưu tại <code>skills/_backup/</code>.</p></div>
     <div class="slots">${skills.map((s, i) => {
       const nm = s.meta.title || s.meta.name || s.name; const extra = s.files.filter((f) => f.path !== 'SKILL.md');
-      const ph = s.content.includes('PLACEHOLDER');
+      const ph = !s.content.trim() || s.content.includes('PLACEHOLDER');
       return `<div class="slot ${i === cur ? 'sel' : ''}" data-i="${i}">
-        <div class="slot-h"><span class="fn-badge">${i + 1}</span><div><b>${esc(s.name)}</b><div class="sub" style="margin:0">skills/${esc(s.id)}/</div></div>${busy[s.id] ? '<span class="spin" style="margin-left:auto"></span>' : `<span class="pill ${ph ? 'mut' : 'ok'}" style="margin-left:auto">${ph ? 'Mẫu giữ chỗ' : 'Đã nạp'}</span>`}</div>
+        <div class="slot-h"><span class="fn-badge">${i + 1}</span><div><b>${esc(s.name)}</b><div class="sub" style="margin:0">skills/${esc(s.id)}/</div></div>${busy[s.id] ? '<span class="spin" style="margin-left:auto"></span>' : `<span class="pill ${ph ? 'noskill' : 'ok'}" style="margin-left:auto" ${ph ? 'title="Thiếu SKILL — chặng này không chạy được"' : ''}>${ph ? '⚠ Thiếu SKILL' : 'Đã nạp'}</span>`}</div>
         <div class="slot-body"><div class="sk-name">✦ ${esc(nm)}</div><div class="sk-desc">${esc(s.meta.description || 'Chưa có mô tả (thêm vào frontmatter của SKILL.md)')}</div>
           <div class="sk-chips"><span class="pill">~${fmt(s.tokens + s.extraTokens)} token</span><span class="pill mut">${s.files.length} file</span></div>
           ${extra.length ? `<div class="sk-files">${extra.slice(0, 6).map((f) => `<span title="${kb(f.size)}">${esc(f.path)}</span>`).join('')}${extra.length > 6 ? `<span>+${extra.length - 6}…</span>` : ''}</div>` : ''}</div>
@@ -222,7 +222,7 @@ async function vSkills() {
   const doUpload = async (i, items) => {
     if (!items.length) return;
     const s = skills[i]; busy[s.id] = true; draw();
-    try { const r = await uploadSkill(s.id, items); skills[i] = r.skill; cur = i; toast(`Đã nạp SKILL cho "${s.name}" (${r.count} file) ✓`); }
+    try { const r = await uploadSkill(s.id, items); skills[i] = r.skill; cur = i; refreshSkills(); toast(`Đã nạp SKILL cho "${s.name}" (${r.count} file) ✓`); }
     catch (e) { toast('Lỗi: ' + e.message); }
     busy[s.id] = false; draw();
   };
@@ -240,7 +240,7 @@ async function vSkills() {
     });
     $('#pf').onchange = (e) => { doUpload(target, [...e.target.files].map((f) => ({ file: f, path: f.name }))); e.target.value = ''; };
     $('#pd').onchange = (e) => { doUpload(target, [...e.target.files].map((f) => ({ file: f, path: f.webkitRelativePath || f.name }))); e.target.value = ''; };
-    $('#save').onclick = async () => { const s = skills[cur]; await jsend('/api/skills/' + s.id, 'PUT', { content: $('#ed').value }); skills = await jget('/api/skills'); toast('Đã lưu SKILL ✓'); draw(); };
+    $('#save').onclick = async () => { const s = skills[cur]; await jsend('/api/skills/' + s.id, 'PUT', { content: $('#ed').value }); skills = await jget('/api/skills'); refreshSkills(); toast('Đã lưu SKILL ✓'); draw(); };
   };
   window.ondragover = (e) => e.preventDefault();
   window.ondrop = (e) => { if (!e.target.closest('.slot')) e.preventDefault(); }; // chặn trình duyệt mở file khi thả trượt
@@ -272,10 +272,22 @@ async function vHistory() {
 }
 
 
+// ---- Trạng thái SKILL (thiếu SKILL → chặng tương ứng không chạy được) ----
+window.SK = [];
+function skMissing() { return (window.SK || []).filter((x) => !x.ok); }
+function skNote(list) { return 'Đang thiếu SKILL: ' + list.map((x) => x.name + ' (' + x.reason + ')').join(', ') + ' — chặng tương ứng không chạy được.'; }
+function drawSkillBar() {
+  const bar = document.getElementById('skill-bar'); if (!bar) return;
+  const m = skMissing(); bar.hidden = !m.length; if (!m.length) { bar.innerHTML = ''; return; }
+  bar.innerHTML = '<span>⚠</span><div style="flex:1;min-width:260px"><b>Đang thiếu SKILL: ' + m.map((x) => esc(x.name)).join(', ') + '</b> — các chặng này không chạy được cho tới khi nạp SKILL.<br><small>' + m.map((x) => esc(x.name) + ': ' + esc(x.reason)).join(' · ') + '</small></div><div class="hb-btns"><a class="btn acc sm" href="#skills" style="text-decoration:none">Mở Stages &amp; SKILLs</a></div>';
+}
+async function refreshSkills() { try { window.SK = await jget('/api/skills/status'); } catch { window.SK = []; } drawSkillBar(); return window.SK; }
+
 // ---- Router ----
 async function route() {
   stopPoll(); window.onresize = null; window.ondragover = null; window.ondrop = null; closeModal();
   const [v, arg] = (location.hash.slice(1) || 'home').split('/'); { const p = document.querySelector('.lp-nav .nav-pill'); window.__navPrev = p ? p.getBoundingClientRect() : null; } document.documentElement.classList.toggle('is-home', v === 'home'); { const g = document.getElementById('gnav'); if (g) g.innerHTML = v === 'home' ? '' : navHTML(v === 'new' ? 'analysis' : v); }
+  await refreshSkills();
   try {
     if (v === 'home') await vHome(arg);
     else if (v === 'analysis' || v === 'new') { if (v === 'new') { location.replace('#analysis'); return; } vAnalysis(); }

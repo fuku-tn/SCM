@@ -184,6 +184,18 @@ function resourceText(id) {
   if (!files.length) return '';
   return '\n\n## Cấu trúc thư mục của SKILL (references/assets/scripts)\nLưu ý: bạn không tự chạy lệnh được. Script pre.js / post.js trong scripts/ (nếu có) do server tự chạy trước / sau lượt trả lời của bạn; chỉ dùng nội dung đã nạp ở dưới.\n' + tree + out;
 }
+// ---- Kiểm tra SKILL từng chặng: thiếu SKILL thì chặng tương ứng KHÔNG chạy được ----
+function skillState(st) {
+  const f = path.join(SKILLS, st.id, 'SKILL.md'); let reason = '';
+  try {
+    if (!fs.existsSync(f)) reason = 'không tìm thấy SKILL.md';
+    else { const c = rd(f); if (!c.trim()) reason = 'SKILL.md đang trống'; else if (c.includes('PLACEHOLDER')) reason = 'SKILL mới là mẫu giữ chỗ'; }
+  } catch { reason = 'không đọc được SKILL.md'; }
+  return { id: st.id, name: st.name, ok: !reason, reason };
+}
+const skillStatus = () => STAGES.map(skillState);
+const missingSkills = (from, to) => skillStatus().filter((s, i) => i >= from && i <= to && !s.ok);
+const missingMsg = (arr) => 'Đang thiếu SKILL: ' + arr.map((s) => `"${s.name}" (${s.reason})`).join(', ') + ' — chặng tương ứng không chạy được. Hãy nạp SKILL ở trang Stages & SKILLs.';
 const skillInfo = (s) => {
   const dir = path.join(SKILLS, s.id), c = rd(path.join(dir, 'SKILL.md'));
   return { ...s, content: c, tokens: estTokens(c), meta: parseFront(c), files: listFiles(dir), extraTokens: estTokens(resourceText(s.id)) };
@@ -192,6 +204,7 @@ const cleanRel = (p) => String(p).replace(/\\/g, '/').split('/').filter((x) => x
 const IGNORED = /(^|\/)(node_modules|\.git|__MACOSX|\.DS_Store)(\/|$)/;
 
 app.get('/api/skills', (req, res) => res.json(STAGES.map(skillInfo)));
+app.get('/api/skills/status', (req, res) => res.json(skillStatus()));
 app.put('/api/skills/:id', (req, res) => {
   if (!STAGES.find((s) => s.id === req.params.id)) return res.sendStatus(404);
   wr(path.join(SKILLS, req.params.id, 'SKILL.md'), String(req.body.content ?? ''));
@@ -690,6 +703,12 @@ async function evaluateStage(run, i, attempt) {
 // Chạy một chặng; nếu bật cổng kiểm chứng: chấm độc lập, trượt (critical) thì chạy lại kèm phản hồi (tối đa MAX_RETRY lần).
 // Lỗi script cũng được chạy lại. Hết lượt mà vẫn trượt → chặng báo lỗi (kết quả vẫn nằm trên đĩa để xem).
 async function execStage(run, i) {
+  { const miss = missingSkills(i, i); if (miss.length) {
+    const sg = run.stages[i], msg = missingMsg(miss);
+    sg.status = 'error'; sg.error = msg; sg.endedAt = Date.now(); sg.startedAt = sg.startedAt || sg.endedAt;
+    sg.errorDetail = { stderr: msg, command: 'kiểm tra SKILL trước khi chạy chặng', model: sg.model, at: new Date().toISOString() };
+    saveRun(run); return false;
+  } }
   const gate = !!(run.gate && run.gate.enabled);
   const st = STAGES[i], s = run.stages[i], dir = path.join(runDir(run.id), st.id);
   s.attempts = []; s.evaluation = null; s.phase = null;
@@ -880,6 +899,7 @@ app.post('/api/runs/:id/start', (req, res) => {
   else if (f.template && !TPL.loadTemplate(String(f.template))) return res.status(400).json({ error: 'Template "' + f.template + '" không tồn tại trong thư mục templates/' });
   const model = (i) => (models && models[i]) || (run.stages && run.stages[i] && run.stages[i].model) || 'sonnet';
   const single = Array.isArray(only) && only.length === 1 && Number.isInteger(only[0]) && only[0] >= 0 && only[0] < STAGES.length ? only[0] : null;
+  { const miss = single !== null ? missingSkills(single, single) : missingSkills(0, STAGES.length - 1); if (miss.length) return res.status(400).json({ error: missingMsg(miss), code: 'skill_missing', missing: miss }); }
   if (single !== null) {
     // Chạy RIÊNG một chặng (kể cả khi thiếu thông tin / chưa chạy chặng trước): giữ kết quả các chặng khác
     if (!run.stages || run.stages.length !== STAGES.length) run.stages = STAGES.map((s, i) => ({ id: s.id, name: s.name, status: 'pending', model: model(i) }));
@@ -902,6 +922,7 @@ app.post('/api/runs/:id/stages/:n/rerun', (req, res) => {
   if (req.body.model) run.stages[i].model = req.body.model;
   if (req.body.gate !== undefined) run.gate = req.body.gate && req.body.gate.enabled ? { enabled: true, model: modelName(req.body.gate.model) } : { enabled: false };
   for (let k = 0; k < i; k++) if (run.stages[k].status !== 'done') return res.status(400).json({ error: 'Các chặng trước chưa hoàn thành' });
+  { const miss = missingSkills(i, req.body.only ? i : STAGES.length - 1); if (miss.length) return res.status(400).json({ error: missingMsg(miss), code: 'skill_missing', missing: miss }); }
   runPipeline(run, i, !!req.body.only);
   res.json({ ok: true });
 });
